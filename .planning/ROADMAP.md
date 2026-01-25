@@ -1,12 +1,12 @@
-# Roadmap: Arriendo Fácil Backend
+# Roadmap: Arriendo Facil Backend
 
 ## Overview
 
-Backend API en NestJS para el marketplace de arriendos "Arriendo Fácil". Provee las APIs REST, Risk Score Engine con análisis de documentos por IA (Claude), y toda la lógica de negocio que consume el frontend Next.js existente.
+Backend API en NestJS para el marketplace de arriendos "Arriendo Facil". Provee las APIs REST, Risk Score Engine con analisis de documentos por IA (Claude), y toda la logica de negocio que consume el frontend Next.js existente.
 
 ## Milestones
 
-- ⏳ **v1.0 Backend MVP** - Phases 1-10 (in progress)
+- **v1.0 Backend MVP** - Phases 1-10 (in progress)
 
 ## Phases
 
@@ -38,8 +38,13 @@ Backend API en NestJS para el marketplace de arriendos "Arriendo Fácil". Provee
   4. Environment variables validated on startup
   5. Swagger docs accessible at /api
   6. Health check returns 200 at /health
-**Research**: Unlikely (established patterns)
-**Plans**: TBD
+**Research**: Complete (01-RESEARCH.md)
+**Plans**: 3 plans
+
+Plans:
+- [ ] 01-01-PLAN.md - Scaffold NestJS project with strict mode and environment validation
+- [ ] 01-02-PLAN.md - Configure Prisma ORM with Supabase PostgreSQL
+- [ ] 01-03-PLAN.md - Add exception filter, Swagger docs, and health check endpoint
 
 ### Phase 2: Auth & Users
 **Goal**: Users can authenticate and manage profiles with role-based access
@@ -94,7 +99,7 @@ Backend API en NestJS para el marketplace de arriendos "Arriendo Fácil". Provee
   3. StabilityModel evaluates employment stability
   4. HistoryModel evaluates references
   5. IntegrityEngine detects basic inconsistencies
-  6. Aggregator combines subscores → 0-100 score
+  6. Aggregator combines subscores -> 0-100 score
   7. Score determines level A/B/C/D
   8. Scoring runs async via BullMQ
   9. Results persisted to RiskScoreResult table
@@ -108,7 +113,7 @@ Backend API en NestJS para el marketplace de arriendos "Arriendo Fácil". Provee
 **Requirements**: AIDOC-01 through AIDOC-08
 **Success Criteria** (what must be TRUE):
   1. Claude API client configured and working
-  2. ID document (cédula) analyzed: name, number, dates extracted
+  2. ID document (cedula) analyzed: name, number, dates extracted
   3. Employment letter analyzed: company, salary, tenure extracted
   4. Pay stubs analyzed: income details extracted
   5. Bank statements analyzed: income patterns detected
@@ -153,7 +158,7 @@ Backend API en NestJS para el marketplace de arriendos "Arriendo Fácil". Provee
 **Requirements**: NOTF-01 through NOTF-07
 **Success Criteria** (what must be TRUE):
   1. Resend email service configured
-  2. Email templates with Arriendo Fácil branding
+  2. Email templates with Arriendo Facil branding
   3. Email sent when application received (to landlord)
   4. Email sent when approved/rejected (to tenant)
   5. Email sent when info requested (to tenant)
@@ -167,7 +172,7 @@ Backend API en NestJS para el marketplace de arriendos "Arriendo Fácil". Provee
 **Requirements**: MLPR-01 through MLPR-04
 **Success Criteria** (what must be TRUE):
   1. All extracted features persisted with application
-  2. Application outcomes trackable (approved → paid/defaulted)
+  2. Application outcomes trackable (approved -> paid/defaulted)
   3. Score predictions vs actuals logged
   4. Data exportable for ML training
 **Research**: Unlikely (data modeling)
@@ -176,11 +181,11 @@ Backend API en NestJS para el marketplace de arriendos "Arriendo Fácil". Provee
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 0/0 | Not started | - |
+| 1. Foundation | 0/3 | Planned | - |
 | 2. Auth & Users | 0/0 | Not started | - |
 | 3. Properties | 0/0 | Not started | - |
 | 4. Applications & Documents | 0/0 | Not started | - |
@@ -232,4 +237,4 @@ El frontend en `../front/` espera estas estructuras de respuesta:
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-01-24 after creation*
+*Last updated: 2026-01-24 after Phase 1 planning*
