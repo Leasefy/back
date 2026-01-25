@@ -14,7 +14,7 @@ Backend API en NestJS para el marketplace de arriendos "Arriendo Facil". Provee 
 - Integer phases (1, 2, 3): Planned milestone work
 - Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
 
-- [ ] **Phase 1: Foundation** - Project scaffold, Prisma, Supabase config
+- [x] **Phase 1: Foundation** - Project scaffold, Prisma, Supabase config ✓
 - [ ] **Phase 2: Auth & Users** - Supabase Auth, guards, user management
 - [ ] **Phase 3: Properties** - CRUD, filtering, image upload
 - [ ] **Phase 4: Applications & Documents** - Wizard, state machine, document upload
@@ -42,9 +42,9 @@ Backend API en NestJS para el marketplace de arriendos "Arriendo Facil". Provee 
 **Plans**: 3 plans
 
 Plans:
-- [ ] 01-01-PLAN.md - Scaffold NestJS project with strict mode and environment validation
-- [ ] 01-02-PLAN.md - Configure Prisma ORM with Supabase PostgreSQL
-- [ ] 01-03-PLAN.md - Add exception filter, Swagger docs, and health check endpoint
+- [x] 01-01-PLAN.md - Scaffold NestJS project with strict mode and environment validation
+- [x] 01-02-PLAN.md - Configure Prisma ORM with Supabase PostgreSQL
+- [x] 01-03-PLAN.md - Add exception filter, Swagger docs, and health check endpoint
 
 ### Phase 2: Auth & Users
 **Goal**: Users can authenticate and manage profiles with role-based access
@@ -185,7 +185,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 0/3 | Planned | - |
+| 1. Foundation | 3/3 | ✓ Complete | 2026-01-25 |
 | 2. Auth & Users | 0/0 | Not started | - |
 | 3. Properties | 0/0 | Not started | - |
 | 4. Applications & Documents | 0/0 | Not started | - |
@@ -237,4 +237,4 @@ El frontend en `../front/` espera estas estructuras de respuesta:
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-01-24 after Phase 1 planning*
+*Last updated: 2026-01-25 after Phase 1 execution*

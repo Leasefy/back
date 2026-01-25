@@ -9,12 +9,12 @@ Requirements for MVP release. Each maps to roadmap phases.
 
 ### Foundation (FUND)
 
-- [ ] **FUND-01**: NestJS 10.x project scaffolded with TypeScript strict mode
-- [ ] **FUND-02**: Prisma ORM configured with Supabase PostgreSQL
-- [ ] **FUND-03**: Environment configuration with validation
-- [ ] **FUND-04**: Global exception handling and error responses
-- [ ] **FUND-05**: Swagger/OpenAPI documentation setup
-- [ ] **FUND-06**: Health check endpoint
+- [x] **FUND-01**: NestJS 10.x project scaffolded with TypeScript strict mode
+- [x] **FUND-02**: Prisma ORM configured with Supabase PostgreSQL
+- [x] **FUND-03**: Environment configuration with validation
+- [x] **FUND-04**: Global exception handling and error responses
+- [x] **FUND-05**: Swagger/OpenAPI documentation setup
+- [x] **FUND-06**: Health check endpoint
 
 ### Authentication (AUTH)
 
@@ -185,12 +185,12 @@ Which phases cover which requirements. Updated by roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| FUND-01 | Phase 1 | Pending |
-| FUND-02 | Phase 1 | Pending |
-| FUND-03 | Phase 1 | Pending |
-| FUND-04 | Phase 1 | Pending |
-| FUND-05 | Phase 1 | Pending |
-| FUND-06 | Phase 1 | Pending |
+| FUND-01 | Phase 1 | Complete |
+| FUND-02 | Phase 1 | Complete |
+| FUND-03 | Phase 1 | Complete |
+| FUND-04 | Phase 1 | Complete |
+| FUND-05 | Phase 1 | Complete |
+| FUND-06 | Phase 1 | Complete |
 | AUTH-01 | Phase 2 | Pending |
 | AUTH-02 | Phase 2 | Pending |
 | AUTH-03 | Phase 2 | Pending |
@@ -285,4 +285,4 @@ Which phases cover which requirements. Updated by roadmap creation.
 
 ---
 *Requirements defined: 2026-01-24*
-*Last updated: 2026-01-24 after definition*
+*Last updated: 2026-01-25 after Phase 1 completion*
