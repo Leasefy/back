@@ -15,7 +15,7 @@ Backend API en NestJS para el marketplace de arriendos "Arriendo Facil". Provee 
 - Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
 
 - [x] **Phase 1: Foundation** - Project scaffold, Prisma, Supabase config ✓
-- [ ] **Phase 2: Auth & Users** - Supabase Auth, guards, user management
+- [x] **Phase 2: Auth & Users** - Supabase Auth, guards, user management ✓
 - [ ] **Phase 3: Properties** - CRUD, filtering, image upload
 - [ ] **Phase 4: Applications & Documents** - Wizard, state machine, document upload
 - [ ] **Phase 5: Scoring Engine** - Feature extraction, models, aggregator
@@ -60,9 +60,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 02-01-PLAN.md - Create User model in Prisma and database trigger for Supabase sync
-- [ ] 02-02-PLAN.md - Implement Supabase JWT authentication with Passport and RBAC
-- [ ] 02-03-PLAN.md - Create user profile management endpoints
+- [x] 02-01-PLAN.md - Create User model in Prisma and database trigger for Supabase sync
+- [x] 02-02-PLAN.md - Implement Supabase JWT authentication with Passport and RBAC
+- [x] 02-03-PLAN.md - Create user profile management endpoints
 
 ### Phase 3: Properties
 **Goal**: Landlords can manage properties, anyone can browse
@@ -191,7 +191,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 3/3 | ✓ Complete | 2026-01-25 |
-| 2. Auth & Users | 0/3 | Planned | - |
+| 2. Auth & Users | 3/3 | ✓ Complete | 2026-01-26 |
 | 3. Properties | 0/0 | Not started | - |
 | 4. Applications & Documents | 0/0 | Not started | - |
 | 5. Scoring Engine | 0/0 | Not started | - |
@@ -242,4 +242,4 @@ El frontend en `../front/` espera estas estructuras de respuesta:
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-01-25 after Phase 2 planning*
+*Last updated: 2026-01-26 after Phase 2 execution*

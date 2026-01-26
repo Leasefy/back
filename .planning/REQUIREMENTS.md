@@ -18,19 +18,19 @@ Requirements for MVP release. Each maps to roadmap phases.
 
 ### Authentication (AUTH)
 
-- [ ] **AUTH-01**: User can register with email via Supabase Auth
-- [ ] **AUTH-02**: User can login and receive session token
-- [ ] **AUTH-03**: User can logout and invalidate session
-- [ ] **AUTH-04**: Supabase Auth guard protects private routes
-- [ ] **AUTH-05**: User roles distinguished (TENANT / LANDLORD / BOTH)
-- [ ] **AUTH-06**: Role-based access control for endpoints
+- [x] **AUTH-01**: User can register with email via Supabase Auth
+- [x] **AUTH-02**: User can login and receive session token
+- [x] **AUTH-03**: User can logout and invalidate session
+- [x] **AUTH-04**: Supabase Auth guard protects private routes
+- [x] **AUTH-05**: User roles distinguished (TENANT / LANDLORD / BOTH)
+- [x] **AUTH-06**: Role-based access control for endpoints
 
 ### Users (USER)
 
-- [ ] **USER-01**: User profile synced from Supabase Auth
-- [ ] **USER-02**: User can view own profile
-- [ ] **USER-03**: User can update profile (name, phone)
-- [ ] **USER-04**: User can switch role if BOTH
+- [x] **USER-01**: User profile synced from Supabase Auth
+- [x] **USER-02**: User can view own profile
+- [x] **USER-03**: User can update profile (name, phone)
+- [x] **USER-04**: User can switch role if BOTH
 
 ### Properties (PROP)
 
@@ -191,16 +191,16 @@ Which phases cover which requirements. Updated by roadmap creation.
 | FUND-04 | Phase 1 | Complete |
 | FUND-05 | Phase 1 | Complete |
 | FUND-06 | Phase 1 | Complete |
-| AUTH-01 | Phase 2 | Pending |
-| AUTH-02 | Phase 2 | Pending |
-| AUTH-03 | Phase 2 | Pending |
-| AUTH-04 | Phase 2 | Pending |
-| AUTH-05 | Phase 2 | Pending |
-| AUTH-06 | Phase 2 | Pending |
-| USER-01 | Phase 2 | Pending |
-| USER-02 | Phase 2 | Pending |
-| USER-03 | Phase 2 | Pending |
-| USER-04 | Phase 2 | Pending |
+| AUTH-01 | Phase 2 | Complete |
+| AUTH-02 | Phase 2 | Complete |
+| AUTH-03 | Phase 2 | Complete |
+| AUTH-04 | Phase 2 | Complete |
+| AUTH-05 | Phase 2 | Complete |
+| AUTH-06 | Phase 2 | Complete |
+| USER-01 | Phase 2 | Complete |
+| USER-02 | Phase 2 | Complete |
+| USER-03 | Phase 2 | Complete |
+| USER-04 | Phase 2 | Complete |
 | PROP-01 | Phase 3 | Pending |
 | PROP-02 | Phase 3 | Pending |
 | PROP-03 | Phase 3 | Pending |
