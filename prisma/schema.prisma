@@ -9,5 +9,36 @@ datasource db {
   provider = "postgresql"
 }
 
-// Models will be added in Phase 2+
-// This empty schema validates Prisma configuration
+// ============================================
+// ENUMS
+// ============================================
+
+/// User role in the system
+/// TENANT: Can apply for properties
+/// LANDLORD: Can list properties, view applications
+/// BOTH: Can do both (switches context via activeRole)
+enum Role {
+  TENANT
+  LANDLORD
+  BOTH
+}
+
+// ============================================
+// MODELS
+// ============================================
+
+/// User model - synced from Supabase Auth via database trigger
+/// The id matches auth.users.id (UUID)
+model User {
+  id         String   @id @db.Uuid // Same UUID as auth.users.id
+  email      String   @unique
+  role       Role     @default(TENANT)
+  activeRole Role?    @map("active_role") // For BOTH users to track current context
+  firstName  String?  @map("first_name")
+  lastName   String?  @map("last_name")
+  phone      String?
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
+}

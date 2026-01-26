@@ -1,9 +1,7 @@
 // Prisma configuration for Supabase PostgreSQL
 //
-// For migrations, use the direct URL (non-pooled) by setting DATABASE_URL:
-//   DATABASE_URL=$DIRECT_URL npx prisma migrate dev
-//
-// For application runtime, DATABASE_URL should point to the pooled connection
+// DATABASE_URL: Pooled connection (port 6543) for application runtime
+// DIRECT_URL: Direct connection (port 5432) for schema push/migrations
 import "dotenv/config";
 import { defineConfig } from "prisma/config";
 
@@ -13,6 +11,8 @@ export default defineConfig({
     path: "prisma/migrations",
   },
   datasource: {
-    url: process.env["DATABASE_URL"],
+    // Use direct URL for schema operations (db push, migrate)
+    // The direct connection bypasses the connection pooler
+    url: process.env["DIRECT_URL"] || process.env["DATABASE_URL"],
   },
 });
