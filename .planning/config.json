@@ -22,5 +22,28 @@
   "safety": {
     "always_confirm_destructive": true,
     "always_confirm_external_services": true
+  },
+  "bd1": {
+  "contrase;a_supabase": "j1c0oTXTNAw6f2QT",
+  "host": "db.jraqurdcjwnifzpdqtnm.supabase.co",
+  "port": 5432,
+  "database": "postgres",
+  "user": "postgres",
+  "url": "postgresql://postgres:j1c0oTXTNAw6f2QT@db.jraqurdcjwnifzpdqtnm.supabase.co:5432/postgres"
+  },
+  "db2": {
+    "url": "postgresql://postgres.jraqurdcjwnifzpdqtnm:j1c0oTXTNAw6f2QT@aws-0-us-west-2.pooler.supabase.com:6543/postgres",
+    "host": "aws-0-us-west-2.pooler.supabase.com",
+    "port": 6543,
+    "database": "postgres",
+    "user": "postgres.jraqurdcjwnifzpdqtnm",
+    "pool_mode": "transaction"
   }
+  // Connect to Supabase via connection pooling
+  //DATABASE_URL="postgresql://postgres.jraqurdcjwnifzpdqtnm:[YOUR-PASSWORD]@aws-0-us-west-2.pooler.supabase.com:6543/postgres?pgbouncer=true"
+
+  // Direct connection to the database. Used for migrations
+  //DIRECT_URL="postgresql://postgres.jraqurdcjwnifzpdqtnm:[YOUR-PASSWORD]@aws-0-us-west-2.pooler.supabase.com:5432/postgres"
+
+
 }
