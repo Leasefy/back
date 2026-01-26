@@ -1,13 +1,29 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule } from './config/config.module.js';
 import { PrismaModule } from './database/prisma.module.js';
 import { HealthModule } from './health/health.module.js';
+import { AuthModule } from './auth/auth.module.js';
+import { SupabaseAuthGuard } from './auth/guards/supabase-auth.guard.js';
+import { RolesGuard } from './auth/guards/roles.guard.js';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 
 @Module({
-  imports: [ConfigModule, PrismaModule, HealthModule],
+  imports: [ConfigModule, PrismaModule, HealthModule, AuthModule],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    // Global guards - ORDER MATTERS: Auth first, then Roles
+    // Auth guard must run before roles guard to ensure user is populated
+    {
+      provide: APP_GUARD,
+      useClass: SupabaseAuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
+    },
+  ],
 })
 export class AppModule {}
