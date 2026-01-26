@@ -3,11 +3,11 @@
 ## Current Status
 
 **Phase:** 2 of 10 (Auth & Users)
-**Plan:** 2 of 3 complete
-**Status:** In Progress
-**Last activity:** 2026-01-26 - Completed 02-02-PLAN.md
+**Plan:** 3 of 3 complete
+**Status:** Phase Complete
+**Last activity:** 2026-01-26 - Completed 02-03-PLAN.md
 
-**Progress:** [####------] 16% (5/31 plans estimated)
+**Progress:** [#####-----] 19% (6/31 plans estimated)
 
 ## Project Reference
 
@@ -15,7 +15,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 **Core value:** Ejecutar el Risk Score con analisis inteligente de documentos para que propietarios tomen decisiones informadas en minutos, con explicabilidad total.
 
-**Current focus:** Phase 2 - Auth & Users (Plan 2 of 3 complete)
+**Current focus:** Phase 2 - Auth & Users COMPLETE
 
 ## Quick Context
 
@@ -29,7 +29,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | Phase | Status | Notes |
 |-------|--------|-------|
 | 1. Foundation | COMPLETE | All 3 plans executed |
-| 2. Auth & Users | In Progress | Plan 2/3 complete - JWT auth & guards |
+| 2. Auth & Users | COMPLETE | All 3 plans executed - User model, JWT auth, profile CRUD |
 | 3. Properties | - Pending | |
 | 4. Applications | - Pending | |
 | 5. Scoring Engine | - Pending | |
@@ -60,11 +60,14 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 2026-01-26 | 02-02 | Global guards via APP_GUARD | All routes protected by default (more secure) |
 | 2026-01-26 | 02-02 | Auth guard before roles guard | User must be populated for role check |
 | 2026-01-26 | 02-02 | BOTH role grants full access | Simplifies logic for dual-role users |
+| 2026-01-26 | 02-03 | Colombian phone regex | /^(\+57)?3[0-9]{9}$/ for mobile validation |
+| 2026-01-26 | 02-03 | Role switch targets only TENANT/LANDLORD | BOTH users switch TO one of these roles |
+| 2026-01-26 | 02-03 | Double validation for role switch | Guard + service check for defense in depth |
 
 ## Session Continuity
 
 **Last session:** 2026-01-26
-**Stopped at:** Completed 02-02-PLAN.md
+**Stopped at:** Completed 02-03-PLAN.md (Phase 2 complete)
 **Resume file:** None
 
 ## Pending User Actions
@@ -76,10 +79,10 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 ## Next Action
 
-Continue with Phase 2 Auth & Users:
+Start Phase 3: Properties
 
 ```
-/gsd:execute-phase 02-03
+/gsd:execute-phase 03-01
 ```
 
 ## Session History
@@ -96,6 +99,7 @@ Continue with Phase 2 Auth & Users:
 | 2026-01-25 | Phase 1 verified | 6/6 must-haves passed |
 | 2026-01-25 | Executed 02-01-PLAN.md | User model, Role enum, env validation, sync trigger |
 | 2026-01-26 | Executed 02-02-PLAN.md | JWT auth, guards, decorators, routes protected |
+| 2026-01-26 | Executed 02-03-PLAN.md | User profile CRUD endpoints, Phase 2 complete |
 
 ---
 *Last updated: 2026-01-26*
