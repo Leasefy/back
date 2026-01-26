@@ -56,8 +56,13 @@ Plans:
   3. Protected routes reject unauthenticated requests
   4. User role (TENANT/LANDLORD) enforced on routes
   5. User profile synced and updatable
-**Research**: Unlikely (Supabase Auth well documented)
-**Plans**: TBD
+**Research**: Complete (02-RESEARCH.md)
+**Plans**: 3 plans
+
+Plans:
+- [ ] 02-01-PLAN.md - Create User model in Prisma and database trigger for Supabase sync
+- [ ] 02-02-PLAN.md - Implement Supabase JWT authentication with Passport and RBAC
+- [ ] 02-03-PLAN.md - Create user profile management endpoints
 
 ### Phase 3: Properties
 **Goal**: Landlords can manage properties, anyone can browse
@@ -186,7 +191,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 3/3 | ✓ Complete | 2026-01-25 |
-| 2. Auth & Users | 0/0 | Not started | - |
+| 2. Auth & Users | 0/3 | Planned | - |
 | 3. Properties | 0/0 | Not started | - |
 | 4. Applications & Documents | 0/0 | Not started | - |
 | 5. Scoring Engine | 0/0 | Not started | - |
@@ -237,4 +242,4 @@ El frontend en `../front/` espera estas estructuras de respuesta:
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-01-25 after Phase 1 execution*
+*Last updated: 2026-01-25 after Phase 2 planning*
