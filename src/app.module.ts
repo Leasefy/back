@@ -4,13 +4,14 @@ import { ConfigModule } from './config/config.module.js';
 import { PrismaModule } from './database/prisma.module.js';
 import { HealthModule } from './health/health.module.js';
 import { AuthModule } from './auth/auth.module.js';
+import { UsersModule } from './users/users.module.js';
 import { SupabaseAuthGuard } from './auth/guards/supabase-auth.guard.js';
 import { RolesGuard } from './auth/guards/roles.guard.js';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 
 @Module({
-  imports: [ConfigModule, PrismaModule, HealthModule, AuthModule],
+  imports: [ConfigModule, PrismaModule, HealthModule, AuthModule, UsersModule],
   controllers: [AppController],
   providers: [
     AppService,
