@@ -3,11 +3,11 @@
 ## Current Status
 
 **Phase:** 2 of 10 (Auth & Users)
-**Plan:** 1 of 3 complete
+**Plan:** 2 of 3 complete
 **Status:** In Progress
-**Last activity:** 2026-01-25 - Completed 02-01-PLAN.md
+**Last activity:** 2026-01-26 - Completed 02-02-PLAN.md
 
-**Progress:** [###-------] 13% (4/31 plans estimated)
+**Progress:** [####------] 16% (5/31 plans estimated)
 
 ## Project Reference
 
@@ -15,7 +15,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 **Core value:** Ejecutar el Risk Score con analisis inteligente de documentos para que propietarios tomen decisiones informadas en minutos, con explicabilidad total.
 
-**Current focus:** Phase 2 - Auth & Users (Plan 1 of 3 complete)
+**Current focus:** Phase 2 - Auth & Users (Plan 2 of 3 complete)
 
 ## Quick Context
 
@@ -29,7 +29,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | Phase | Status | Notes |
 |-------|--------|-------|
 | 1. Foundation | COMPLETE | All 3 plans executed |
-| 2. Auth & Users | In Progress | Plan 1/3 complete - User model & env setup |
+| 2. Auth & Users | In Progress | Plan 2/3 complete - JWT auth & guards |
 | 3. Properties | - Pending | |
 | 4. Applications | - Pending | |
 | 5. Scoring Engine | - Pending | |
@@ -56,11 +56,15 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 2026-01-25 | 02-01 | Role as Prisma enum | Type-safe, auto-generates TypeScript types |
 | 2026-01-25 | 02-01 | activeRole field for BOTH users | Track current context when acting as TENANT/LANDLORD |
 | 2026-01-25 | 02-01 | SECURITY DEFINER on trigger | Required for cross-schema write from auth to public |
+| 2026-01-26 | 02-02 | JWKS-based JWT verification | Future-proof, automatic key rotation support |
+| 2026-01-26 | 02-02 | Global guards via APP_GUARD | All routes protected by default (more secure) |
+| 2026-01-26 | 02-02 | Auth guard before roles guard | User must be populated for role check |
+| 2026-01-26 | 02-02 | BOTH role grants full access | Simplifies logic for dual-role users |
 
 ## Session Continuity
 
-**Last session:** 2026-01-25
-**Stopped at:** Completed 02-01-PLAN.md
+**Last session:** 2026-01-26
+**Stopped at:** Completed 02-02-PLAN.md
 **Resume file:** None
 
 ## Pending User Actions
@@ -75,7 +79,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 Continue with Phase 2 Auth & Users:
 
 ```
-/gsd:execute-phase 02-02
+/gsd:execute-phase 02-03
 ```
 
 ## Session History
@@ -91,6 +95,7 @@ Continue with Phase 2 Auth & Users:
 | 2026-01-25 | Executed 01-03-PLAN.md | Swagger, health check, exception filter |
 | 2026-01-25 | Phase 1 verified | 6/6 must-haves passed |
 | 2026-01-25 | Executed 02-01-PLAN.md | User model, Role enum, env validation, sync trigger |
+| 2026-01-26 | Executed 02-02-PLAN.md | JWT auth, guards, decorators, routes protected |
 
 ---
-*Last updated: 2026-01-25*
+*Last updated: 2026-01-26*
