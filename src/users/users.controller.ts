@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Patch } from '@nestjs/common';
+import { Body, Controller, Get, Patch, Post } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOkResponse,
@@ -11,6 +11,7 @@ import { Roles } from '../auth/decorators/roles.decorator.js';
 import { Role } from '../common/enums/role.enum.js';
 import { UpdateProfileDto } from './dto/update-profile.dto.js';
 import { SwitchRoleDto } from './dto/switch-role.dto.js';
+import { CompleteOnboardingDto } from './dto/complete-onboarding.dto.js';
 import { UsersService } from './users.service.js';
 
 /**
@@ -59,5 +60,54 @@ export class UsersController {
     @Body() dto: SwitchRoleDto,
   ): Promise<User> {
     return this.usersService.setActiveRole(userId, dto.activeRole);
+  }
+
+  /**
+   * Complete user onboarding after Google OAuth registration.
+   *
+   * This endpoint allows new users to:
+   * 1. Set their profile information (firstName, lastName, phone)
+   * 2. Select their user type:
+   *    - TENANT: Looking to rent a property (inquilino)
+   *    - LANDLORD: Has properties to rent out (propietario)
+   *    - BOTH: Does both activities
+   *
+   * The user's role will be updated based on their selection.
+   * For BOTH users, activeRole is set to LANDLORD by default.
+   */
+  @Post('me/onboarding')
+  @ApiOperation({
+    summary: 'Complete onboarding after Google registration',
+    description:
+      'Updates user profile and sets their role. Call this after Google OAuth to complete registration.',
+  })
+  @ApiOkResponse({ description: 'Onboarding completed successfully' })
+  async completeOnboarding(
+    @CurrentUser('id') userId: string,
+    @Body() dto: CompleteOnboardingDto,
+  ): Promise<User> {
+    return this.usersService.completeOnboarding(userId, dto);
+  }
+
+  /**
+   * Check if the current user has completed onboarding.
+   * Returns true if the user has a firstName set.
+   */
+  @Get('me/onboarding/status')
+  @ApiOperation({ summary: 'Check if onboarding is complete' })
+  @ApiOkResponse({
+    description: 'Onboarding status',
+    schema: {
+      type: 'object',
+      properties: {
+        complete: { type: 'boolean' },
+      },
+    },
+  })
+  async getOnboardingStatus(
+    @CurrentUser('id') userId: string,
+  ): Promise<{ complete: boolean }> {
+    const complete = await this.usersService.isOnboardingComplete(userId);
+    return { complete };
   }
 }
