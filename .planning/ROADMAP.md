@@ -83,7 +83,13 @@ Plans:
   8. Properties blocked from edit/delete if has active applications
 **Research**: Unlikely (standard CRUD)
 **Context**: Complete (03-CONTEXT.md)
-**Plans**: TBD
+**Plans**: 4 plans
+
+Plans:
+- [ ] 03-01-PLAN.md - Create Property and PropertyImage Prisma models with enums
+- [ ] 03-02-PLAN.md - Create PropertiesModule with landlord CRUD operations
+- [ ] 03-03-PLAN.md - Add public property listing with filters and search
+- [ ] 03-04-PLAN.md - Implement property image upload to Supabase Storage
 
 **Model Changes (aligned with frontend):**
 - type: apartment | house | studio | room
@@ -263,9 +269,9 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 3/3 | ✓ Complete | 2026-01-25 |
-| 2. Auth & Users | 3/3 | ✓ Complete | 2026-01-26 |
-| 3. Properties | 0/0 | Context ready | - |
+| 1. Foundation | 3/3 | Complete | 2026-01-25 |
+| 2. Auth & Users | 3/3 | Complete | 2026-01-26 |
+| 3. Properties | 0/4 | Planned | - |
 | 4. Applications & Documents | 0/0 | Not started | - |
 | 5. Scoring Engine | 0/0 | Not started | - |
 | 6. AI Document Analysis | 0/0 | Not started | - |
@@ -346,4 +352,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-01-29 - Added phases 11-14 based on frontend BACKEND-INTEGRATION.md*
+*Last updated: 2026-01-29 - Phase 3 planned with 4 plans*
