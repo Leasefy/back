@@ -12,7 +12,7 @@ import {
   IsLatitude,
   IsLongitude,
 } from 'class-validator';
-import { PropertyType, PropertyStatus, ListingPlan } from '../../common/enums/index.js';
+import { PropertyType, PropertyStatus } from '../../common/enums/index.js';
 
 /**
  * DTO for creating a new property listing.
@@ -134,9 +134,4 @@ export class CreatePropertyDto {
   @IsArray()
   @IsString({ each: true })
   amenities?: string[];
-
-  @ApiPropertyOptional({ enum: ListingPlan, default: ListingPlan.FREE })
-  @IsOptional()
-  @IsEnum(ListingPlan)
-  listingPlan?: ListingPlan;
 }

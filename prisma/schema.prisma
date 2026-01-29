@@ -39,8 +39,11 @@ enum PropertyStatus {
   PENDING
 }
 
-/// Listing plan for properties
-enum ListingPlan {
+/// Subscription plan for users
+/// FREE: 1 property, 1 contract, no AI scoring
+/// PRO: 10 properties, unlimited contracts, AI scoring ($149,900/month)
+/// BUSINESS: Unlimited properties, API access ($499,900/month)
+enum SubscriptionPlan {
   FREE
   PRO
   BUSINESS
@@ -60,6 +63,11 @@ model User {
   firstName  String?  @map("first_name")
   lastName   String?  @map("last_name")
   phone      String?
+
+  // Subscription
+  subscriptionPlan    SubscriptionPlan @default(FREE) @map("subscription_plan")
+  subscriptionEndsAt  DateTime?        @map("subscription_ends_at") // null = no expiration (free) or lifetime
+
   createdAt  DateTime @default(now()) @map("created_at")
   updatedAt  DateTime @updatedAt @map("updated_at")
 
@@ -101,9 +109,6 @@ model Property {
 
   // Amenities stored as array of string IDs
   amenities    String[]       @default([])
-
-  // Plan
-  listingPlan  ListingPlan    @default(FREE) @map("listing_plan")
 
   // Timestamps
   createdAt    DateTime       @default(now()) @map("created_at")
