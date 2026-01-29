@@ -49,6 +49,40 @@ enum SubscriptionPlan {
   BUSINESS
 }
 
+/// Application status in the rental process
+enum ApplicationStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  NEEDS_INFO
+  PREAPPROVED
+  APPROVED
+  REJECTED
+  WITHDRAWN
+}
+
+/// Type of application event for audit trail
+enum ApplicationEventType {
+  CREATED
+  STEP_COMPLETED
+  SUBMITTED
+  STATUS_CHANGED
+  INFO_REQUESTED
+  INFO_PROVIDED
+  DOCUMENT_UPLOADED
+  DOCUMENT_DELETED
+  WITHDRAWN
+}
+
+/// Type of document uploaded with application
+enum DocumentType {
+  ID_DOCUMENT
+  EMPLOYMENT_LETTER
+  PAY_STUB
+  BANK_STATEMENT
+  OTHER
+}
+
 // ============================================
 // MODELS
 // ============================================
@@ -72,7 +106,9 @@ model User {
   updatedAt  DateTime @updatedAt @map("updated_at")
 
   // Relations
-  properties Property[]
+  properties   Property[]
+  applications Application[]      @relation("TenantApplications")
+  events       ApplicationEvent[] @relation("UserEvents")
 
   @@map("users")
 }
@@ -117,6 +153,7 @@ model Property {
   // Relations
   landlord     User           @relation(fields: [landlordId], references: [id], onDelete: Cascade)
   images       PropertyImage[]
+  applications Application[]
 
   @@index([landlordId])
   @@index([city])
@@ -141,4 +178,74 @@ model PropertyImage {
   @@unique([propertyId, order])
   @@index([propertyId])
   @@map("property_images")
+}
+
+/// Rental application from tenant to property
+model Application {
+  id              String            @id @default(uuid()) @db.Uuid
+  propertyId      String            @map("property_id") @db.Uuid
+  tenantId        String            @map("tenant_id") @db.Uuid
+  status          ApplicationStatus @default(DRAFT)
+  currentStep     Int               @default(1) @map("current_step")
+
+  // Wizard steps as separate JSON fields (validated in application layer)
+  personalInfo    Json?             @map("personal_info")    // Step 1
+  employmentInfo  Json?             @map("employment_info")  // Step 2
+  incomeInfo      Json?             @map("income_info")      // Step 3
+  referencesInfo  Json?             @map("references_info")  // Step 4
+  // Step 5: Documents (separate table)
+  // Step 6: Review (no data, just submit)
+
+  submittedAt     DateTime?         @map("submitted_at")
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+
+  // Relations
+  property        Property          @relation(fields: [propertyId], references: [id])
+  tenant          User              @relation("TenantApplications", fields: [tenantId], references: [id])
+  documents       ApplicationDocument[]
+  events          ApplicationEvent[]
+
+  @@index([propertyId])
+  @@index([tenantId])
+  @@index([status])
+  @@map("applications")
+}
+
+/// Document uploaded as part of an application
+model ApplicationDocument {
+  id            String       @id @default(uuid()) @db.Uuid
+  applicationId String       @map("application_id") @db.Uuid
+  type          DocumentType
+  storagePath   String       @map("storage_path") @db.VarChar(500)
+  originalName  String       @map("original_name") @db.VarChar(255)
+  mimeType      String       @map("mime_type") @db.VarChar(100)
+  size          Int          // bytes
+  createdAt     DateTime     @default(now()) @map("created_at")
+
+  // Relations
+  application   Application  @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@index([applicationId])
+  @@index([type])
+  @@map("application_documents")
+}
+
+/// Event log entry for application audit trail
+model ApplicationEvent {
+  id            String               @id @default(uuid()) @db.Uuid
+  applicationId String               @map("application_id") @db.Uuid
+  type          ApplicationEventType
+  actorId       String               @map("actor_id") @db.Uuid
+  metadata      Json                 @default("{}")
+  createdAt     DateTime             @default(now()) @map("created_at")
+
+  // Relations
+  application   Application          @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  actor         User                 @relation("UserEvents", fields: [actorId], references: [id])
+
+  @@index([applicationId])
+  @@index([actorId])
+  @@index([createdAt])
+  @@map("application_events")
 }
