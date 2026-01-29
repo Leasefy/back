@@ -2,12 +2,12 @@
 
 ## Current Status
 
-**Phase:** 3 of 10 (Properties) - COMPLETE
-**Plan:** 4 of 4 complete
-**Status:** Phase Complete
-**Last activity:** 2026-01-29 - Completed 03-04-PLAN.md (Property Images)
+**Phase:** 4 of 10 (Applications)
+**Plan:** 1 of 4 complete
+**Status:** In progress
+**Last activity:** 2026-01-29 - Completed 04-01-PLAN.md (Application Data Models)
 
-**Progress:** [#####-----] 22% (10/~45 plans estimated)
+**Progress:** [#####-----] 24% (11/~45 plans estimated)
 
 ## Project Reference
 
@@ -15,7 +15,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 **Core value:** Ejecutar el Risk Score con analisis inteligente de documentos para que propietarios tomen decisiones informadas en minutos, con explicabilidad total.
 
-**Current focus:** Phase 3 Complete - Property images with Supabase Storage. Ready for Phase 4 (Applications)
+**Current focus:** Phase 4 In Progress - Application data models complete. Database sync pending manual action.
 
 ## Quick Context
 
@@ -31,7 +31,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 1. Foundation | COMPLETE | All 3 plans executed |
 | 2. Auth & Users | COMPLETE | All 3 plans executed - User model, JWT auth, profile CRUD |
 | 3. Properties | COMPLETE | All 4 plans executed - Data model, CRUD, public listing, images |
-| 4. Applications | - Pending | |
+| 4. Applications | IN PROGRESS | 1/4 plans - Data models complete |
 | 5. Scoring Engine | - Pending | |
 | 6. AI Document Analysis | - Pending | |
 | 7. Explainability | - Pending | |
@@ -78,11 +78,14 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 2026-01-29 | 03-04 | Service key for Storage operations | Anon key has limited Storage permissions; service key enables server-side operations |
 | 2026-01-29 | 03-04 | Auto-reorder after delete | Prevents gaps in order sequence, maintains clean 0-N ordering |
 | 2026-01-29 | 03-04 | Transaction for reorder | Ensures all order updates succeed or none do (atomicity) |
+| 2026-01-29 | 04-01 | JSON fields for wizard steps | Validated in application layer, not DB - flexibility for schema evolution |
+| 2026-01-29 | 04-01 | Cascade delete on ApplicationDocument/Event | Maintains referential integrity when Application deleted |
+| 2026-01-29 | 04-01 | Event sourcing for audit trail | actorId + type + metadata JSON enables full audit history |
 
 ## Session Continuity
 
 **Last session:** 2026-01-29
-**Stopped at:** Completed 03-04-PLAN.md - Phase 3 complete
+**Stopped at:** Completed 04-01-PLAN.md - Application data models
 **Resume file:** None
 
 ## Pending User Actions
@@ -101,12 +104,17 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 1. Add `SUPABASE_SERVICE_KEY` to `.env`
 2. Get from: Supabase Dashboard > Settings > API > service_role key
 
+**Database sync for Application tables:**
+1. Run: `npx prisma db push`
+2. If "spawn UNKNOWN" error on Windows/OneDrive, try WSL or shorter path
+3. Verify tables: `npx prisma studio`
+
 ## Next Action
 
-Begin Phase 4: Applications - Create rental application plans
+Continue Phase 4: Execute 04-02-PLAN.md (Application Service Layer)
 
 ```
-/gsd:plan-phase 04-applications
+/gsd:execute-plan .planning/phases/04-applications-documents/04-02-PLAN.md
 ```
 
 ## Session History
@@ -129,6 +137,7 @@ Begin Phase 4: Applications - Create rental application plans
 | 2026-01-29 | Executed 03-02-PLAN.md | PropertiesModule, landlord CRUD, ownership validation |
 | 2026-01-29 | Executed 03-03-PLAN.md | Public listing with filters, search, pagination |
 | 2026-01-29 | Executed 03-04-PLAN.md | Property images with Supabase Storage, Phase 3 complete |
+| 2026-01-29 | Executed 04-01-PLAN.md | Application/ApplicationDocument/ApplicationEvent models, enums |
 
 ---
 *Last updated: 2026-01-29*
