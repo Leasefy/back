@@ -582,32 +582,199 @@ npm run start:dev
 
 ---
 
-## 14. Solución de Problemas
+## 14. Configuracion de OAuth en Supabase
+
+### Redirect URLs
+
+En **Supabase Dashboard > Authentication > URL Configuration**, configurar:
+
+| Campo | Valor |
+|-------|-------|
+| Site URL | `http://localhost:4200` |
+| Redirect URLs | `http://localhost:4200/**` |
+
+### Proveedores de OAuth
+
+En **Supabase Dashboard > Authentication > Providers**:
+
+1. **Google**:
+   - Habilitar Google provider
+   - Configurar Client ID y Client Secret desde Google Cloud Console
+   - Authorized redirect URI: `https://[project-ref].supabase.co/auth/v1/callback`
+
+---
+
+## 15. SQL Completo para Sincronizacion
+
+Ejecutar en **Supabase Dashboard > SQL Editor**:
+
+```sql
+-- =============================================
+-- 1. CREAR TRIGGER PARA FUTUROS USUARIOS
+-- =============================================
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+DROP FUNCTION IF EXISTS public.handle_new_user();
+
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+BEGIN
+  INSERT INTO public.users (
+    id, email, role, first_name, last_name, created_at, updated_at
+  )
+  VALUES (
+    NEW.id,
+    NEW.email,
+    COALESCE(
+      CASE
+        WHEN NEW.raw_user_meta_data ->> 'role' IN ('TENANT', 'LANDLORD', 'BOTH')
+        THEN (NEW.raw_user_meta_data ->> 'role')::"Role"
+        ELSE NULL
+      END,
+      'TENANT'::"Role"
+    ),
+    NEW.raw_user_meta_data ->> 'first_name',
+    NEW.raw_user_meta_data ->> 'last_name',
+    NOW(),
+    NOW()
+  );
+  RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW
+  EXECUTE FUNCTION public.handle_new_user();
+
+-- =============================================
+-- 2. SINCRONIZAR USUARIOS EXISTENTES
+-- =============================================
+-- Inserta usuarios de auth.users que no existen en public.users
+INSERT INTO public.users (id, email, role, created_at, updated_at)
+SELECT id, email, 'TENANT'::"Role", NOW(), NOW()
+FROM auth.users
+WHERE id NOT IN (SELECT id FROM public.users);
+```
+
+---
+
+## 16. Estructura del JWT de Supabase
+
+Ejemplo de payload JWT decodificado:
+
+```json
+{
+  "iss": "https://[project-ref].supabase.co/auth/v1",
+  "sub": "1532e820-9100-4f3f-b47d-2af8d92a3765",
+  "aud": "authenticated",
+  "exp": 1769649184,
+  "iat": 1769645584,
+  "email": "usuario@gmail.com",
+  "phone": "",
+  "app_metadata": {
+    "provider": "google",
+    "providers": ["google"]
+  },
+  "user_metadata": {
+    "avatar_url": "https://...",
+    "email": "usuario@gmail.com",
+    "email_verified": true,
+    "full_name": "Nombre Usuario",
+    "name": "Nombre Usuario",
+    "picture": "https://..."
+  },
+  "role": "authenticated",
+  "session_id": "c4eb3a06-fb1d-466f-b113-460ece109ae1"
+}
+```
+
+| Campo | Descripcion |
+|-------|-------------|
+| `sub` | UUID del usuario (usado como ID en public.users) |
+| `email` | Email del usuario |
+| `iss` | Emisor (URL de Supabase + /auth/v1) |
+| `aud` | Audience ("authenticated" para usuarios logueados) |
+| `exp` | Timestamp de expiracion |
+| `user_metadata` | Datos adicionales del proveedor OAuth |
+
+---
+
+## 17. Archivo de Prueba (pruebaLogin.html)
+
+Ubicacion: `C:\Users\victo\OneDrive\Escritorio\Rent\pruebaLogin.html`
+
+### Funcionalidades:
+
+| Seccion | Endpoint | Descripcion |
+|---------|----------|-------------|
+| 1. Autenticacion | - | Login Google, ver sesion, logout |
+| 2. Health Check | GET /health | Endpoint publico |
+| 3. Perfil | GET /users/me | Obtener perfil (requiere auth) |
+| 4. Actualizar | PATCH /users/me | Actualizar nombre/apellido/telefono |
+| 5. Cambiar Rol | PATCH /users/me/role | Solo usuarios con rol BOTH |
+
+### Como ejecutar:
+
+```bash
+# Desde la carpeta Rent (donde esta el archivo)
+cd C:\Users\victo\OneDrive\Escritorio\Rent
+npx serve -l 4200
+```
+
+Abrir: **http://localhost:4200/pruebaLogin.html**
+
+---
+
+## 18. Solucion de Problemas
 
 ### Error: `prisma db push` se cuelga
 
 **Causa:** El connection pooler (puerto 6543) no es compatible con comandos de schema.
 
-**Solución:** Usar `DIRECT_URL` en `prisma.config.ts` para migraciones.
+**Solucion:** Usar `DIRECT_URL` en `prisma.config.ts` para migraciones.
 
 ### Error: `Algorithm not supported`
 
 **Causa:** Supabase usa ES256, no RS256.
 
-**Solución:** Configurar `algorithms: ['ES256']` en la estrategia JWT.
+**Solucion:** Configurar `algorithms: ['ES256']` en la estrategia JWT.
 
-### Error: `User not found`
+### Error: `User not found` (401 Unauthorized)
 
-**Causa:** El trigger no creó el usuario en `public.users`.
+**Causa:** El usuario existe en `auth.users` pero no en `public.users`, o los UUIDs no coinciden.
 
-**Solución:**
-1. Verificar que el trigger existe en Supabase
-2. Ejecutar manualmente el SQL del trigger
-3. Verificar que la tabla `public.users` existe (`prisma db push`)
+**Solucion 1 - Ejecutar trigger y sincronizar:**
+```sql
+-- Sincronizar usuarios existentes
+INSERT INTO public.users (id, email, role, created_at, updated_at)
+SELECT id, email, 'TENANT'::"Role", NOW(), NOW()
+FROM auth.users
+WHERE id NOT IN (SELECT id FROM public.users);
+```
+
+**Solucion 2 - Corregir UUID que no coincide:**
+```sql
+-- Si el usuario ya existe pero con UUID diferente
+UPDATE public.users
+SET id = '[UUID-DE-AUTH-USERS]'
+WHERE id = '[UUID-ACTUAL-EN-PUBLIC-USERS]';
+```
+
+### Error: Redirect a URL incorrecta despues de OAuth
+
+**Causa:** La URL de redirect no esta configurada en Supabase.
+
+**Solucion:**
+1. Ir a Supabase Dashboard > Authentication > URL Configuration
+2. Agregar la URL a "Redirect URLs" (ej: `http://localhost:4200/**`)
 
 ---
 
-## 15. Estructura de Archivos
+## 19. Estructura de Archivos
 
 ```
 src/
