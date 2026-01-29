@@ -23,6 +23,29 @@ enum Role {
   BOTH
 }
 
+/// Property type
+enum PropertyType {
+  APARTMENT
+  HOUSE
+  STUDIO
+  ROOM
+}
+
+/// Property listing status
+enum PropertyStatus {
+  DRAFT
+  AVAILABLE
+  RENTED
+  PENDING
+}
+
+/// Listing plan for properties
+enum ListingPlan {
+  FREE
+  PRO
+  BUSINESS
+}
+
 // ============================================
 // MODELS
 // ============================================
@@ -40,5 +63,77 @@ model User {
   createdAt  DateTime @default(now()) @map("created_at")
   updatedAt  DateTime @updatedAt @map("updated_at")
 
+  // Relations
+  properties Property[]
+
   @@map("users")
+}
+
+/// Property listing owned by a landlord
+model Property {
+  id           String         @id @default(uuid()) @db.Uuid
+  landlordId   String         @map("landlord_id") @db.Uuid
+  title        String         @db.VarChar(100)
+  description  String         @db.Text
+  type         PropertyType   @default(APARTMENT)
+  status       PropertyStatus @default(DRAFT)
+
+  // Location
+  city         String         @db.VarChar(50)
+  neighborhood String         @db.VarChar(100)
+  address      String         @db.VarChar(200)
+  latitude     Float?
+  longitude    Float?
+
+  // Pricing (COP integers)
+  monthlyRent  Int            @map("monthly_rent")
+  adminFee     Int            @default(0) @map("admin_fee")
+  deposit      Int            @default(0)
+
+  // Characteristics
+  bedrooms     Int            @default(1)
+  bathrooms    Int            @default(1)
+  area         Int            // square meters
+  floor        Int?
+  parkingSpaces Int?          @map("parking_spaces")
+  stratum      Int?           // Colombian stratum 1-6
+  yearBuilt    Int?           @map("year_built")
+
+  // Amenities stored as array of string IDs
+  amenities    String[]       @default([])
+
+  // Plan
+  listingPlan  ListingPlan    @default(FREE) @map("listing_plan")
+
+  // Timestamps
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime       @updatedAt @map("updated_at")
+
+  // Relations
+  landlord     User           @relation(fields: [landlordId], references: [id], onDelete: Cascade)
+  images       PropertyImage[]
+
+  @@index([landlordId])
+  @@index([city])
+  @@index([status])
+  @@index([monthlyRent])
+  @@index([bedrooms])
+  @@index([type])
+  @@map("properties")
+}
+
+/// Image for a property, ordered 0-9 with first as thumbnail
+model PropertyImage {
+  id         String   @id @default(uuid()) @db.Uuid
+  propertyId String   @map("property_id") @db.Uuid
+  url        String   @db.VarChar(500)
+  order      Int      @default(0) // 0-9, first is thumbnail
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  // Relations
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@unique([propertyId, order])
+  @@index([propertyId])
+  @@map("property_images")
 }
