@@ -34,22 +34,22 @@ Requirements for MVP release. Each maps to roadmap phases.
 
 ### Properties (PROP)
 
-- [ ] **PROP-01**: Landlord can create property listing
-- [ ] **PROP-02**: Landlord can update own property
-- [ ] **PROP-03**: Landlord can delete own property (blocked if active applications)
-- [ ] **PROP-04**: Anyone can list properties (public, excludes draft)
-- [ ] **PROP-05**: Properties filterable by city, neighborhood
-- [ ] **PROP-06**: Properties filterable by price range (minPrice, maxPrice)
-- [ ] **PROP-07**: Properties filterable by bedrooms, propertyType
-- [ ] **PROP-08**: Properties filterable by amenities (array of IDs)
-- [ ] **PROP-09**: Anyone can view property detail
-- [ ] **PROP-10**: Landlord can upload property images to Supabase Storage (max 10)
-- [ ] **PROP-11**: Property images ordered with first as thumbnail
-- [ ] **PROP-12**: Landlord can view own properties list
-- [ ] **PROP-13**: Property supports draft status (not visible to public)
-- [ ] **PROP-14**: Property model includes parkingSpaces, stratum, yearBuilt
-- [ ] **PROP-15**: Property model includes listingPlan (free/pro/business)
-- [ ] **PROP-16**: Full-text search on title, description, address, neighborhood
+- [x] **PROP-01**: Landlord can create property listing
+- [x] **PROP-02**: Landlord can update own property
+- [x] **PROP-03**: Landlord can delete own property (blocked if active applications)
+- [x] **PROP-04**: Anyone can list properties (public, excludes draft)
+- [x] **PROP-05**: Properties filterable by city, neighborhood
+- [x] **PROP-06**: Properties filterable by price range (minPrice, maxPrice)
+- [x] **PROP-07**: Properties filterable by bedrooms, propertyType
+- [x] **PROP-08**: Properties filterable by amenities (array of IDs)
+- [x] **PROP-09**: Anyone can view property detail
+- [x] **PROP-10**: Landlord can upload property images to Supabase Storage (max 10)
+- [x] **PROP-11**: Property images ordered with first as thumbnail
+- [x] **PROP-12**: Landlord can view own properties list
+- [x] **PROP-13**: Property supports draft status (not visible to public)
+- [x] **PROP-14**: Property model includes parkingSpaces, stratum, yearBuilt
+- [x] **PROP-15**: Property model includes listingPlan (free/pro/business)
+- [x] **PROP-16**: Full-text search on title, description, address, neighborhood
 
 ### Applications (APPL)
 
@@ -247,18 +247,18 @@ Which phases cover which requirements. Updated by roadmap creation.
 | USER-02 | Phase 2 | Complete |
 | USER-03 | Phase 2 | Complete |
 | USER-04 | Phase 2 | Complete |
-| PROP-01 | Phase 3 | Pending |
-| PROP-02 | Phase 3 | Pending |
-| PROP-03 | Phase 3 | Pending |
-| PROP-04 | Phase 3 | Pending |
-| PROP-05 | Phase 3 | Pending |
-| PROP-06 | Phase 3 | Pending |
-| PROP-07 | Phase 3 | Pending |
-| PROP-08 | Phase 3 | Pending |
-| PROP-09 | Phase 3 | Pending |
-| PROP-10 | Phase 3 | Pending |
-| PROP-11 | Phase 3 | Pending |
-| PROP-12 | Phase 3 | Pending |
+| PROP-01 | Phase 3 | Complete |
+| PROP-02 | Phase 3 | Complete |
+| PROP-03 | Phase 3 | Complete |
+| PROP-04 | Phase 3 | Complete |
+| PROP-05 | Phase 3 | Complete |
+| PROP-06 | Phase 3 | Complete |
+| PROP-07 | Phase 3 | Complete |
+| PROP-08 | Phase 3 | Complete |
+| PROP-09 | Phase 3 | Complete |
+| PROP-10 | Phase 3 | Complete |
+| PROP-11 | Phase 3 | Complete |
+| PROP-12 | Phase 3 | Complete |
 | APPL-01 | Phase 4 | Pending |
 | APPL-02 | Phase 4 | Pending |
 | APPL-03 | Phase 4 | Pending |
@@ -353,10 +353,10 @@ Which phases cover which requirements. Updated by roadmap creation.
 | INSU-02 | Phase 14 | Pending |
 | INSU-03 | Phase 14 | Pending |
 | INSU-04 | Phase 14 | Pending |
-| PROP-13 | Phase 3 | Pending |
-| PROP-14 | Phase 3 | Pending |
-| PROP-15 | Phase 3 | Pending |
-| PROP-16 | Phase 3 | Pending |
+| PROP-13 | Phase 3 | Complete |
+| PROP-14 | Phase 3 | Complete |
+| PROP-15 | Phase 3 | Complete |
+| PROP-16 | Phase 3 | Complete |
 
 **Coverage:**
 - v1 requirements: 112 total (was 78, added 34 new)

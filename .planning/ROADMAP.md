@@ -16,7 +16,7 @@ Backend API en NestJS para el marketplace de arriendos "Arriendo Facil". Provee 
 
 - [x] **Phase 1: Foundation** - Project scaffold, Prisma, Supabase config ✓
 - [x] **Phase 2: Auth & Users** - Supabase Auth, guards, user management ✓
-- [ ] **Phase 3: Properties** - CRUD, filtering, image upload, plans
+- [x] **Phase 3: Properties** - CRUD, filtering, image upload, plans ✓
 - [ ] **Phase 4: Applications & Documents** - Wizard, state machine, document upload
 - [ ] **Phase 5: Scoring Engine** - Feature extraction, models, aggregator
 - [ ] **Phase 6: AI Document Analysis** - Claude integration, document analyzers
@@ -86,10 +86,10 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 03-01-PLAN.md - Create Property and PropertyImage Prisma models with enums
-- [ ] 03-02-PLAN.md - Create PropertiesModule with landlord CRUD operations
-- [ ] 03-03-PLAN.md - Add public property listing with filters and search
-- [ ] 03-04-PLAN.md - Implement property image upload to Supabase Storage
+- [x] 03-01-PLAN.md - Create Property and PropertyImage Prisma models with enums
+- [x] 03-02-PLAN.md - Create PropertiesModule with landlord CRUD operations
+- [x] 03-03-PLAN.md - Add public property listing with filters and search
+- [x] 03-04-PLAN.md - Implement property image upload to Supabase Storage
 
 **Model Changes (aligned with frontend):**
 - type: apartment | house | studio | room
@@ -271,7 +271,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 |-------|----------------|--------|-----------|
 | 1. Foundation | 3/3 | Complete | 2026-01-25 |
 | 2. Auth & Users | 3/3 | Complete | 2026-01-26 |
-| 3. Properties | 0/4 | Planned | - |
+| 3. Properties | 4/4 | Complete | 2026-01-29 |
 | 4. Applications & Documents | 0/0 | Not started | - |
 | 5. Scoring Engine | 0/0 | Not started | - |
 | 6. AI Document Analysis | 0/0 | Not started | - |
@@ -352,4 +352,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-01-29 - Phase 3 planned with 4 plans*
+*Last updated: 2026-01-29 - Phase 3 complete with 4 plans*
