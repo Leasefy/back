@@ -16,6 +16,9 @@ import {
   EmploymentInfoDto,
   IncomeInfoDto,
   ReferencesDto,
+  SubmitApplicationDto,
+  WithdrawApplicationDto,
+  RespondInfoRequestDto,
 } from './dto/index.js';
 
 type StepDto = PersonalInfoDto | EmploymentInfoDto | IncomeInfoDto | ReferencesDto;
@@ -236,5 +239,225 @@ export class ApplicationsService {
         `Application must be in ${expectedStatus} status. Current: ${application.status}`,
       );
     }
+  }
+
+  /**
+   * Submit a completed application.
+   * Validates all wizard steps are complete and at least 1 document uploaded.
+   */
+  async submit(
+    applicationId: string,
+    tenantId: string,
+    dto: SubmitApplicationDto,
+  ): Promise<Application> {
+    const application = await this.findByIdOrThrow(applicationId);
+    this.ensureOwnership(application, tenantId);
+
+    // Validate current state allows submission
+    this.stateMachine.validateTransition(
+      application.status as ApplicationStatus,
+      ApplicationStatus.SUBMITTED,
+    );
+
+    // Validate all wizard steps are complete
+    if (!application.personalInfo) {
+      throw new BadRequestException('Step 1 (Personal Info) is not complete');
+    }
+    if (!application.employmentInfo) {
+      throw new BadRequestException('Step 2 (Employment Info) is not complete');
+    }
+    if (!application.incomeInfo) {
+      throw new BadRequestException('Step 3 (Income Info) is not complete');
+    }
+    if (!application.referencesInfo) {
+      throw new BadRequestException('Step 4 (References) is not complete');
+    }
+
+    // Validate at least one document uploaded
+    const documentCount = await this.prisma.applicationDocument.count({
+      where: { applicationId },
+    });
+
+    if (documentCount === 0) {
+      throw new BadRequestException('At least one document must be uploaded');
+    }
+
+    // Update status
+    const updatedApplication = await this.prisma.application.update({
+      where: { id: applicationId },
+      data: {
+        status: ApplicationStatus.SUBMITTED,
+        currentStep: 6,
+        submittedAt: new Date(),
+      },
+      include: {
+        property: true,
+        documents: true,
+      },
+    });
+
+    // Log events
+    await this.eventService.logSubmitted(applicationId, tenantId);
+    await this.eventService.logStatusChanged(
+      applicationId,
+      tenantId,
+      ApplicationStatus.DRAFT,
+      ApplicationStatus.SUBMITTED,
+      dto.message,
+    );
+
+    return updatedApplication;
+  }
+
+  /**
+   * Withdraw an application.
+   * Can be done from most non-terminal states.
+   */
+  async withdraw(
+    applicationId: string,
+    tenantId: string,
+    dto: WithdrawApplicationDto,
+  ): Promise<Application> {
+    const application = await this.findByIdOrThrow(applicationId);
+    this.ensureOwnership(application, tenantId);
+
+    // Validate transition
+    const currentStatus = application.status as ApplicationStatus;
+    this.stateMachine.validateTransition(currentStatus, ApplicationStatus.WITHDRAWN);
+
+    // Update status
+    const updatedApplication = await this.prisma.application.update({
+      where: { id: applicationId },
+      data: {
+        status: ApplicationStatus.WITHDRAWN,
+      },
+      include: {
+        property: true,
+        documents: true,
+      },
+    });
+
+    // Log events
+    await this.eventService.logWithdrawn(applicationId, tenantId, dto.reason);
+    await this.eventService.logStatusChanged(
+      applicationId,
+      tenantId,
+      currentStatus,
+      ApplicationStatus.WITHDRAWN,
+      dto.reason,
+    );
+
+    return updatedApplication;
+  }
+
+  /**
+   * Get all applications for a tenant.
+   */
+  async findByTenant(tenantId: string): Promise<Application[]> {
+    return this.prisma.application.findMany({
+      where: { tenantId },
+      include: {
+        property: {
+          include: {
+            images: {
+              orderBy: { order: 'asc' },
+              take: 1, // Only thumbnail
+            },
+          },
+        },
+        documents: {
+          select: {
+            id: true,
+            type: true,
+            originalName: true,
+            createdAt: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  /**
+   * Get timeline (events) for an application.
+   * Only accessible by tenant owner or property landlord.
+   */
+  async getTimeline(applicationId: string, userId: string) {
+    const application = await this.prisma.application.findUnique({
+      where: { id: applicationId },
+      include: {
+        property: {
+          select: { landlordId: true },
+        },
+      },
+    });
+
+    if (!application) {
+      throw new NotFoundException(`Application with ID ${applicationId} not found`);
+    }
+
+    // Only tenant or landlord can view timeline
+    const isOwner = application.tenantId === userId;
+    const isLandlord = application.property.landlordId === userId;
+
+    if (!isOwner && !isLandlord) {
+      throw new ForbiddenException('You do not have access to this application timeline');
+    }
+
+    return this.eventService.getTimeline(applicationId);
+  }
+
+  /**
+   * Respond to a landlord's info request.
+   * Only valid when application is in NEEDS_INFO status.
+   */
+  async respondToInfoRequest(
+    applicationId: string,
+    tenantId: string,
+    dto: RespondInfoRequestDto,
+  ): Promise<Application> {
+    const application = await this.findByIdOrThrow(applicationId);
+    this.ensureOwnership(application, tenantId);
+
+    // Must be in NEEDS_INFO status
+    if (application.status !== ApplicationStatus.NEEDS_INFO) {
+      throw new BadRequestException(
+        `Application must be in ${ApplicationStatus.NEEDS_INFO} status to respond. Current: ${application.status}`,
+      );
+    }
+
+    // Log info provided
+    await this.eventService.logInfoProvided(applicationId, tenantId, dto.message);
+
+    // If ready for review, transition back to UNDER_REVIEW
+    if (dto.readyForReview !== false) {
+      this.stateMachine.validateTransition(
+        ApplicationStatus.NEEDS_INFO,
+        ApplicationStatus.UNDER_REVIEW,
+      );
+
+      const updatedApplication = await this.prisma.application.update({
+        where: { id: applicationId },
+        data: {
+          status: ApplicationStatus.UNDER_REVIEW,
+        },
+        include: {
+          property: true,
+          documents: true,
+        },
+      });
+
+      await this.eventService.logStatusChanged(
+        applicationId,
+        tenantId,
+        ApplicationStatus.NEEDS_INFO,
+        ApplicationStatus.UNDER_REVIEW,
+        'Tenant provided requested information',
+      );
+
+      return updatedApplication;
+    }
+
+    return this.findByIdOrThrow(applicationId);
   }
 }
