@@ -10,7 +10,11 @@ import {
   ParseUUIDPipe,
   HttpCode,
   HttpStatus,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiTags,
   ApiBearerAuth,
@@ -18,8 +22,9 @@ import {
   ApiCreatedResponse,
   ApiOkResponse,
   ApiNoContentResponse,
+  ApiConsumes,
 } from '@nestjs/swagger';
-import type { Property } from '@prisma/client';
+import type { Property, PropertyImage } from '@prisma/client';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import { Roles } from '../auth/decorators/roles.decorator.js';
 import { Public } from '../auth/decorators/public.decorator.js';
@@ -30,6 +35,7 @@ import {
   UpdatePropertyDto,
   FilterPropertiesDto,
   PaginatedPropertiesResponse,
+  ReorderImagesDto,
 } from './dto/index.js';
 
 /**
@@ -137,5 +143,69 @@ export class PropertiesController {
     @CurrentUser('id') landlordId: string,
   ): Promise<void> {
     return this.propertiesService.delete(propertyId, landlordId);
+  }
+
+  // ===========================================
+  // IMAGE MANAGEMENT ENDPOINTS
+  // ===========================================
+
+  /**
+   * Upload an image to a property.
+   * Max 10 images per property. Allowed: jpg, png, webp. Max size: 5MB.
+   */
+  @Post(':id/images')
+  @ApiBearerAuth()
+  @Roles(Role.LANDLORD, Role.BOTH)
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiConsumes('multipart/form-data')
+  @ApiOperation({ summary: 'Upload property image' })
+  @ApiCreatedResponse({ description: 'Image uploaded successfully' })
+  async uploadImage(
+    @Param('id', ParseUUIDPipe) propertyId: string,
+    @CurrentUser('id') landlordId: string,
+    @UploadedFile() file: Express.Multer.File,
+  ): Promise<PropertyImage> {
+    if (!file) {
+      throw new BadRequestException('No file uploaded');
+    }
+    return this.propertiesService.uploadImage(propertyId, landlordId, file);
+  }
+
+  /**
+   * Delete an image from a property.
+   */
+  @Delete(':id/images/:imageId')
+  @ApiBearerAuth()
+  @Roles(Role.LANDLORD, Role.BOTH)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Delete property image' })
+  @ApiNoContentResponse({ description: 'Image deleted successfully' })
+  async deleteImage(
+    @Param('id', ParseUUIDPipe) propertyId: string,
+    @Param('imageId', ParseUUIDPipe) imageId: string,
+    @CurrentUser('id') landlordId: string,
+  ): Promise<void> {
+    return this.propertiesService.deleteImage(propertyId, imageId, landlordId);
+  }
+
+  /**
+   * Reorder images for a property.
+   * First image (order 0) is the thumbnail.
+   */
+  @Patch(':id/images/order')
+  @ApiBearerAuth()
+  @Roles(Role.LANDLORD, Role.BOTH)
+  @ApiOperation({ summary: 'Reorder property images' })
+  @ApiOkResponse({ description: 'Images reordered successfully' })
+  async reorderImages(
+    @Param('id', ParseUUIDPipe) propertyId: string,
+    @CurrentUser('id') landlordId: string,
+    @Body() dto: ReorderImagesDto,
+  ): Promise<PropertyImage[]> {
+    return this.propertiesService.reorderImages(
+      propertyId,
+      landlordId,
+      dto.imageIds,
+    );
   }
 }
