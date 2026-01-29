@@ -50,12 +50,13 @@ BEGIN
     NEW.email,
     COALESCE(
       -- Try to get role from user metadata, validate it's a valid enum value
+      -- Note: Must use public."Role" because search_path is empty for SECURITY DEFINER
       CASE
         WHEN NEW.raw_user_meta_data ->> 'role' IN ('TENANT', 'LANDLORD', 'BOTH')
-        THEN (NEW.raw_user_meta_data ->> 'role')::"Role"
+        THEN (NEW.raw_user_meta_data ->> 'role')::public."Role"
         ELSE NULL
       END,
-      'TENANT'::"Role"  -- Default to TENANT if not specified or invalid
+      'TENANT'::public."Role"  -- Default to TENANT if not specified or invalid
     ),
     NEW.raw_user_meta_data ->> 'first_name',
     NEW.raw_user_meta_data ->> 'last_name',
