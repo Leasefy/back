@@ -3,3 +3,6 @@ export * from './personal-info.dto.js';
 export * from './employment-info.dto.js';
 export * from './income-info.dto.js';
 export * from './references.dto.js';
+export * from './submit-application.dto.js';
+export * from './withdraw-application.dto.js';
+export * from './respond-info-request.dto.js';
