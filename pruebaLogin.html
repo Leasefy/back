@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Supabase Auth + Backend</title>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    h1 { color: #333; }
+    h2 { color: #555; margin-top: 30px; border-bottom: 2px solid #ddd; padding-bottom: 10px; }
+
+    .section {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    button {
+      padding: 10px 20px;
+      margin: 5px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    button:hover { transform: translateY(-1px); }
+
+    .btn-primary { background: #4285f4; color: white; }
+    .btn-primary:hover { background: #3367d6; }
+
+    .btn-success { background: #34a853; color: white; }
+    .btn-success:hover { background: #2d8f47; }
+
+    .btn-warning { background: #fbbc04; color: #333; }
+    .btn-warning:hover { background: #f9a825; }
+
+    .btn-danger { background: #ea4335; color: white; }
+    .btn-danger:hover { background: #d93025; }
+
+    .btn-info { background: #6c757d; color: white; }
+    .btn-info:hover { background: #5a6268; }
+
+    pre {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 15px;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-size: 13px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .status {
+      padding: 10px 15px;
+      border-radius: 6px;
+      margin: 10px 0;
+      font-weight: 500;
+    }
+    .status.success { background: #d4edda; color: #155724; }
+    .status.error { background: #f8d7da; color: #721c24; }
+    .status.info { background: #cce5ff; color: #004085; }
+
+    input, select {
+      padding: 10px;
+      margin: 5px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    input { width: 200px; }
+
+    .form-group {
+      margin: 10px 0;
+    }
+    .form-group label {
+      display: inline-block;
+      width: 100px;
+      font-weight: 500;
+    }
+
+    .jwt-display {
+      word-break: break-all;
+      font-size: 11px;
+      background: #2d2d2d;
+      padding: 10px;
+      border-radius: 4px;
+      margin-top: 10px;
+      color: #9cdcfe;
+    }
+
+    .user-info {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 10px;
+      margin: 10px 0;
+    }
+    .user-info-item {
+      background: #f8f9fa;
+      padding: 10px;
+      border-radius: 4px;
+    }
+    .user-info-item strong {
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <h1>Test Supabase Auth + NestJS Backend</h1>
+
+  <!-- Auth Section -->
+  <div class="section">
+    <h2>1. Autenticacion</h2>
+    <button id="btnGoogle" class="btn-primary">Login con Google</button>
+    <button id="btnSession" class="btn-info">Ver Sesion</button>
+    <button id="btnLogout" class="btn-danger">Logout</button>
+
+    <div id="authStatus"></div>
+    <div id="jwtToken" class="jwt-display" style="display:none;"></div>
+  </div>
+
+  <!-- Health Check Section -->
+  <div class="section">
+    <h2>2. Health Check (Publico)</h2>
+    <button id="btnHealth" class="btn-success">GET /health</button>
+    <pre id="healthOutput">// Resultado aparecera aqui...</pre>
+  </div>
+
+  <!-- Profile Section -->
+  <div class="section">
+    <h2>3. Perfil de Usuario (Requiere Auth)</h2>
+    <button id="btnGetProfile" class="btn-primary">GET /users/me</button>
+    <pre id="profileOutput">// Resultado aparecera aqui...</pre>
+
+    <div id="userInfoDisplay" style="display:none;">
+      <h3>Datos del Usuario:</h3>
+      <div class="user-info" id="userInfo"></div>
+    </div>
+  </div>
+
+  <!-- Update Profile Section -->
+  <div class="section">
+    <h2>4. Actualizar Perfil</h2>
+    <div class="form-group">
+      <label>Nombre:</label>
+      <input type="text" id="firstName" placeholder="Juan">
+    </div>
+    <div class="form-group">
+      <label>Apellido:</label>
+      <input type="text" id="lastName" placeholder="Garcia">
+    </div>
+    <div class="form-group">
+      <label>Telefono:</label>
+      <input type="text" id="phone" placeholder="+573001234567">
+    </div>
+    <button id="btnUpdateProfile" class="btn-warning">PATCH /users/me</button>
+    <pre id="updateOutput">// Resultado aparecera aqui...</pre>
+  </div>
+
+  <!-- Switch Role Section -->
+  <div class="section">
+    <h2>5. Cambiar Rol Activo (Solo usuarios BOTH)</h2>
+    <div class="form-group">
+      <label>Rol Activo:</label>
+      <select id="activeRole">
+        <option value="TENANT">TENANT</option>
+        <option value="LANDLORD">LANDLORD</option>
+      </select>
+    </div>
+    <button id="btnSwitchRole" class="btn-warning">PATCH /users/me/role</button>
+    <pre id="roleOutput">// Resultado aparecera aqui...</pre>
+  </div>
+
+  <!-- Logs Section -->
+  <div class="section">
+    <h2>6. Log de Peticiones</h2>
+    <button id="btnClearLogs" class="btn-info">Limpiar Logs</button>
+    <pre id="requestLog">// Log de peticiones HTTP...</pre>
+  </div>
+
+  <script>
+    // ==================== CONFIGURACION ====================
+    const SUPABASE_URL = 'https://jraqurdcjwnifzpdqtnm.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_o0rCunkxRvbRrlLTmMekHw_GCpKgvrw';
+    const BACKEND_URL = 'http://localhost:3000';
+
+    // ==================== INICIALIZACION ====================
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    let currentSession = null;
+    let requestLogs = [];
+
+    // ==================== UTILIDADES ====================
+    function showStatus(elementId, message, type) {
+      const el = document.getElementById(elementId);
+      el.innerHTML = '<div class="status ' + type + '">' + message + '</div>';
+    }
+
+    function showJson(elementId, data) {
+      document.getElementById(elementId).textContent = JSON.stringify(data, null, 2);
+    }
+
+    function addLog(method, url, status, response) {
+      const timestamp = new Date().toLocaleTimeString();
+      const log = '[' + timestamp + '] ' + method + ' ' + url + '\nStatus: ' + status + '\nResponse: ' + JSON.stringify(response, null, 2) + '\n' + '='.repeat(50);
+      requestLogs.unshift(log);
+      document.getElementById('requestLog').textContent = requestLogs.join('\n\n');
+    }
+
+    function getAuthHeaders() {
+      if (!currentSession || !currentSession.access_token) {
+        return { 'Content-Type': 'application/json' };
+      }
+      return {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + currentSession.access_token
+      };
+    }
+
+    async function makeRequest(method, endpoint, body) {
+      const url = BACKEND_URL + endpoint;
+      const options = {
+        method: method,
+        headers: getAuthHeaders(),
+      };
+
+      if (body) {
+        options.body = JSON.stringify(body);
+      }
+
+      try {
+        const response = await fetch(url, options);
+        const data = await response.json();
+        addLog(method, endpoint, response.status, data);
+        return { status: response.status, data: data, ok: response.ok };
+      } catch (error) {
+        const errorData = { error: error.message };
+        addLog(method, endpoint, 'ERROR', errorData);
+        return { status: 'ERROR', data: errorData, ok: false };
+      }
+    }
+
+    function displayUserInfo(user) {
+      const container = document.getElementById('userInfo');
+      const display = document.getElementById('userInfoDisplay');
+
+      container.innerHTML =
+        '<div class="user-info-item"><strong>ID:</strong><br>' + user.id + '</div>' +
+        '<div class="user-info-item"><strong>Email:</strong><br>' + user.email + '</div>' +
+        '<div class="user-info-item"><strong>Rol:</strong><br>' + user.role + '</div>' +
+        '<div class="user-info-item"><strong>Rol Activo:</strong><br>' + (user.activeRole || 'N/A') + '</div>' +
+        '<div class="user-info-item"><strong>Nombre:</strong><br>' + (user.firstName || 'No definido') + '</div>' +
+        '<div class="user-info-item"><strong>Apellido:</strong><br>' + (user.lastName || 'No definido') + '</div>' +
+        '<div class="user-info-item"><strong>Telefono:</strong><br>' + (user.phone || 'No definido') + '</div>' +
+        '<div class="user-info-item"><strong>Creado:</strong><br>' + new Date(user.createdAt).toLocaleString() + '</div>';
+      display.style.display = 'block';
+    }
+
+    // ==================== AUTENTICACION ====================
+    async function updateAuthStatus() {
+      const { data } = await supabaseClient.auth.getSession();
+      currentSession = data.session;
+
+      if (currentSession) {
+        showStatus('authStatus', 'Autenticado como: ' + currentSession.user.email, 'success');
+        document.getElementById('jwtToken').style.display = 'block';
+        document.getElementById('jwtToken').innerHTML = '<strong>JWT Token:</strong><br>' + currentSession.access_token;
+        console.log('JWT Token:', currentSession.access_token);
+      } else {
+        showStatus('authStatus', 'No autenticado - Inicia sesion con Google', 'info');
+        document.getElementById('jwtToken').style.display = 'none';
+        document.getElementById('userInfoDisplay').style.display = 'none';
+      }
+    }
+
+    // ==================== EVENT LISTENERS ====================
+
+    // Login con Google
+    document.getElementById('btnGoogle').addEventListener('click', async function() {
+      const { data, error } = await supabaseClient.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.href
+        }
+      });
+      if (error) {
+        showStatus('authStatus', 'Error: ' + error.message, 'error');
+      }
+    });
+
+    // Ver sesion
+    document.getElementById('btnSession').addEventListener('click', async function() {
+      await updateAuthStatus();
+      if (currentSession) {
+        console.log('Session completa:', currentSession);
+      }
+    });
+
+    // Logout
+    document.getElementById('btnLogout').addEventListener('click', async function() {
+      await supabaseClient.auth.signOut();
+      currentSession = null;
+      showStatus('authStatus', 'Sesion cerrada correctamente', 'info');
+      document.getElementById('jwtToken').style.display = 'none';
+      document.getElementById('userInfoDisplay').style.display = 'none';
+    });
+
+    // Health check
+    document.getElementById('btnHealth').addEventListener('click', async function() {
+      const result = await makeRequest('GET', '/health', null);
+      showJson('healthOutput', result.data);
+    });
+
+    // Get profile
+    document.getElementById('btnGetProfile').addEventListener('click', async function() {
+      if (!currentSession) {
+        showJson('profileOutput', { error: 'No estas autenticado. Inicia sesion primero.' });
+        return;
+      }
+
+      const result = await makeRequest('GET', '/users/me', null);
+      showJson('profileOutput', result.data);
+
+      if (result.ok) {
+        displayUserInfo(result.data);
+      }
+    });
+
+    // Update profile
+    document.getElementById('btnUpdateProfile').addEventListener('click', async function() {
+      if (!currentSession) {
+        showJson('updateOutput', { error: 'No estas autenticado. Inicia sesion primero.' });
+        return;
+      }
+
+      const body = {};
+      const firstName = document.getElementById('firstName').value.trim();
+      const lastName = document.getElementById('lastName').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+
+      if (firstName) body.firstName = firstName;
+      if (lastName) body.lastName = lastName;
+      if (phone) body.phone = phone;
+
+      if (Object.keys(body).length === 0) {
+        showJson('updateOutput', { error: 'Ingresa al menos un campo para actualizar' });
+        return;
+      }
+
+      const result = await makeRequest('PATCH', '/users/me', body);
+      showJson('updateOutput', result.data);
+
+      if (result.ok) {
+        displayUserInfo(result.data);
+      }
+    });
+
+    // Switch role
+    document.getElementById('btnSwitchRole').addEventListener('click', async function() {
+      if (!currentSession) {
+        showJson('roleOutput', { error: 'No estas autenticado. Inicia sesion primero.' });
+        return;
+      }
+
+      const activeRole = document.getElementById('activeRole').value;
+      const result = await makeRequest('PATCH', '/users/me/role', { activeRole: activeRole });
+      showJson('roleOutput', result.data);
+
+      if (result.ok) {
+        displayUserInfo(result.data);
+      }
+    });
+
+    // Clear logs
+    document.getElementById('btnClearLogs').addEventListener('click', function() {
+      requestLogs = [];
+      document.getElementById('requestLog').textContent = '// Log limpiado...';
+    });
+
+    // ==================== INICIALIZACION ====================
+    // Verificar sesion al cargar la pagina
+    updateAuthStatus();
+
+    // Escuchar cambios en la autenticacion
+    supabaseClient.auth.onAuthStateChange(function(event, session) {
+      console.log('Auth event:', event);
+      currentSession = session;
+      updateAuthStatus();
+    });
+  </script>
+</body>
+</html>
