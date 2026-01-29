@@ -32,6 +32,10 @@ export class EnvironmentVariables {
   @IsString()
   SUPABASE_ANON_KEY!: string;
 
+  /** Supabase service role key (for Storage operations) */
+  @IsString()
+  SUPABASE_SERVICE_KEY!: string;
+
   /** Supabase JWKS URL for JWT verification */
   @IsUrl({ require_tld: false })
   SUPABASE_JWKS_URL!: string;
