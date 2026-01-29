@@ -3,11 +3,11 @@
 ## Current Status
 
 **Phase:** 3 of 10 (Properties)
-**Plan:** 1 of 4 complete
+**Plan:** 2 of 4 complete
 **Status:** In Progress
-**Last activity:** 2026-01-29 - Completed 03-01-PLAN.md
+**Last activity:** 2026-01-29 - Completed 03-02-PLAN.md
 
-**Progress:** [###-------] 16% (7/~45 plans estimated)
+**Progress:** [####------] 18% (8/~45 plans estimated)
 
 ## Project Reference
 
@@ -15,7 +15,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 **Core value:** Ejecutar el Risk Score con analisis inteligente de documentos para que propietarios tomen decisiones informadas en minutos, con explicabilidad total.
 
-**Current focus:** Phase 3 - Properties (data model complete, CRUD next)
+**Current focus:** Phase 3 - Properties (data model and CRUD complete, public listing next)
 
 ## Quick Context
 
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 |-------|--------|-------|
 | 1. Foundation | COMPLETE | All 3 plans executed |
 | 2. Auth & Users | COMPLETE | All 3 plans executed - User model, JWT auth, profile CRUD |
-| 3. Properties | IN PROGRESS | Plan 1/4 complete - Data model done |
+| 3. Properties | IN PROGRESS | Plan 2/4 complete - Data model and CRUD done |
 | 4. Applications | - Pending | |
 | 5. Scoring Engine | - Pending | |
 | 6. AI Document Analysis | - Pending | |
@@ -67,11 +67,15 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 2026-01-29 | 03-01 | Cascade delete on property relations | Landlord delete removes properties; property delete removes images |
 | 2026-01-29 | 03-01 | Separate PropertyImage model | Flexible image ordering with unique constraint on [propertyId, order] |
 | 2026-01-29 | 03-01 | Six indexes on Property model | Optimized for common queries: landlordId, city, status, monthlyRent, bedrooms, type |
+| 2026-01-29 | 03-02 | Definite assignment for DTO properties | TypeScript strict mode requires `!:` for class properties without initializers |
+| 2026-01-29 | 03-02 | Roles decorator with LANDLORD and BOTH | Both role types can manage properties |
+| 2026-01-29 | 03-02 | Amenity validation with Set | 15 valid amenities: pool, gym, security, parking, elevator, terrace, bbq, playground, laundry, pets, furnished, balcony, storage, ac, heating |
+| 2026-01-29 | 03-02 | Include images in property queries | Consistent response shape with images array sorted by order |
 
 ## Session Continuity
 
 **Last session:** 2026-01-29
-**Stopped at:** Completed 03-01-PLAN.md
+**Stopped at:** Completed 03-02-PLAN.md
 **Resume file:** None
 
 ## Pending User Actions
@@ -83,10 +87,10 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 ## Next Action
 
-Continue Phase 3: Properties - Execute plan 03-02 (Property Service)
+Continue Phase 3: Properties - Execute plan 03-03 (Public Listing)
 
 ```
-/gsd:execute-plan 03-02
+/gsd:execute-plan 03-03
 ```
 
 ## Session History
@@ -106,6 +110,7 @@ Continue Phase 3: Properties - Execute plan 03-02 (Property Service)
 | 2026-01-26 | Executed 02-03-PLAN.md | User profile CRUD endpoints, Phase 2 complete |
 | 2026-01-26 | Phase 2 verified | 5/5 must-haves passed |
 | 2026-01-29 | Executed 03-01-PLAN.md | Property/PropertyImage models, enums, database tables |
+| 2026-01-29 | Executed 03-02-PLAN.md | PropertiesModule, landlord CRUD, ownership validation |
 
 ---
 *Last updated: 2026-01-29*
