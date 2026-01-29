@@ -3,11 +3,11 @@
 ## Current Status
 
 **Phase:** 4 of 10 (Applications)
-**Plan:** 2 of 4 complete
+**Plan:** 3 of 4 complete
 **Status:** In progress
-**Last activity:** 2026-01-29 - Completed 04-02-PLAN.md (State Machine and Events)
+**Last activity:** 2026-01-29 - Completed 04-03-PLAN.md (Application CRUD and Wizard)
 
-**Progress:** [######----] 27% (12/~45 plans estimated)
+**Progress:** [######----] 29% (13/~45 plans estimated)
 
 ## Project Reference
 
@@ -15,7 +15,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 **Core value:** Ejecutar el Risk Score con analisis inteligente de documentos para que propietarios tomen decisiones informadas en minutos, con explicabilidad total.
 
-**Current focus:** Phase 4 In Progress - State machine and event services complete. Ready for main ApplicationService.
+**Current focus:** Phase 4 In Progress - Application CRUD and wizard steps complete. Ready for document uploads.
 
 ## Quick Context
 
@@ -31,7 +31,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 1. Foundation | COMPLETE | All 3 plans executed |
 | 2. Auth & Users | COMPLETE | All 3 plans executed - User model, JWT auth, profile CRUD |
 | 3. Properties | COMPLETE | All 4 plans executed - Data model, CRUD, public listing, images |
-| 4. Applications | IN PROGRESS | 2/4 plans - Data models, state machine, events complete |
+| 4. Applications | IN PROGRESS | 3/4 plans - Data models, state machine, events, CRUD complete |
 | 5. Scoring Engine | - Pending | |
 | 6. AI Document Analysis | - Pending | |
 | 7. Explainability | - Pending | |
@@ -84,11 +84,15 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 2026-01-29 | 04-02 | Prisma JSON cast for metadata | Prisma 7.x strict JSON typing requires explicit cast to InputJsonValue |
 | 2026-01-29 | 04-02 | Terminal states with empty arrays | Clear pattern for identifying terminal states via isTerminal() |
 | 2026-01-29 | 04-02 | Event methods return ApplicationEvent | Enables chaining and immediate access to created event |
+| 2026-01-29 | 04-03 | Separate DTO per wizard step | Strong typing and validation per step, clear API contracts |
+| 2026-01-29 | 04-03 | JSON field persistence | Each step persists to its own JSON field for schema flexibility |
+| 2026-01-29 | 04-03 | Auto-advance currentStep | Track wizard progress via max(current, step+1) |
+| 2026-01-29 | 04-03 | Colombian cedula regex | /^\d{6,10}$/ for Colombian ID validation |
 
 ## Session Continuity
 
 **Last session:** 2026-01-29
-**Stopped at:** Completed 04-02-PLAN.md - State machine and event services
+**Stopped at:** Completed 04-03-PLAN.md - Application CRUD and wizard steps
 **Resume file:** None
 
 ## Pending User Actions
@@ -114,10 +118,10 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 ## Next Action
 
-Continue Phase 4: Execute 04-03-PLAN.md (Application CRUD and Wizard)
+Continue Phase 4: Execute 04-04-PLAN.md (Document Upload)
 
 ```
-/gsd:execute-plan .planning/phases/04-applications-documents/04-03-PLAN.md
+/gsd:execute-plan .planning/phases/04-applications-documents/04-04-PLAN.md
 ```
 
 ## Session History
@@ -142,6 +146,7 @@ Continue Phase 4: Execute 04-03-PLAN.md (Application CRUD and Wizard)
 | 2026-01-29 | Executed 03-04-PLAN.md | Property images with Supabase Storage, Phase 3 complete |
 | 2026-01-29 | Executed 04-01-PLAN.md | Application/ApplicationDocument/ApplicationEvent models, enums |
 | 2026-01-29 | Executed 04-02-PLAN.md | ApplicationStateMachine, ApplicationEventService, ApplicationsModule |
+| 2026-01-29 | Executed 04-03-PLAN.md | ApplicationsService, ApplicationsController, wizard step DTOs |
 
 ---
 *Last updated: 2026-01-29*
