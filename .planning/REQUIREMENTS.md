@@ -53,30 +53,30 @@ Requirements for MVP release. Each maps to roadmap phases.
 
 ### Applications (APPL)
 
-- [ ] **APPL-01**: Tenant can start application for a property
-- [ ] **APPL-02**: Application wizard step 1: Personal info
-- [ ] **APPL-03**: Application wizard step 2: Employment info
-- [ ] **APPL-04**: Application wizard step 3: Income info
-- [ ] **APPL-05**: Application wizard step 4: References (landlord, employment, personal)
-- [ ] **APPL-06**: Application wizard step 5: Document upload
-- [ ] **APPL-07**: Application wizard step 6: Review and submit
-- [ ] **APPL-08**: Application state machine enforced (DRAFT→SUBMITTED→UNDER_REVIEW→NEEDS_INFO→PREAPPROVED→APPROVED/REJECTED/WITHDRAWN)
-- [ ] **APPL-09**: State transitions logged with timestamps
-- [ ] **APPL-10**: Tenant can view application timeline/events
-- [ ] **APPL-11**: Tenant can withdraw application
-- [ ] **APPL-12**: Tenant can view list of own applications
-- [ ] **APPL-13**: Tenant can respond to info requests
+- [x] **APPL-01**: Tenant can start application for a property
+- [x] **APPL-02**: Application wizard step 1: Personal info
+- [x] **APPL-03**: Application wizard step 2: Employment info
+- [x] **APPL-04**: Application wizard step 3: Income info
+- [x] **APPL-05**: Application wizard step 4: References (landlord, employment, personal)
+- [x] **APPL-06**: Application wizard step 5: Document upload
+- [x] **APPL-07**: Application wizard step 6: Review and submit
+- [x] **APPL-08**: Application state machine enforced (DRAFT→SUBMITTED→UNDER_REVIEW→NEEDS_INFO→PREAPPROVED→APPROVED/REJECTED/WITHDRAWN)
+- [x] **APPL-09**: State transitions logged with timestamps
+- [x] **APPL-10**: Tenant can view application timeline/events
+- [x] **APPL-11**: Tenant can withdraw application
+- [x] **APPL-12**: Tenant can view list of own applications
+- [x] **APPL-13**: Tenant can respond to info requests
 
 ### Documents (DOCS)
 
-- [ ] **DOCS-01**: Tenant can upload ID document (cédula)
-- [ ] **DOCS-02**: Tenant can upload employment letter (carta laboral)
-- [ ] **DOCS-03**: Tenant can upload pay stubs (desprendibles)
-- [ ] **DOCS-04**: Tenant can upload bank statements (extractos)
-- [ ] **DOCS-05**: Documents stored in Supabase Storage
-- [ ] **DOCS-06**: Documents accessible via signed URLs
-- [ ] **DOCS-07**: Document type validation (PDF, images)
-- [ ] **DOCS-08**: Document size limit enforced
+- [x] **DOCS-01**: Tenant can upload ID document (cédula)
+- [x] **DOCS-02**: Tenant can upload employment letter (carta laboral)
+- [x] **DOCS-03**: Tenant can upload pay stubs (desprendibles)
+- [x] **DOCS-04**: Tenant can upload bank statements (extractos)
+- [x] **DOCS-05**: Documents stored in Supabase Storage
+- [x] **DOCS-06**: Documents accessible via signed URLs
+- [x] **DOCS-07**: Document type validation (PDF, images)
+- [x] **DOCS-08**: Document size limit enforced
 
 ### Risk Score Engine (SCOR)
 
@@ -259,27 +259,27 @@ Which phases cover which requirements. Updated by roadmap creation.
 | PROP-10 | Phase 3 | Complete |
 | PROP-11 | Phase 3 | Complete |
 | PROP-12 | Phase 3 | Complete |
-| APPL-01 | Phase 4 | Pending |
-| APPL-02 | Phase 4 | Pending |
-| APPL-03 | Phase 4 | Pending |
-| APPL-04 | Phase 4 | Pending |
-| APPL-05 | Phase 4 | Pending |
-| APPL-06 | Phase 4 | Pending |
-| APPL-07 | Phase 4 | Pending |
-| APPL-08 | Phase 4 | Pending |
-| APPL-09 | Phase 4 | Pending |
-| APPL-10 | Phase 4 | Pending |
-| APPL-11 | Phase 4 | Pending |
-| APPL-12 | Phase 4 | Pending |
-| APPL-13 | Phase 4 | Pending |
-| DOCS-01 | Phase 4 | Pending |
-| DOCS-02 | Phase 4 | Pending |
-| DOCS-03 | Phase 4 | Pending |
-| DOCS-04 | Phase 4 | Pending |
-| DOCS-05 | Phase 4 | Pending |
-| DOCS-06 | Phase 4 | Pending |
-| DOCS-07 | Phase 4 | Pending |
-| DOCS-08 | Phase 4 | Pending |
+| APPL-01 | Phase 4 | Complete |
+| APPL-02 | Phase 4 | Complete |
+| APPL-03 | Phase 4 | Complete |
+| APPL-04 | Phase 4 | Complete |
+| APPL-05 | Phase 4 | Complete |
+| APPL-06 | Phase 4 | Complete |
+| APPL-07 | Phase 4 | Complete |
+| APPL-08 | Phase 4 | Complete |
+| APPL-09 | Phase 4 | Complete |
+| APPL-10 | Phase 4 | Complete |
+| APPL-11 | Phase 4 | Complete |
+| APPL-12 | Phase 4 | Complete |
+| APPL-13 | Phase 4 | Complete |
+| DOCS-01 | Phase 4 | Complete |
+| DOCS-02 | Phase 4 | Complete |
+| DOCS-03 | Phase 4 | Complete |
+| DOCS-04 | Phase 4 | Complete |
+| DOCS-05 | Phase 4 | Complete |
+| DOCS-06 | Phase 4 | Complete |
+| DOCS-07 | Phase 4 | Complete |
+| DOCS-08 | Phase 4 | Complete |
 | SCOR-01 | Phase 5 | Pending |
 | SCOR-02 | Phase 5 | Pending |
 | SCOR-03 | Phase 5 | Pending |

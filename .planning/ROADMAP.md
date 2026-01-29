@@ -16,8 +16,8 @@ Backend API en NestJS para el marketplace de arriendos "Arriendo Facil". Provee 
 
 - [x] **Phase 1: Foundation** - Project scaffold, Prisma, Supabase config
 - [x] **Phase 2: Auth & Users** - Supabase Auth, guards, user management
-- [x] **Phase 3: Properties** - CRUD, filtering, image upload, plans
-- [ ] **Phase 4: Applications & Documents** - Wizard, state machine, document upload
+- [x] **Phase 3: Properties** - CRUD, filtering, image upload, plans ✓
+- [x] **Phase 4: Applications & Documents** - Wizard, state machine, document upload ✓
 - [ ] **Phase 5: Scoring Engine** - Feature extraction, models, aggregator
 - [ ] **Phase 6: AI Document Analysis** - Claude integration, document analyzers
 - [ ] **Phase 7: Explainability** - Drivers, flags, conditions, AI explanation
@@ -115,11 +115,11 @@ Plans:
 **Plans**: 5 plans
 
 Plans:
-- [ ] 04-01-PLAN.md - Create Application, ApplicationDocument, ApplicationEvent models and enums
-- [ ] 04-02-PLAN.md - Create ApplicationStateMachine and ApplicationEventService
-- [ ] 04-03-PLAN.md - Create ApplicationsModule with create and wizard steps 1-4
-- [ ] 04-04-PLAN.md - Create DocumentsModule with upload, validation, and signed URLs
-- [ ] 04-05-PLAN.md - Add submit, withdraw, list, timeline, and info response endpoints
+- [x] 04-01-PLAN.md - Create Application, ApplicationDocument, ApplicationEvent models and enums
+- [x] 04-02-PLAN.md - Create ApplicationStateMachine and ApplicationEventService
+- [x] 04-03-PLAN.md - Create ApplicationsModule with create and wizard steps 1-4
+- [x] 04-04-PLAN.md - Create DocumentsModule with upload, validation, and signed URLs
+- [x] 04-05-PLAN.md - Add submit, withdraw, list, timeline, and info response endpoints
 
 ### Phase 5: Scoring Engine
 **Goal**: Basic risk scoring with rule-based models
@@ -278,7 +278,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 1. Foundation | 3/3 | Complete | 2026-01-25 |
 | 2. Auth & Users | 3/3 | Complete | 2026-01-26 |
 | 3. Properties | 4/4 | Complete | 2026-01-29 |
-| 4. Applications & Documents | 0/5 | Planned | - |
+| 4. Applications & Documents | 5/5 | Complete | 2026-01-29 |
 | 5. Scoring Engine | 0/0 | Not started | - |
 | 6. AI Document Analysis | 0/0 | Not started | - |
 | 7. Explainability | 0/0 | Not started | - |
@@ -358,4 +358,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-01-29 - Phase 4 planned with 5 plans*
+*Last updated: 2026-01-29 - Phase 4 complete with 5 plans*
