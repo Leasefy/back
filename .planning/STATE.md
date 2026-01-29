@@ -2,12 +2,12 @@
 
 ## Current Status
 
-**Phase:** 3 of 10 (Properties)
-**Plan:** 3 of 4 complete
-**Status:** In Progress
-**Last activity:** 2026-01-29 - Completed 03-03-PLAN.md
+**Phase:** 3 of 10 (Properties) - COMPLETE
+**Plan:** 4 of 4 complete
+**Status:** Phase Complete
+**Last activity:** 2026-01-29 - Completed 03-04-PLAN.md (Property Images)
 
-**Progress:** [####------] 20% (9/~45 plans estimated)
+**Progress:** [#####-----] 22% (10/~45 plans estimated)
 
 ## Project Reference
 
@@ -15,7 +15,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 **Core value:** Ejecutar el Risk Score con analisis inteligente de documentos para que propietarios tomen decisiones informadas en minutos, con explicabilidad total.
 
-**Current focus:** Phase 3 - Properties (data model, CRUD, public listing complete, images next)
+**Current focus:** Phase 3 Complete - Property images with Supabase Storage. Ready for Phase 4 (Applications)
 
 ## Quick Context
 
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 |-------|--------|-------|
 | 1. Foundation | COMPLETE | All 3 plans executed |
 | 2. Auth & Users | COMPLETE | All 3 plans executed - User model, JWT auth, profile CRUD |
-| 3. Properties | IN PROGRESS | Plan 3/4 complete - Data model, CRUD, public listing done |
+| 3. Properties | COMPLETE | All 4 plans executed - Data model, CRUD, public listing, images |
 | 4. Applications | - Pending | |
 | 5. Scoring Engine | - Pending | |
 | 6. AI Document Analysis | - Pending | |
@@ -75,11 +75,14 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 2026-01-29 | 03-03 | Draft visibility rules | Drafts excluded from public list; draft detail only visible to owner |
 | 2026-01-29 | 03-03 | hasEvery for amenities filter | Property must have ALL specified amenities, not just any |
 | 2026-01-29 | 03-03 | Route ordering pattern | GET /mine before GET /:id to prevent 'mine' being parsed as UUID |
+| 2026-01-29 | 03-04 | Service key for Storage operations | Anon key has limited Storage permissions; service key enables server-side operations |
+| 2026-01-29 | 03-04 | Auto-reorder after delete | Prevents gaps in order sequence, maintains clean 0-N ordering |
+| 2026-01-29 | 03-04 | Transaction for reorder | Ensures all order updates succeed or none do (atomicity) |
 
 ## Session Continuity
 
 **Last session:** 2026-01-29
-**Stopped at:** Completed 03-03-PLAN.md
+**Stopped at:** Completed 03-04-PLAN.md - Phase 3 complete
 **Resume file:** None
 
 ## Pending User Actions
@@ -89,12 +92,21 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 2. Paste contents of `supabase/migrations/00001_user_sync_trigger.sql`
 3. Click Run
 
+**Supabase Storage bucket for property images:**
+1. Go to Supabase Dashboard > Storage > New bucket
+2. Create bucket named `property-images`
+3. Set Public = true
+
+**Environment variable:**
+1. Add `SUPABASE_SERVICE_KEY` to `.env`
+2. Get from: Supabase Dashboard > Settings > API > service_role key
+
 ## Next Action
 
-Continue Phase 3: Properties - Execute plan 03-04 (Property Images)
+Begin Phase 4: Applications - Create rental application plans
 
 ```
-/gsd:execute-plan 03-04
+/gsd:plan-phase 04-applications
 ```
 
 ## Session History
@@ -116,6 +128,7 @@ Continue Phase 3: Properties - Execute plan 03-04 (Property Images)
 | 2026-01-29 | Executed 03-01-PLAN.md | Property/PropertyImage models, enums, database tables |
 | 2026-01-29 | Executed 03-02-PLAN.md | PropertiesModule, landlord CRUD, ownership validation |
 | 2026-01-29 | Executed 03-03-PLAN.md | Public listing with filters, search, pagination |
+| 2026-01-29 | Executed 03-04-PLAN.md | Property images with Supabase Storage, Phase 3 complete |
 
 ---
 *Last updated: 2026-01-29*
