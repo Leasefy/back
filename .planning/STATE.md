@@ -3,11 +3,11 @@
 ## Current Status
 
 **Phase:** 4 of 10 (Applications) - COMPLETE
-**Plan:** 4 of 4 complete
+**Plan:** 5 of 5 complete
 **Status:** Phase complete
-**Last activity:** 2026-01-29 - Completed 04-04-PLAN.md (Document Upload)
+**Last activity:** 2026-01-29 - Completed 04-05-PLAN.md (Application Lifecycle)
 
-**Progress:** [#######---] 31% (14/~45 plans estimated)
+**Progress:** [########--] 33% (15/~45 plans estimated)
 
 ## Project Reference
 
@@ -15,7 +15,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 **Core value:** Ejecutar el Risk Score con analisis inteligente de documentos para que propietarios tomen decisiones informadas en minutos, con explicabilidad total.
 
-**Current focus:** Phase 4 Complete - Applications fully implemented with wizard, state machine, events, and document uploads. Ready for Phase 5 (Scoring Engine).
+**Current focus:** Phase 4 Complete - Applications fully implemented with wizard, state machine, events, document uploads, and lifecycle (submit/withdraw). Ready for Phase 5 (Scoring Engine).
 
 ## Quick Context
 
@@ -31,7 +31,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 1. Foundation | COMPLETE | All 3 plans executed |
 | 2. Auth & Users | COMPLETE | All 3 plans executed - User model, JWT auth, profile CRUD |
 | 3. Properties | COMPLETE | All 4 plans executed - Data model, CRUD, public listing, images |
-| 4. Applications | COMPLETE | All 4 plans executed - Data models, state machine, events, CRUD, documents |
+| 4. Applications | COMPLETE | All 5 plans executed - Data models, state machine, events, CRUD, documents, lifecycle |
 | 5. Scoring Engine | - Pending | |
 | 6. AI Document Analysis | - Pending | |
 | 7. Explainability | - Pending | |
@@ -92,11 +92,15 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 2026-01-29 | 04-04 | Private bucket for documents | Sensitive documents (cedula, payslips) require signed URL access |
 | 2026-01-29 | 04-04 | 1-hour signed URL expiry | Balance between security and usability |
 | 2026-01-29 | 04-04 | 10MB file size limit | Sufficient for scans/photos while preventing abuse |
+| 2026-01-29 | 04-05 | Submit requires all steps + 1 doc | Validates wizard completion and document upload before submission |
+| 2026-01-29 | 04-05 | Dual event logging on withdraw | Logs both WITHDRAWN and STATUS_CHANGED events for completeness |
+| 2026-01-29 | 04-05 | GET /mine before GET /:id | Static routes before parameterized to prevent 'mine' being parsed as UUID |
+| 2026-01-29 | 04-05 | respondToInfoRequest defaults UNDER_REVIEW | Transitions to UNDER_REVIEW by default when tenant responds |
 
 ## Session Continuity
 
 **Last session:** 2026-01-29
-**Stopped at:** Completed 04-04-PLAN.md - Document upload with magic number validation
+**Stopped at:** Completed 04-05-PLAN.md - Application lifecycle (submit, withdraw, timeline)
 **Resume file:** None
 
 ## Pending User Actions
@@ -157,6 +161,7 @@ Phase 4 complete. Ready for Phase 5 (Scoring Engine).
 | 2026-01-29 | Executed 04-02-PLAN.md | ApplicationStateMachine, ApplicationEventService, ApplicationsModule |
 | 2026-01-29 | Executed 04-03-PLAN.md | ApplicationsService, ApplicationsController, wizard step DTOs |
 | 2026-01-29 | Executed 04-04-PLAN.md | DocumentsService, DocumentsController, magic number validation |
+| 2026-01-29 | Executed 04-05-PLAN.md | Submit, withdraw, timeline, respond-info endpoints, Phase 4 complete |
 
 ---
 *Last updated: 2026-01-29*
