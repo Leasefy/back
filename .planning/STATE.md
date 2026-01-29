@@ -2,12 +2,12 @@
 
 ## Current Status
 
-**Phase:** 4 of 10 (Applications)
-**Plan:** 3 of 4 complete
-**Status:** In progress
-**Last activity:** 2026-01-29 - Completed 04-03-PLAN.md (Application CRUD and Wizard)
+**Phase:** 4 of 10 (Applications) - COMPLETE
+**Plan:** 4 of 4 complete
+**Status:** Phase complete
+**Last activity:** 2026-01-29 - Completed 04-04-PLAN.md (Document Upload)
 
-**Progress:** [######----] 29% (13/~45 plans estimated)
+**Progress:** [#######---] 31% (14/~45 plans estimated)
 
 ## Project Reference
 
@@ -15,7 +15,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 **Core value:** Ejecutar el Risk Score con analisis inteligente de documentos para que propietarios tomen decisiones informadas en minutos, con explicabilidad total.
 
-**Current focus:** Phase 4 In Progress - Application CRUD and wizard steps complete. Ready for document uploads.
+**Current focus:** Phase 4 Complete - Applications fully implemented with wizard, state machine, events, and document uploads. Ready for Phase 5 (Scoring Engine).
 
 ## Quick Context
 
@@ -31,7 +31,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 1. Foundation | COMPLETE | All 3 plans executed |
 | 2. Auth & Users | COMPLETE | All 3 plans executed - User model, JWT auth, profile CRUD |
 | 3. Properties | COMPLETE | All 4 plans executed - Data model, CRUD, public listing, images |
-| 4. Applications | IN PROGRESS | 3/4 plans - Data models, state machine, events, CRUD complete |
+| 4. Applications | COMPLETE | All 4 plans executed - Data models, state machine, events, CRUD, documents |
 | 5. Scoring Engine | - Pending | |
 | 6. AI Document Analysis | - Pending | |
 | 7. Explainability | - Pending | |
@@ -88,11 +88,15 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 2026-01-29 | 04-03 | JSON field persistence | Each step persists to its own JSON field for schema flexibility |
 | 2026-01-29 | 04-03 | Auto-advance currentStep | Track wizard progress via max(current, step+1) |
 | 2026-01-29 | 04-03 | Colombian cedula regex | /^\d{6,10}$/ for Colombian ID validation |
+| 2026-01-29 | 04-04 | Magic number validation via file-type | Validates actual file content, not extension - security |
+| 2026-01-29 | 04-04 | Private bucket for documents | Sensitive documents (cedula, payslips) require signed URL access |
+| 2026-01-29 | 04-04 | 1-hour signed URL expiry | Balance between security and usability |
+| 2026-01-29 | 04-04 | 10MB file size limit | Sufficient for scans/photos while preventing abuse |
 
 ## Session Continuity
 
 **Last session:** 2026-01-29
-**Stopped at:** Completed 04-03-PLAN.md - Application CRUD and wizard steps
+**Stopped at:** Completed 04-04-PLAN.md - Document upload with magic number validation
 **Resume file:** None
 
 ## Pending User Actions
@@ -107,6 +111,11 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 2. Create bucket named `property-images`
 3. Set Public = true
 
+**Supabase Storage bucket for application documents:**
+1. Go to Supabase Dashboard > Storage > New bucket
+2. Create bucket named `application-documents`
+3. Set Public = false (private bucket for sensitive documents)
+
 **Environment variable:**
 1. Add `SUPABASE_SERVICE_KEY` to `.env`
 2. Get from: Supabase Dashboard > Settings > API > service_role key
@@ -118,10 +127,10 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 ## Next Action
 
-Continue Phase 4: Execute 04-04-PLAN.md (Document Upload)
+Phase 4 complete. Ready for Phase 5 (Scoring Engine).
 
 ```
-/gsd:execute-plan .planning/phases/04-applications-documents/04-04-PLAN.md
+/gsd:execute-phase .planning/phases/05-scoring-engine/
 ```
 
 ## Session History
@@ -147,6 +156,7 @@ Continue Phase 4: Execute 04-04-PLAN.md (Document Upload)
 | 2026-01-29 | Executed 04-01-PLAN.md | Application/ApplicationDocument/ApplicationEvent models, enums |
 | 2026-01-29 | Executed 04-02-PLAN.md | ApplicationStateMachine, ApplicationEventService, ApplicationsModule |
 | 2026-01-29 | Executed 04-03-PLAN.md | ApplicationsService, ApplicationsController, wizard step DTOs |
+| 2026-01-29 | Executed 04-04-PLAN.md | DocumentsService, DocumentsController, magic number validation |
 
 ---
 *Last updated: 2026-01-29*
