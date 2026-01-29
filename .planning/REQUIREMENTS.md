@@ -36,16 +36,20 @@ Requirements for MVP release. Each maps to roadmap phases.
 
 - [ ] **PROP-01**: Landlord can create property listing
 - [ ] **PROP-02**: Landlord can update own property
-- [ ] **PROP-03**: Landlord can delete own property
-- [ ] **PROP-04**: Anyone can list properties (public)
+- [ ] **PROP-03**: Landlord can delete own property (blocked if active applications)
+- [ ] **PROP-04**: Anyone can list properties (public, excludes draft)
 - [ ] **PROP-05**: Properties filterable by city, neighborhood
-- [ ] **PROP-06**: Properties filterable by price range
-- [ ] **PROP-07**: Properties filterable by bedrooms, bathrooms
-- [ ] **PROP-08**: Properties filterable by amenities (petFriendly, furnished, parking)
+- [ ] **PROP-06**: Properties filterable by price range (minPrice, maxPrice)
+- [ ] **PROP-07**: Properties filterable by bedrooms, propertyType
+- [ ] **PROP-08**: Properties filterable by amenities (array of IDs)
 - [ ] **PROP-09**: Anyone can view property detail
-- [ ] **PROP-10**: Landlord can upload property images to Supabase Storage
-- [ ] **PROP-11**: Property images served via signed URLs
+- [ ] **PROP-10**: Landlord can upload property images to Supabase Storage (max 10)
+- [ ] **PROP-11**: Property images ordered with first as thumbnail
 - [ ] **PROP-12**: Landlord can view own properties list
+- [ ] **PROP-13**: Property supports draft status (not visible to public)
+- [ ] **PROP-14**: Property model includes parkingSpaces, stratum, yearBuilt
+- [ ] **PROP-15**: Property model includes listingPlan (free/pro/business)
+- [ ] **PROP-16**: Full-text search on title, description, address, neighborhood
 
 ### Applications (APPL)
 
@@ -134,6 +138,48 @@ Requirements for MVP release. Each maps to roadmap phases.
 - [ ] **MLPR-02**: Application outcomes tracked (approved → paid/defaulted)
 - [ ] **MLPR-03**: Score predictions vs actuals logged
 - [ ] **MLPR-04**: Data export capability for ML training
+
+### Subscriptions & Plans (SUBS)
+
+- [ ] **SUBS-01**: Three plans defined: free, pro, business
+- [ ] **SUBS-02**: Plan limits enforced (properties count, AI scoring access)
+- [ ] **SUBS-03**: User can view available plans
+- [ ] **SUBS-04**: User can subscribe to a plan
+- [ ] **SUBS-05**: Subscription status tracked (active, cancelled, past_due)
+- [ ] **SUBS-06**: Coupon codes can be validated
+- [ ] **SUBS-07**: Coupon discount applied to subscription
+- [ ] **SUBS-08**: Plan selection during property publishing
+
+### Contracts (CONT)
+
+- [ ] **CONT-01**: Contract templates available
+- [ ] **CONT-02**: Landlord can create contract for approved candidate
+- [ ] **CONT-03**: Contract includes start/end dates, rent, deposit, payment day
+- [ ] **CONT-04**: Contract supports custom clauses
+- [ ] **CONT-05**: Contract supports optional insurance selection
+- [ ] **CONT-06**: Landlord can sign contract digitally
+- [ ] **CONT-07**: Tenant can sign contract digitally
+- [ ] **CONT-08**: Digital signatures comply with Ley 527/1999
+- [ ] **CONT-09**: Signed contract generates PDF document
+- [ ] **CONT-10**: Contract status tracked (draft, pending_signature, signed, active)
+
+### Leases & Payments (LEAS)
+
+- [ ] **LEAS-01**: Lease created automatically from signed contract
+- [ ] **LEAS-02**: Lease status tracked (active, ending_soon, ended, terminated)
+- [ ] **LEAS-03**: Lease includes denormalized property/tenant/landlord info
+- [ ] **LEAS-04**: Landlord can record payment received
+- [ ] **LEAS-05**: Payment methods supported (transfer, PSE, cash)
+- [ ] **LEAS-06**: Payment history visible to both parties
+- [ ] **LEAS-07**: Tenant can view active lease details
+- [ ] **LEAS-08**: Landlord can view all their leases
+
+### Insurance (INSU)
+
+- [ ] **INSU-01**: Three insurance tiers: none, basic, premium
+- [ ] **INSU-02**: Insurance can be selected during contract creation
+- [ ] **INSU-03**: Insurance premium calculated and added to contract
+- [ ] **INSU-04**: Insurance coverage details visible
 
 ## v2 Requirements
 
@@ -277,12 +323,46 @@ Which phases cover which requirements. Updated by roadmap creation.
 | MLPR-02 | Phase 10 | Pending |
 | MLPR-03 | Phase 10 | Pending |
 | MLPR-04 | Phase 10 | Pending |
+| SUBS-01 | Phase 11 | Pending |
+| SUBS-02 | Phase 11 | Pending |
+| SUBS-03 | Phase 11 | Pending |
+| SUBS-04 | Phase 11 | Pending |
+| SUBS-05 | Phase 11 | Pending |
+| SUBS-06 | Phase 11 | Pending |
+| SUBS-07 | Phase 11 | Pending |
+| SUBS-08 | Phase 11 | Pending |
+| CONT-01 | Phase 12 | Pending |
+| CONT-02 | Phase 12 | Pending |
+| CONT-03 | Phase 12 | Pending |
+| CONT-04 | Phase 12 | Pending |
+| CONT-05 | Phase 12 | Pending |
+| CONT-06 | Phase 12 | Pending |
+| CONT-07 | Phase 12 | Pending |
+| CONT-08 | Phase 12 | Pending |
+| CONT-09 | Phase 12 | Pending |
+| CONT-10 | Phase 12 | Pending |
+| LEAS-01 | Phase 13 | Pending |
+| LEAS-02 | Phase 13 | Pending |
+| LEAS-03 | Phase 13 | Pending |
+| LEAS-04 | Phase 13 | Pending |
+| LEAS-05 | Phase 13 | Pending |
+| LEAS-06 | Phase 13 | Pending |
+| LEAS-07 | Phase 13 | Pending |
+| LEAS-08 | Phase 13 | Pending |
+| INSU-01 | Phase 14 | Pending |
+| INSU-02 | Phase 14 | Pending |
+| INSU-03 | Phase 14 | Pending |
+| INSU-04 | Phase 14 | Pending |
+| PROP-13 | Phase 3 | Pending |
+| PROP-14 | Phase 3 | Pending |
+| PROP-15 | Phase 3 | Pending |
+| PROP-16 | Phase 3 | Pending |
 
 **Coverage:**
-- v1 requirements: 78 total
-- Mapped to phases: 78
+- v1 requirements: 112 total (was 78, added 34 new)
+- Mapped to phases: 112
 - Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-01-24*
-*Last updated: 2026-01-25 after Phase 1 completion*
+*Last updated: 2026-01-29 - Added SUBS, CONT, LEAS, INSU requirements based on frontend*

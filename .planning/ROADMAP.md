@@ -6,7 +6,7 @@ Backend API en NestJS para el marketplace de arriendos "Arriendo Facil". Provee 
 
 ## Milestones
 
-- **v1.0 Backend MVP** - Phases 1-10 (in progress)
+- **v1.0 Backend MVP** - Phases 1-14 (in progress)
 
 ## Phases
 
@@ -16,7 +16,7 @@ Backend API en NestJS para el marketplace de arriendos "Arriendo Facil". Provee 
 
 - [x] **Phase 1: Foundation** - Project scaffold, Prisma, Supabase config ✓
 - [x] **Phase 2: Auth & Users** - Supabase Auth, guards, user management ✓
-- [ ] **Phase 3: Properties** - CRUD, filtering, image upload
+- [ ] **Phase 3: Properties** - CRUD, filtering, image upload, plans
 - [ ] **Phase 4: Applications & Documents** - Wizard, state machine, document upload
 - [ ] **Phase 5: Scoring Engine** - Feature extraction, models, aggregator
 - [ ] **Phase 6: AI Document Analysis** - Claude integration, document analyzers
@@ -24,6 +24,10 @@ Backend API en NestJS para el marketplace de arriendos "Arriendo Facil". Provee 
 - [ ] **Phase 8: Landlord Features** - Candidates, decisions, notes
 - [ ] **Phase 9: Notifications** - Email service, templates, queue
 - [ ] **Phase 10: ML Persistence** - Feature logging, outcome tracking
+- [ ] **Phase 11: Subscriptions & Plans** - Pricing plans, coupons, billing
+- [ ] **Phase 12: Contracts** - Templates, digital signatures, clauses
+- [ ] **Phase 13: Leases & Payments** - Active leases, payment tracking
+- [ ] **Phase 14: Insurance** - Optional insurance tiers
 
 ## Phase Details
 
@@ -67,16 +71,27 @@ Plans:
 ### Phase 3: Properties
 **Goal**: Landlords can manage properties, anyone can browse
 **Depends on**: Phase 2
-**Requirements**: PROP-01 through PROP-12
+**Requirements**: PROP-01 through PROP-16
 **Success Criteria** (what must be TRUE):
   1. Landlord can CRUD own properties
-  2. Property images uploaded to Supabase Storage
+  2. Property images uploaded to Supabase Storage (max 10, ordered)
   3. Public can list/filter properties without auth
-  4. Filters work: city, price, bedrooms, amenities
-  5. Property detail returns complete data
+  4. Filters work: city, price, bedrooms, type, amenities, full-text search
+  5. Property detail returns complete data including all new fields
   6. Landlord can view own property list
+  7. Properties support draft status (not visible to public)
+  8. Properties blocked from edit/delete if has active applications
 **Research**: Unlikely (standard CRUD)
+**Context**: Complete (03-CONTEXT.md)
 **Plans**: TBD
+
+**Model Changes (aligned with frontend):**
+- type: apartment | house | studio | room
+- status: draft | available | rented | pending
+- parkingSpaces, stratum, yearBuilt (new fields)
+- listingPlan: free | pro | business
+- amenities: string[] with predefined IDs
+- latitude, longitude for map
 
 ### Phase 4: Applications & Documents
 **Goal**: Complete application submission flow with document upload
@@ -183,6 +198,64 @@ Plans:
 **Research**: Unlikely (data modeling)
 **Plans**: TBD
 
+### Phase 11: Subscriptions & Plans
+**Goal**: Pricing plans for landlords with coupon support
+**Depends on**: Phase 3 (landlords need properties first)
+**Requirements**: SUBS-01 through SUBS-08
+**Success Criteria** (what must be TRUE):
+  1. Three plans available: free, pro, business
+  2. Plan limits enforced (properties, AI scoring access)
+  3. Coupons can be validated and applied
+  4. Subscription status tracked per user
+  5. Plan selection during property publish
+**Research**: Likely (billing patterns, coupon systems)
+**Plans**: TBD
+
+**Plans (from frontend):**
+- Free: 1 property, 1 contract, no AI scoring
+- Pro: 10 properties, unlimited contracts, AI scoring ($149,900/month)
+- Business: Unlimited, API access ($499,900/month)
+
+### Phase 12: Contracts
+**Goal**: Digital contract signing with templates and legal compliance
+**Depends on**: Phase 8 (after candidate approval)
+**Requirements**: CONT-01 through CONT-10
+**Success Criteria** (what must be TRUE):
+  1. Contract templates available
+  2. Landlord can generate contract for approved candidate
+  3. Contract includes custom clauses
+  4. Both parties can sign digitally (Ley 527/1999)
+  5. Signed contract generates PDF
+  6. Contract status tracked (draft, pending, signed, active)
+**Research**: Likely (Colombian digital signature law, PDF generation)
+**Plans**: TBD
+
+### Phase 13: Leases & Payments
+**Goal**: Track active leases and payment history
+**Depends on**: Phase 12 (signed contract creates lease)
+**Requirements**: LEAS-01 through LEAS-08
+**Success Criteria** (what must be TRUE):
+  1. Lease created from signed contract
+  2. Lease status tracked (active, ending_soon, ended)
+  3. Payment records can be added
+  4. Payment methods supported (PSE, transfer, cash)
+  5. Tenant and landlord can view lease details
+  6. Payment history visible
+**Research**: Likely (payment integration patterns)
+**Plans**: TBD
+
+### Phase 14: Insurance
+**Goal**: Optional insurance tiers for contracts
+**Depends on**: Phase 12 (insurance attached to contracts)
+**Requirements**: INSU-01 through INSU-04
+**Success Criteria** (what must be TRUE):
+  1. Three insurance tiers: none, basic, premium
+  2. Insurance can be selected during contract creation
+  3. Insurance premium added to contract terms
+  4. Coverage details visible in contract
+**Research**: Unlikely (straightforward feature)
+**Plans**: TBD
+
 ## Progress
 
 **Execution Order:**
@@ -192,7 +265,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 |-------|----------------|--------|-----------|
 | 1. Foundation | 3/3 | ✓ Complete | 2026-01-25 |
 | 2. Auth & Users | 3/3 | ✓ Complete | 2026-01-26 |
-| 3. Properties | 0/0 | Not started | - |
+| 3. Properties | 0/0 | Context ready | - |
 | 4. Applications & Documents | 0/0 | Not started | - |
 | 5. Scoring Engine | 0/0 | Not started | - |
 | 6. AI Document Analysis | 0/0 | Not started | - |
@@ -200,34 +273,65 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 8. Landlord Features | 0/0 | Not started | - |
 | 9. Notifications | 0/0 | Not started | - |
 | 10. ML Persistence | 0/0 | Not started | - |
+| 11. Subscriptions & Plans | 0/0 | Not started | - |
+| 12. Contracts | 0/0 | Not started | - |
+| 13. Leases & Payments | 0/0 | Not started | - |
+| 14. Insurance | 0/0 | Not started | - |
 
 ## Notes
 
 ### Frontend Integration Points
 
-El frontend en `../front/` espera estas estructuras de respuesta:
+**Reference:** See `../front/docs/BACKEND-INTEGRATION.md` for complete API contracts.
+**Reference:** See `../front/docs/FRONTEND-ARCHITECTURE.md` for component structure.
 
-**Property:**
+**Property (updated 2026-01-29):**
 ```typescript
 {
-  id, ownerId, title, description, address, city, neighborhood,
-  priceMonthly, adminFee, bedrooms, bathrooms, area,
-  furnished, petFriendly, parking, availableFrom,
-  images: [{ id, url, order }]
+  id: string,
+  title: string,
+  description: string,
+  type: 'apartment' | 'house' | 'studio' | 'room',
+  status: 'available' | 'rented' | 'pending',
+  city: string,
+  neighborhood: string,
+  address: string,
+  latitude: number,
+  longitude: number,
+  monthlyRent: number,  // COP integers
+  adminFee: number,
+  deposit: number,
+  bedrooms: number,
+  bathrooms: number,
+  area: number,
+  floor?: number,
+  parkingSpaces?: number,
+  stratum?: number,
+  yearBuilt?: number,
+  amenities: PropertyAmenity[],
+  images: string[],
+  thumbnailUrl: string,
+  landlordId: string,
+  createdAt: string,
+  updatedAt: string
 }
 ```
 
-**RiskScoreResult:**
+**RiskScore (updated 2026-01-29):**
 ```typescript
 {
-  totalScore: number,
+  total: number,        // 0-100
   level: 'A' | 'B' | 'C' | 'D',
-  recommendation: string,
-  subscores: { integrity, financial, stability, history, documents },
-  drivers: string[],
-  flags: RiskFlag[],
-  suggestedConditions: Condition[],
-  aiExplanation: string
+  categories: {
+    integrity: number,  // 0-25
+    financial: number,  // 0-35
+    stability: number,  // 0-25
+    history: number     // 0-15
+  },
+  explanation: string,  // AI-generated
+  drivers: { text: string, positive: boolean }[],
+  flags: { code: string, severity: string, message: string }[],
+  conditions: { type: string, message: string, required: boolean }[]
 }
 ```
 
@@ -242,4 +346,4 @@ El frontend en `../front/` espera estas estructuras de respuesta:
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-01-26 after Phase 2 execution*
+*Last updated: 2026-01-29 - Added phases 11-14 based on frontend BACKEND-INTEGRATION.md*
