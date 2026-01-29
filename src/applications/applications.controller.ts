@@ -25,6 +25,9 @@ import {
   EmploymentInfoDto,
   IncomeInfoDto,
   ReferencesDto,
+  SubmitApplicationDto,
+  WithdrawApplicationDto,
+  RespondInfoRequestDto,
 } from './dto/index.js';
 
 @ApiTags('Applications')
@@ -102,6 +105,14 @@ export class ApplicationsController {
     return this.applicationsService.updateStep(applicationId, user.id, 4, dto);
   }
 
+  @Get('mine')
+  @Roles(Role.TENANT, Role.BOTH)
+  @ApiOperation({ summary: 'Get all applications for current tenant' })
+  @ApiResponse({ status: 200, description: 'List of tenant applications' })
+  async findMine(@CurrentUser() user: User) {
+    return this.applicationsService.findByTenant(user.id);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get application details' })
   @ApiParam({ name: 'id', description: 'Application ID' })
@@ -113,5 +124,66 @@ export class ApplicationsController {
     @Param('id', ParseUUIDPipe) applicationId: string,
   ) {
     return this.applicationsService.findByIdWithDetails(applicationId, user.id);
+  }
+
+  @Get(':id/timeline')
+  @ApiOperation({ summary: 'Get application timeline/events' })
+  @ApiParam({ name: 'id', description: 'Application ID' })
+  @ApiResponse({ status: 200, description: 'Application timeline' })
+  @ApiResponse({ status: 403, description: 'Not authorized to view' })
+  @ApiResponse({ status: 404, description: 'Application not found' })
+  async getTimeline(
+    @CurrentUser() user: User,
+    @Param('id', ParseUUIDPipe) applicationId: string,
+  ) {
+    return this.applicationsService.getTimeline(applicationId, user.id);
+  }
+
+  @Post(':id/submit')
+  @Roles(Role.TENANT, Role.BOTH)
+  @ApiOperation({ summary: 'Submit a completed application' })
+  @ApiParam({ name: 'id', description: 'Application ID' })
+  @ApiResponse({ status: 200, description: 'Application submitted' })
+  @ApiResponse({ status: 400, description: 'Incomplete application or invalid transition' })
+  @ApiResponse({ status: 403, description: 'Not application owner' })
+  @ApiResponse({ status: 404, description: 'Application not found' })
+  async submit(
+    @CurrentUser() user: User,
+    @Param('id', ParseUUIDPipe) applicationId: string,
+    @Body() dto: SubmitApplicationDto,
+  ) {
+    return this.applicationsService.submit(applicationId, user.id, dto);
+  }
+
+  @Post(':id/withdraw')
+  @Roles(Role.TENANT, Role.BOTH)
+  @ApiOperation({ summary: 'Withdraw an application' })
+  @ApiParam({ name: 'id', description: 'Application ID' })
+  @ApiResponse({ status: 200, description: 'Application withdrawn' })
+  @ApiResponse({ status: 400, description: 'Invalid transition (terminal state)' })
+  @ApiResponse({ status: 403, description: 'Not application owner' })
+  @ApiResponse({ status: 404, description: 'Application not found' })
+  async withdraw(
+    @CurrentUser() user: User,
+    @Param('id', ParseUUIDPipe) applicationId: string,
+    @Body() dto: WithdrawApplicationDto,
+  ) {
+    return this.applicationsService.withdraw(applicationId, user.id, dto);
+  }
+
+  @Post(':id/respond-info')
+  @Roles(Role.TENANT, Role.BOTH)
+  @ApiOperation({ summary: 'Respond to landlord info request' })
+  @ApiParam({ name: 'id', description: 'Application ID' })
+  @ApiResponse({ status: 200, description: 'Response recorded' })
+  @ApiResponse({ status: 400, description: 'Application not in NEEDS_INFO status' })
+  @ApiResponse({ status: 403, description: 'Not application owner' })
+  @ApiResponse({ status: 404, description: 'Application not found' })
+  async respondToInfoRequest(
+    @CurrentUser() user: User,
+    @Param('id', ParseUUIDPipe) applicationId: string,
+    @Body() dto: RespondInfoRequestDto,
+  ) {
+    return this.applicationsService.respondToInfoRequest(applicationId, user.id, dto);
   }
 }
