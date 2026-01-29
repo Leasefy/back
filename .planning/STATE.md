@@ -3,11 +3,11 @@
 ## Current Status
 
 **Phase:** 4 of 10 (Applications)
-**Plan:** 1 of 4 complete
+**Plan:** 2 of 4 complete
 **Status:** In progress
-**Last activity:** 2026-01-29 - Completed 04-01-PLAN.md (Application Data Models)
+**Last activity:** 2026-01-29 - Completed 04-02-PLAN.md (State Machine and Events)
 
-**Progress:** [#####-----] 24% (11/~45 plans estimated)
+**Progress:** [######----] 27% (12/~45 plans estimated)
 
 ## Project Reference
 
@@ -15,7 +15,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 **Core value:** Ejecutar el Risk Score con analisis inteligente de documentos para que propietarios tomen decisiones informadas en minutos, con explicabilidad total.
 
-**Current focus:** Phase 4 In Progress - Application data models complete. Database sync pending manual action.
+**Current focus:** Phase 4 In Progress - State machine and event services complete. Ready for main ApplicationService.
 
 ## Quick Context
 
@@ -31,7 +31,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 1. Foundation | COMPLETE | All 3 plans executed |
 | 2. Auth & Users | COMPLETE | All 3 plans executed - User model, JWT auth, profile CRUD |
 | 3. Properties | COMPLETE | All 4 plans executed - Data model, CRUD, public listing, images |
-| 4. Applications | IN PROGRESS | 1/4 plans - Data models complete |
+| 4. Applications | IN PROGRESS | 2/4 plans - Data models, state machine, events complete |
 | 5. Scoring Engine | - Pending | |
 | 6. AI Document Analysis | - Pending | |
 | 7. Explainability | - Pending | |
@@ -81,11 +81,14 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 2026-01-29 | 04-01 | JSON fields for wizard steps | Validated in application layer, not DB - flexibility for schema evolution |
 | 2026-01-29 | 04-01 | Cascade delete on ApplicationDocument/Event | Maintains referential integrity when Application deleted |
 | 2026-01-29 | 04-01 | Event sourcing for audit trail | actorId + type + metadata JSON enables full audit history |
+| 2026-01-29 | 04-02 | Prisma JSON cast for metadata | Prisma 7.x strict JSON typing requires explicit cast to InputJsonValue |
+| 2026-01-29 | 04-02 | Terminal states with empty arrays | Clear pattern for identifying terminal states via isTerminal() |
+| 2026-01-29 | 04-02 | Event methods return ApplicationEvent | Enables chaining and immediate access to created event |
 
 ## Session Continuity
 
 **Last session:** 2026-01-29
-**Stopped at:** Completed 04-01-PLAN.md - Application data models
+**Stopped at:** Completed 04-02-PLAN.md - State machine and event services
 **Resume file:** None
 
 ## Pending User Actions
@@ -111,10 +114,10 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 ## Next Action
 
-Continue Phase 4: Execute 04-02-PLAN.md (Application Service Layer)
+Continue Phase 4: Execute 04-03-PLAN.md (Application CRUD and Wizard)
 
 ```
-/gsd:execute-plan .planning/phases/04-applications-documents/04-02-PLAN.md
+/gsd:execute-plan .planning/phases/04-applications-documents/04-03-PLAN.md
 ```
 
 ## Session History
@@ -138,6 +141,7 @@ Continue Phase 4: Execute 04-02-PLAN.md (Application Service Layer)
 | 2026-01-29 | Executed 03-03-PLAN.md | Public listing with filters, search, pagination |
 | 2026-01-29 | Executed 03-04-PLAN.md | Property images with Supabase Storage, Phase 3 complete |
 | 2026-01-29 | Executed 04-01-PLAN.md | Application/ApplicationDocument/ApplicationEvent models, enums |
+| 2026-01-29 | Executed 04-02-PLAN.md | ApplicationStateMachine, ApplicationEventService, ApplicationsModule |
 
 ---
 *Last updated: 2026-01-29*
