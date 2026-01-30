@@ -1,0 +1,1361 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Supabase Auth + Backend</title>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    h1 { color: #333; }
+    h2 { color: #555; margin-top: 30px; border-bottom: 2px solid #ddd; padding-bottom: 10px; }
+
+    .section {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    button {
+      padding: 10px 20px;
+      margin: 5px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    button:hover { transform: translateY(-1px); }
+
+    .btn-primary { background: #4285f4; color: white; }
+    .btn-primary:hover { background: #3367d6; }
+
+    .btn-success { background: #34a853; color: white; }
+    .btn-success:hover { background: #2d8f47; }
+
+    .btn-warning { background: #fbbc04; color: #333; }
+    .btn-warning:hover { background: #f9a825; }
+
+    .btn-danger { background: #ea4335; color: white; }
+    .btn-danger:hover { background: #d93025; }
+
+    .btn-info { background: #6c757d; color: white; }
+    .btn-info:hover { background: #5a6268; }
+
+    pre {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 15px;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-size: 13px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .status {
+      padding: 10px 15px;
+      border-radius: 6px;
+      margin: 10px 0;
+      font-weight: 500;
+    }
+    .status.success { background: #d4edda; color: #155724; }
+    .status.error { background: #f8d7da; color: #721c24; }
+    .status.info { background: #cce5ff; color: #004085; }
+
+    input, select {
+      padding: 10px;
+      margin: 5px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    input { width: 200px; }
+
+    .form-group {
+      margin: 10px 0;
+    }
+    .form-group label {
+      display: inline-block;
+      width: 100px;
+      font-weight: 500;
+    }
+
+    .jwt-display {
+      word-break: break-all;
+      font-size: 11px;
+      background: #2d2d2d;
+      padding: 10px;
+      border-radius: 4px;
+      margin-top: 10px;
+      color: #9cdcfe;
+    }
+
+    .user-info {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 10px;
+      margin: 10px 0;
+    }
+    .user-info-item {
+      background: #f8f9fa;
+      padding: 10px;
+      border-radius: 4px;
+    }
+    .user-info-item strong {
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <h1>Test Supabase Auth + NestJS Backend</h1>
+
+  <!-- Auth Section -->
+  <div class="section">
+    <h2>1. Autenticacion</h2>
+
+    <!-- Login -->
+    <div style="margin-bottom: 15px;">
+      <strong>Ya tienes cuenta?</strong><br>
+      <button id="btnGoogle" class="btn-primary">🔑 Login con Google</button>
+    </div>
+
+    <!-- Register -->
+    <div style="margin-bottom: 15px; padding: 15px; background: #e8f4fd; border-radius: 8px;">
+      <strong>🆕 Nuevo usuario? Registrate:</strong><br><br>
+      <div class="form-group">
+        <label>Tipo de cuenta:</label>
+        <select id="registerRole" style="width: 200px;">
+          <option value="TENANT">🏠 Inquilino (TENANT)</option>
+          <option value="LANDLORD">🔑 Propietario (LANDLORD)</option>
+          <option value="BOTH">👥 Ambos (BOTH)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Nombre:</label>
+        <input type="text" id="registerFirstName" placeholder="Juan">
+      </div>
+      <div class="form-group">
+        <label>Apellido:</label>
+        <input type="text" id="registerLastName" placeholder="Garcia">
+      </div>
+      <button id="btnRegisterGoogle" class="btn-success">📝 Registrarse con Google</button>
+      <div style="font-size: 12px; color: #666; margin-top: 10px; padding: 10px; background: #d4edda; border-radius: 4px;">
+        <strong>✅ Flujo de registro:</strong><br>
+        1. Selecciona tu tipo de cuenta arriba<br>
+        2. Ingresa tu nombre (opcional, se puede tomar de Google)<br>
+        3. Click en "Registrarse con Google"<br>
+        4. El backend actualizará tu rol automáticamente via <code>POST /users/me/onboarding</code>
+      </div>
+    </div>
+
+    <!-- Session controls -->
+    <div>
+      <button id="btnSession" class="btn-info">Ver Sesion</button>
+      <button id="btnLogout" class="btn-danger">Logout</button>
+    </div>
+
+    <div id="authStatus"></div>
+    <div id="jwtToken" class="jwt-display" style="display:none;"></div>
+    <button id="btnCopyToken" class="btn-info" style="display:none; margin-top: 10px;">📋 Copiar Token</button>
+  </div>
+
+  <!-- Health Check Section -->
+  <div class="section">
+    <h2>2. Health Check (Publico)</h2>
+    <button id="btnHealth" class="btn-success">GET /health</button>
+    <pre id="healthOutput">// Resultado aparecera aqui...</pre>
+  </div>
+
+  <!-- Profile Section -->
+  <div class="section">
+    <h2>3. Perfil de Usuario (Requiere Auth)</h2>
+    <button id="btnGetProfile" class="btn-primary">GET /users/me</button>
+    <pre id="profileOutput">// Resultado aparecera aqui...</pre>
+
+    <div id="userInfoDisplay" style="display:none;">
+      <h3>Datos del Usuario:</h3>
+      <div class="user-info" id="userInfo"></div>
+    </div>
+  </div>
+
+  <!-- Update Profile Section -->
+  <div class="section">
+    <h2>4. Actualizar Perfil</h2>
+    <div class="form-group">
+      <label>Nombre:</label>
+      <input type="text" id="firstName" placeholder="Juan">
+    </div>
+    <div class="form-group">
+      <label>Apellido:</label>
+      <input type="text" id="lastName" placeholder="Garcia">
+    </div>
+    <div class="form-group">
+      <label>Telefono:</label>
+      <input type="text" id="phone" placeholder="+573001234567">
+    </div>
+    <button id="btnUpdateProfile" class="btn-warning">PATCH /users/me</button>
+    <pre id="updateOutput">// Resultado aparecera aqui...</pre>
+  </div>
+
+  <!-- Onboarding Section -->
+  <div class="section">
+    <h2>5. Onboarding Manual (POST /users/me/onboarding)</h2>
+    <p style="color: #666; font-size: 13px;">
+      Usa este formulario para completar/actualizar tu onboarding manualmente.
+      Esto cambiará tu rol y datos de perfil.
+    </p>
+    <div class="form-group">
+      <label>Nombre:</label>
+      <input type="text" id="onboardFirstName" placeholder="Juan">
+    </div>
+    <div class="form-group">
+      <label>Apellido:</label>
+      <input type="text" id="onboardLastName" placeholder="Garcia">
+    </div>
+    <div class="form-group">
+      <label>Teléfono:</label>
+      <input type="text" id="onboardPhone" placeholder="+573001234567">
+    </div>
+    <div class="form-group">
+      <label>Tipo cuenta:</label>
+      <select id="onboardUserType" style="width: 200px;">
+        <option value="TENANT">🏠 Inquilino (busco arriendo)</option>
+        <option value="LANDLORD">🔑 Propietario (tengo inmuebles)</option>
+        <option value="BOTH">👥 Ambos</option>
+      </select>
+    </div>
+    <button id="btnOnboarding" class="btn-success">POST /users/me/onboarding</button>
+    <button id="btnOnboardingStatus" class="btn-info">GET /users/me/onboarding/status</button>
+    <pre id="onboardingOutput">// Resultado aparecera aqui...</pre>
+  </div>
+
+  <!-- Switch Role Section -->
+  <div class="section">
+    <h2>6. Cambiar Rol Activo (Solo usuarios BOTH)</h2>
+    <div class="form-group">
+      <label>Rol Activo:</label>
+      <select id="activeRole">
+        <option value="TENANT">TENANT</option>
+        <option value="LANDLORD">LANDLORD</option>
+      </select>
+    </div>
+    <button id="btnSwitchRole" class="btn-warning">PATCH /users/me/role</button>
+    <pre id="roleOutput">// Resultado aparecera aqui...</pre>
+  </div>
+
+  <!-- Properties Section (LANDLORD) -->
+  <div class="section">
+    <h2>7. Propiedades (Requiere rol LANDLORD)</h2>
+
+    <div style="background: #fff3cd; padding: 10px; border-radius: 6px; margin-bottom: 15px;">
+      <strong>⚠️ Nota:</strong> Debes tener rol LANDLORD o BOTH para crear propiedades.
+    </div>
+
+    <!-- Create Property -->
+    <h3>7.1 Crear Propiedad</h3>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+      <div class="form-group">
+        <label>Título:</label>
+        <input type="text" id="propTitle" placeholder="Apartamento moderno" style="width: 100%;">
+      </div>
+      <div class="form-group">
+        <label>Tipo:</label>
+        <select id="propType" style="width: 100%;">
+          <option value="APARTMENT">Apartamento</option>
+          <option value="HOUSE">Casa</option>
+          <option value="STUDIO">Estudio</option>
+          <option value="ROOM">Habitación</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Ciudad:</label>
+        <input type="text" id="propCity" value="Bogota" style="width: 100%;">
+      </div>
+      <div class="form-group">
+        <label>Barrio:</label>
+        <input type="text" id="propNeighborhood" placeholder="Chapinero" style="width: 100%;">
+      </div>
+      <div class="form-group">
+        <label>Dirección:</label>
+        <input type="text" id="propAddress" placeholder="Calle 53 #7-25" style="width: 100%;">
+      </div>
+      <div class="form-group">
+        <label>Arriendo (COP):</label>
+        <input type="number" id="propRent" value="2500000" style="width: 100%;">
+      </div>
+      <div class="form-group">
+        <label>Habitaciones:</label>
+        <input type="number" id="propBedrooms" value="2" style="width: 100%;">
+      </div>
+      <div class="form-group">
+        <label>Baños:</label>
+        <input type="number" id="propBathrooms" value="2" style="width: 100%;">
+      </div>
+      <div class="form-group">
+        <label>Área (m²):</label>
+        <input type="number" id="propArea" value="75" style="width: 100%;">
+      </div>
+      <div class="form-group">
+        <label>Estrato:</label>
+        <input type="number" id="propStratum" value="4" min="1" max="6" style="width: 100%;">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Descripción:</label><br>
+      <textarea id="propDescription" rows="3" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ddd;">Hermoso apartamento con vista a la ciudad, excelente ubicación cerca de transporte público y centros comerciales.</textarea>
+    </div>
+    <button id="btnCreateProperty" class="btn-success">POST /properties (Crear)</button>
+    <pre id="createPropertyOutput">// Resultado aparecerá aquí...</pre>
+
+    <!-- My Properties -->
+    <h3>7.2 Mis Propiedades</h3>
+    <button id="btnMyProperties" class="btn-primary">GET /properties/mine</button>
+    <pre id="myPropertiesOutput">// Lista de mis propiedades...</pre>
+
+    <div id="propertiesList" style="display: none; margin-top: 15px;">
+      <h4>Selecciona una propiedad para subir imágenes:</h4>
+      <select id="selectedPropertyId" style="width: 100%; padding: 10px; margin-bottom: 10px;"></select>
+    </div>
+
+    <!-- Upload Images -->
+    <h3>7.3 Subir Imágenes a Propiedad</h3>
+    <div class="form-group">
+      <label>Property ID:</label>
+      <input type="text" id="imagePropertyId" placeholder="UUID de la propiedad" style="width: 300px;">
+      <button id="btnUseSelectedProperty" class="btn-info">← Usar seleccionada</button>
+    </div>
+    <div class="form-group">
+      <label>Imágenes:</label>
+      <input type="file" id="propertyImages" multiple accept="image/*" style="padding: 5px;">
+      <small style="color: #666;">(Máximo 10 imágenes, formatos: JPG, PNG, WebP)</small>
+    </div>
+    <button id="btnUploadImages" class="btn-warning">POST /properties/:id/images (Subir)</button>
+    <div id="uploadProgress" style="display: none; margin: 10px 0; padding: 10px; background: #e8f4fd; border-radius: 6px;"></div>
+    <pre id="uploadImagesOutput">// Resultado de subida...</pre>
+
+    <!-- Property Detail with Images -->
+    <h3>7.4 Ver Propiedad con Imágenes</h3>
+    <div class="form-group">
+      <label>Property ID:</label>
+      <input type="text" id="viewPropertyId" placeholder="UUID de la propiedad" style="width: 300px;">
+      <button id="btnUseSelectedForView" class="btn-info">← Usar seleccionada</button>
+    </div>
+    <button id="btnViewProperty" class="btn-primary">GET /properties/:id (Ver detalle)</button>
+    <pre id="viewPropertyOutput">// Detalle de la propiedad...</pre>
+    <div id="propertyImagesGallery" style="display: none; margin-top: 15px;">
+      <h4>Imágenes de la propiedad:</h4>
+      <div id="imagesContainer" style="display: flex; flex-wrap: wrap; gap: 10px;"></div>
+    </div>
+
+    <!-- Publish Property -->
+    <h3>7.5 Publicar Propiedad</h3>
+    <div class="form-group">
+      <label>Property ID:</label>
+      <input type="text" id="publishPropertyId" placeholder="UUID de la propiedad" style="width: 300px;">
+      <button id="btnUseSelectedForPublish" class="btn-info">← Usar seleccionada</button>
+    </div>
+    <div class="form-group">
+      <label>Estado:</label>
+      <select id="publishStatus" style="width: 200px;">
+        <option value="AVAILABLE">AVAILABLE (Publicar)</option>
+        <option value="DRAFT">DRAFT (Borrador)</option>
+        <option value="RENTED">RENTED (Arrendado)</option>
+      </select>
+    </div>
+    <button id="btnPublishProperty" class="btn-success">PATCH /properties/:id (Publicar)</button>
+    <pre id="publishPropertyOutput">// Resultado...</pre>
+  </div>
+
+  <!-- Applications Section (TENANT) -->
+  <div class="section">
+    <h2>8. Aplicaciones (Requiere rol TENANT)</h2>
+
+    <div style="background: #d4edda; padding: 10px; border-radius: 6px; margin-bottom: 15px;">
+      <strong>✅ Flujo de aplicación:</strong><br>
+      1. Crear aplicación → 2. Completar wizard (4 pasos) → 3. Subir documentos → 4. Enviar aplicación
+    </div>
+
+    <!-- Public Properties -->
+    <h3>8.1 Propiedades Disponibles (Público)</h3>
+    <button id="btnPublicProperties" class="btn-primary">GET /properties (Listar públicas)</button>
+    <pre id="publicPropertiesOutput">// Propiedades disponibles...</pre>
+    <div id="availablePropertiesList" style="display: none; margin-top: 15px;">
+      <h4>Selecciona una propiedad para aplicar:</h4>
+      <select id="selectedPublicPropertyId" style="width: 100%; padding: 10px;"></select>
+    </div>
+
+    <!-- Create Application -->
+    <h3>8.2 Crear Aplicación</h3>
+    <div class="form-group">
+      <label>Property ID:</label>
+      <input type="text" id="applyPropertyId" placeholder="UUID de la propiedad" style="width: 300px;">
+      <button id="btnUsePublicProperty" class="btn-info">← Usar seleccionada</button>
+    </div>
+    <button id="btnCreateApplication" class="btn-success">POST /applications (Crear)</button>
+    <pre id="createApplicationOutput">// Resultado...</pre>
+
+    <!-- My Applications -->
+    <h3>8.3 Mis Aplicaciones</h3>
+    <button id="btnMyApplications" class="btn-primary">GET /applications/mine</button>
+    <pre id="myApplicationsOutput">// Mis aplicaciones...</pre>
+    <div id="applicationsList" style="display: none; margin-top: 15px;">
+      <h4>Selecciona una aplicación:</h4>
+      <select id="selectedApplicationId" style="width: 100%; padding: 10px;"></select>
+    </div>
+
+    <!-- Wizard Steps -->
+    <h3>8.4 Wizard - Completar Pasos</h3>
+    <div class="form-group">
+      <label>Application ID:</label>
+      <input type="text" id="wizardApplicationId" placeholder="UUID de la aplicación" style="width: 300px;">
+      <button id="btnUseSelectedApp" class="btn-info">← Usar seleccionada</button>
+    </div>
+
+    <!-- Step 1: Personal Info -->
+    <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; margin: 10px 0;">
+      <strong>Paso 1: Información Personal</strong>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+        <input type="text" id="step1FullName" placeholder="Nombre completo">
+        <input type="text" id="step1Cedula" placeholder="Cédula (ej: 1234567890)">
+        <input type="date" id="step1DateOfBirth">
+        <input type="email" id="step1Email" placeholder="Email">
+        <input type="text" id="step1Phone" placeholder="Teléfono (+573001234567)">
+        <input type="text" id="step1Address" placeholder="Dirección actual">
+      </div>
+      <button id="btnStep1" class="btn-warning" style="margin-top: 10px;">PATCH /applications/:id/steps/1</button>
+    </div>
+
+    <!-- Step 2: Employment Info -->
+    <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; margin: 10px 0;">
+      <strong>Paso 2: Información Laboral</strong>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+        <select id="step2EmploymentType">
+          <option value="EMPLOYED">Empleado</option>
+          <option value="SELF_EMPLOYED">Independiente</option>
+          <option value="CONTRACTOR">Contratista</option>
+          <option value="UNEMPLOYED">Desempleado</option>
+          <option value="RETIRED">Pensionado</option>
+          <option value="STUDENT">Estudiante</option>
+        </select>
+        <input type="text" id="step2Company" placeholder="Empresa">
+        <input type="text" id="step2JobTitle" placeholder="Cargo">
+        <input type="date" id="step2StartDate">
+        <input type="text" id="step2WorkAddress" placeholder="Dirección trabajo">
+        <input type="text" id="step2HRPhone" placeholder="Teléfono RRHH">
+      </div>
+      <button id="btnStep2" class="btn-warning" style="margin-top: 10px;">PATCH /applications/:id/steps/2</button>
+    </div>
+
+    <!-- Step 3: Income Info -->
+    <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; margin: 10px 0;">
+      <strong>Paso 3: Información de Ingresos</strong>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+        <input type="number" id="step3MonthlySalary" placeholder="Salario mensual (COP)" value="5000000">
+        <input type="number" id="step3AdditionalIncome" placeholder="Ingresos adicionales (COP)" value="0">
+        <input type="text" id="step3AdditionalSource" placeholder="Fuente ingresos adicionales">
+        <input type="number" id="step3DebtPayments" placeholder="Pagos deuda mensual (COP)" value="0">
+      </div>
+      <button id="btnStep3" class="btn-warning" style="margin-top: 10px;">PATCH /applications/:id/steps/3</button>
+    </div>
+
+    <!-- Step 4: References -->
+    <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; margin: 10px 0;">
+      <strong>Paso 4: Referencias</strong>
+
+      <p style="font-size: 12px; color: #666; margin-top: 10px;"><strong>Referencia Laboral (requerida):</strong></p>
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+        <input type="text" id="step4EmpRefName" placeholder="Nombre jefe/RRHH">
+        <input type="text" id="step4EmpRefPhone" placeholder="Teléfono">
+        <input type="text" id="step4EmpRefRelation" placeholder="Relación (ej: Jefe directo)">
+      </div>
+
+      <p style="font-size: 12px; color: #666; margin-top: 10px;"><strong>Referencia Personal (requerida):</strong></p>
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+        <input type="text" id="step4PersRefName" placeholder="Nombre familiar/amigo">
+        <input type="text" id="step4PersRefPhone" placeholder="Teléfono">
+        <input type="text" id="step4PersRefRelation" placeholder="Relación (ej: Hermano)">
+      </div>
+
+      <button id="btnStep4" class="btn-warning" style="margin-top: 10px;">PATCH /applications/:id/steps/4</button>
+    </div>
+
+    <pre id="wizardOutput">// Resultado del wizard...</pre>
+
+    <!-- Upload Documents -->
+    <h3>8.5 Subir Documentos</h3>
+    <div class="form-group">
+      <label>Application ID:</label>
+      <input type="text" id="docApplicationId" placeholder="UUID de la aplicación" style="width: 300px;">
+      <button id="btnUseSelectedAppForDocs" class="btn-info">← Usar seleccionada</button>
+    </div>
+    <div class="form-group">
+      <label>Tipo de documento:</label>
+      <select id="docType" style="width: 200px;">
+        <option value="CEDULA">Cédula</option>
+        <option value="EMPLOYMENT_LETTER">Carta Laboral</option>
+        <option value="PAY_STUB">Desprendible de Pago</option>
+        <option value="BANK_STATEMENT">Extracto Bancario</option>
+        <option value="OTHER">Otro</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Archivo:</label>
+      <input type="file" id="documentFile" accept=".pdf,image/*">
+      <small style="color: #666;">(PDF, JPG, PNG - Máx 10MB)</small>
+    </div>
+    <button id="btnUploadDocument" class="btn-warning">POST /documents/upload</button>
+    <pre id="uploadDocOutput">// Resultado...</pre>
+
+    <!-- List Documents -->
+    <h3>8.6 Ver Documentos de Aplicación</h3>
+    <button id="btnListDocuments" class="btn-primary">GET /documents/application/:id</button>
+    <pre id="listDocsOutput">// Documentos...</pre>
+
+    <!-- Submit Application -->
+    <h3>8.7 Enviar Aplicación</h3>
+    <div class="form-group">
+      <label>Application ID:</label>
+      <input type="text" id="submitApplicationId" placeholder="UUID de la aplicación" style="width: 300px;">
+      <button id="btnUseSelectedAppForSubmit" class="btn-info">← Usar seleccionada</button>
+    </div>
+    <button id="btnSubmitApplication" class="btn-success">POST /applications/:id/submit</button>
+    <pre id="submitOutput">// Resultado...</pre>
+
+    <!-- Application Timeline -->
+    <h3>8.8 Timeline de Aplicación</h3>
+    <button id="btnTimeline" class="btn-info">GET /applications/:id/timeline</button>
+    <pre id="timelineOutput">// Timeline de eventos...</pre>
+
+    <!-- Withdraw Application -->
+    <h3>8.9 Retirar Aplicación</h3>
+    <div class="form-group">
+      <label>Razón (opcional):</label>
+      <input type="text" id="withdrawReason" placeholder="Encontré otra opción" style="width: 300px;">
+    </div>
+    <button id="btnWithdraw" class="btn-danger">POST /applications/:id/withdraw</button>
+    <pre id="withdrawOutput">// Resultado...</pre>
+  </div>
+
+  <!-- Logs Section -->
+  <div class="section">
+    <h2>9. Log de Peticiones</h2>
+    <button id="btnClearLogs" class="btn-info">Limpiar Logs</button>
+    <pre id="requestLog">// Log de peticiones HTTP...</pre>
+  </div>
+
+  <script>
+    // ==================== CONFIGURACION ====================
+    const SUPABASE_URL = 'https://jraqurdcjwnifzpdqtnm.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_o0rCunkxRvbRrlLTmMekHw_GCpKgvrw';
+    const BACKEND_URL = 'http://localhost:3000';
+
+    // URL limpia para redirects (sin parámetros de error)
+    const CLEAN_REDIRECT_URL = window.location.origin + window.location.pathname;
+
+    // Limpiar URL si tiene errores (evita acumulación de parámetros)
+    if (window.location.search.includes('error=') || window.location.hash.includes('error=')) {
+      console.log('Limpiando URL con errores...');
+      window.history.replaceState({}, document.title, CLEAN_REDIRECT_URL);
+    }
+
+    // ==================== INICIALIZACION ====================
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    let currentSession = null;
+    let requestLogs = [];
+
+    // ==================== UTILIDADES ====================
+    function showStatus(elementId, message, type) {
+      const el = document.getElementById(elementId);
+      el.innerHTML = '<div class="status ' + type + '">' + message + '</div>';
+    }
+
+    function showJson(elementId, data) {
+      document.getElementById(elementId).textContent = JSON.stringify(data, null, 2);
+    }
+
+    function addLog(method, url, status, response) {
+      const timestamp = new Date().toLocaleTimeString();
+      const log = '[' + timestamp + '] ' + method + ' ' + url + '\nStatus: ' + status + '\nResponse: ' + JSON.stringify(response, null, 2) + '\n' + '='.repeat(50);
+      requestLogs.unshift(log);
+      document.getElementById('requestLog').textContent = requestLogs.join('\n\n');
+    }
+
+    function getAuthHeaders() {
+      if (!currentSession || !currentSession.access_token) {
+        return { 'Content-Type': 'application/json' };
+      }
+      return {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + currentSession.access_token
+      };
+    }
+
+    async function makeRequest(method, endpoint, body) {
+      const url = BACKEND_URL + endpoint;
+      const options = {
+        method: method,
+        headers: getAuthHeaders(),
+      };
+
+      if (body) {
+        options.body = JSON.stringify(body);
+      }
+
+      try {
+        const response = await fetch(url, options);
+        const data = await response.json();
+        addLog(method, endpoint, response.status, data);
+        return { status: response.status, data: data, ok: response.ok };
+      } catch (error) {
+        const errorData = { error: error.message };
+        addLog(method, endpoint, 'ERROR', errorData);
+        return { status: 'ERROR', data: errorData, ok: false };
+      }
+    }
+
+    function displayUserInfo(user) {
+      const container = document.getElementById('userInfo');
+      const display = document.getElementById('userInfoDisplay');
+
+      container.innerHTML =
+        '<div class="user-info-item"><strong>ID:</strong><br>' + user.id + '</div>' +
+        '<div class="user-info-item"><strong>Email:</strong><br>' + user.email + '</div>' +
+        '<div class="user-info-item"><strong>Rol:</strong><br>' + user.role + '</div>' +
+        '<div class="user-info-item"><strong>Rol Activo:</strong><br>' + (user.activeRole || 'N/A') + '</div>' +
+        '<div class="user-info-item"><strong>Nombre:</strong><br>' + (user.firstName || 'No definido') + '</div>' +
+        '<div class="user-info-item"><strong>Apellido:</strong><br>' + (user.lastName || 'No definido') + '</div>' +
+        '<div class="user-info-item"><strong>Telefono:</strong><br>' + (user.phone || 'No definido') + '</div>' +
+        '<div class="user-info-item"><strong>Creado:</strong><br>' + new Date(user.createdAt).toLocaleString() + '</div>';
+      display.style.display = 'block';
+    }
+
+    // ==================== AUTENTICACION ====================
+    async function updateAuthStatus() {
+      const { data } = await supabaseClient.auth.getSession();
+      currentSession = data.session;
+
+      if (currentSession) {
+        showStatus('authStatus', '✅ Autenticado como: ' + currentSession.user.email, 'success');
+        document.getElementById('jwtToken').style.display = 'block';
+        document.getElementById('jwtToken').innerHTML = '<strong>JWT Token (click para seleccionar):</strong><br><span id="tokenText" style="cursor:pointer;" onclick="this.ownerDocument.defaultView.getSelection().selectAllChildren(this)">' + currentSession.access_token + '</span>';
+        document.getElementById('btnCopyToken').style.display = 'inline-block';
+        console.log('JWT Token:', currentSession.access_token);
+      } else {
+        showStatus('authStatus', 'No autenticado - Inicia sesion con Google', 'info');
+        document.getElementById('jwtToken').style.display = 'none';
+        document.getElementById('btnCopyToken').style.display = 'none';
+        document.getElementById('userInfoDisplay').style.display = 'none';
+      }
+    }
+
+    // ==================== EVENT LISTENERS ====================
+
+    // Login con Google (usuario existente)
+    document.getElementById('btnGoogle').addEventListener('click', async function() {
+      // Limpiar cualquier dato de registro pendiente
+      localStorage.removeItem('pendingRegistration');
+
+      const { data, error } = await supabaseClient.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: CLEAN_REDIRECT_URL
+        }
+      });
+      if (error) {
+        showStatus('authStatus', 'Error: ' + error.message, 'error');
+      }
+    });
+
+    // Registrarse con Google (nuevo usuario)
+    document.getElementById('btnRegisterGoogle').addEventListener('click', async function() {
+      const role = document.getElementById('registerRole').value;
+      const firstName = document.getElementById('registerFirstName').value.trim();
+      const lastName = document.getElementById('registerLastName').value.trim();
+
+      // Guardar datos de registro para después del OAuth redirect
+      const registrationData = {
+        role: role,
+        firstName: firstName || null,
+        lastName: lastName || null,
+        isNewRegistration: true
+      };
+      localStorage.setItem('pendingRegistration', JSON.stringify(registrationData));
+
+      console.log('Iniciando registro con datos:', registrationData);
+
+      // Iniciar OAuth con Google
+      const { data, error } = await supabaseClient.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: CLEAN_REDIRECT_URL,
+          queryParams: {
+            prompt: 'select_account'  // Forzar selección de cuenta
+          }
+        }
+      });
+
+      if (error) {
+        localStorage.removeItem('pendingRegistration');
+        showStatus('authStatus', 'Error: ' + error.message, 'error');
+      }
+    });
+
+    // Ver sesion
+    document.getElementById('btnSession').addEventListener('click', async function() {
+      await updateAuthStatus();
+      if (currentSession) {
+        console.log('Session completa:', currentSession);
+      }
+    });
+
+    // Copiar token
+    document.getElementById('btnCopyToken').addEventListener('click', async function() {
+      if (currentSession && currentSession.access_token) {
+        try {
+          await navigator.clipboard.writeText(currentSession.access_token);
+          this.textContent = '✅ Copiado!';
+          setTimeout(() => { this.textContent = '📋 Copiar Token'; }, 2000);
+        } catch (e) {
+          // Fallback para navegadores que no soportan clipboard API
+          const tokenText = document.getElementById('tokenText');
+          if (tokenText) {
+            window.getSelection().selectAllChildren(tokenText);
+            document.execCommand('copy');
+            this.textContent = '✅ Copiado!';
+            setTimeout(() => { this.textContent = '📋 Copiar Token'; }, 2000);
+          }
+        }
+      }
+    });
+
+    // Logout
+    document.getElementById('btnLogout').addEventListener('click', async function() {
+      await supabaseClient.auth.signOut();
+      currentSession = null;
+      showStatus('authStatus', 'Sesion cerrada correctamente', 'info');
+      document.getElementById('jwtToken').style.display = 'none';
+      document.getElementById('btnCopyToken').style.display = 'none';
+      document.getElementById('userInfoDisplay').style.display = 'none';
+    });
+
+    // Health check
+    document.getElementById('btnHealth').addEventListener('click', async function() {
+      const result = await makeRequest('GET', '/health', null);
+      showJson('healthOutput', result.data);
+    });
+
+    // Get profile
+    document.getElementById('btnGetProfile').addEventListener('click', async function() {
+      if (!currentSession) {
+        showJson('profileOutput', { error: 'No estas autenticado. Inicia sesion primero.' });
+        return;
+      }
+
+      const result = await makeRequest('GET', '/users/me', null);
+      showJson('profileOutput', result.data);
+
+      if (result.ok) {
+        displayUserInfo(result.data);
+      }
+    });
+
+    // Update profile
+    document.getElementById('btnUpdateProfile').addEventListener('click', async function() {
+      if (!currentSession) {
+        showJson('updateOutput', { error: 'No estas autenticado. Inicia sesion primero.' });
+        return;
+      }
+
+      const body = {};
+      const firstName = document.getElementById('firstName').value.trim();
+      const lastName = document.getElementById('lastName').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+
+      if (firstName) body.firstName = firstName;
+      if (lastName) body.lastName = lastName;
+      if (phone) body.phone = phone;
+
+      if (Object.keys(body).length === 0) {
+        showJson('updateOutput', { error: 'Ingresa al menos un campo para actualizar' });
+        return;
+      }
+
+      const result = await makeRequest('PATCH', '/users/me', body);
+      showJson('updateOutput', result.data);
+
+      if (result.ok) {
+        displayUserInfo(result.data);
+      }
+    });
+
+    // Manual onboarding
+    document.getElementById('btnOnboarding').addEventListener('click', async function() {
+      if (!currentSession) {
+        showJson('onboardingOutput', { error: 'No estas autenticado. Inicia sesion primero.' });
+        return;
+      }
+
+      const firstName = document.getElementById('onboardFirstName').value.trim();
+      const lastName = document.getElementById('onboardLastName').value.trim();
+      const phone = document.getElementById('onboardPhone').value.trim();
+      const userType = document.getElementById('onboardUserType').value;
+
+      if (!firstName || !lastName) {
+        showJson('onboardingOutput', { error: 'Nombre y apellido son requeridos' });
+        return;
+      }
+
+      const body = {
+        firstName: firstName,
+        lastName: lastName,
+        userType: userType
+      };
+
+      if (phone) {
+        body.phone = phone;
+      }
+
+      const result = await makeRequest('POST', '/users/me/onboarding', body);
+      showJson('onboardingOutput', result.data);
+
+      if (result.ok) {
+        displayUserInfo(result.data);
+        showStatus('authStatus', '✅ Onboarding completado! Rol: ' + result.data.role, 'success');
+      }
+    });
+
+    // Check onboarding status
+    document.getElementById('btnOnboardingStatus').addEventListener('click', async function() {
+      if (!currentSession) {
+        showJson('onboardingOutput', { error: 'No estas autenticado. Inicia sesion primero.' });
+        return;
+      }
+
+      const result = await makeRequest('GET', '/users/me/onboarding/status', null);
+      showJson('onboardingOutput', result.data);
+    });
+
+    // Switch role
+    document.getElementById('btnSwitchRole').addEventListener('click', async function() {
+      if (!currentSession) {
+        showJson('roleOutput', { error: 'No estas autenticado. Inicia sesion primero.' });
+        return;
+      }
+
+      const activeRole = document.getElementById('activeRole').value;
+      const result = await makeRequest('PATCH', '/users/me/role', { activeRole: activeRole });
+      showJson('roleOutput', result.data);
+
+      if (result.ok) {
+        displayUserInfo(result.data);
+      }
+    });
+
+    // Clear logs
+    document.getElementById('btnClearLogs').addEventListener('click', function() {
+      requestLogs = [];
+      document.getElementById('requestLog').textContent = '// Log limpiado...';
+    });
+
+    // ==================== PROPIEDADES (LANDLORD) ====================
+
+    // Crear propiedad
+    document.getElementById('btnCreateProperty').addEventListener('click', async function() {
+      if (!currentSession) {
+        showJson('createPropertyOutput', { error: 'No estás autenticado' });
+        return;
+      }
+
+      const body = {
+        title: document.getElementById('propTitle').value || 'Apartamento de prueba',
+        description: document.getElementById('propDescription').value,
+        type: document.getElementById('propType').value,
+        city: document.getElementById('propCity').value,
+        neighborhood: document.getElementById('propNeighborhood').value || 'Centro',
+        address: document.getElementById('propAddress').value || 'Calle 1 #2-3',
+        monthlyRent: parseInt(document.getElementById('propRent').value) || 2500000,
+        bedrooms: parseInt(document.getElementById('propBedrooms').value) || 2,
+        bathrooms: parseInt(document.getElementById('propBathrooms').value) || 2,
+        area: parseInt(document.getElementById('propArea').value) || 75,
+        stratum: parseInt(document.getElementById('propStratum').value) || 4
+      };
+
+      const result = await makeRequest('POST', '/properties', body);
+      showJson('createPropertyOutput', result.data);
+
+      if (result.ok) {
+        document.getElementById('imagePropertyId').value = result.data.id;
+        document.getElementById('viewPropertyId').value = result.data.id;
+        document.getElementById('publishPropertyId').value = result.data.id;
+      }
+    });
+
+    // Mis propiedades
+    document.getElementById('btnMyProperties').addEventListener('click', async function() {
+      if (!currentSession) {
+        showJson('myPropertiesOutput', { error: 'No estás autenticado' });
+        return;
+      }
+
+      const result = await makeRequest('GET', '/properties/mine', null);
+      showJson('myPropertiesOutput', result.data);
+
+      if (result.ok && result.data.length > 0) {
+        const select = document.getElementById('selectedPropertyId');
+        select.innerHTML = result.data.map(p =>
+          '<option value="' + p.id + '">' + p.title + ' (' + p.status + ') - ' + p.city + '</option>'
+        ).join('');
+        document.getElementById('propertiesList').style.display = 'block';
+      }
+    });
+
+    // Usar propiedad seleccionada
+    document.getElementById('btnUseSelectedProperty').addEventListener('click', function() {
+      const id = document.getElementById('selectedPropertyId').value;
+      if (id) document.getElementById('imagePropertyId').value = id;
+    });
+    document.getElementById('btnUseSelectedForView').addEventListener('click', function() {
+      const id = document.getElementById('selectedPropertyId').value;
+      if (id) document.getElementById('viewPropertyId').value = id;
+    });
+    document.getElementById('btnUseSelectedForPublish').addEventListener('click', function() {
+      const id = document.getElementById('selectedPropertyId').value;
+      if (id) document.getElementById('publishPropertyId').value = id;
+    });
+
+    // Subir imágenes
+    document.getElementById('btnUploadImages').addEventListener('click', async function() {
+      if (!currentSession) {
+        showJson('uploadImagesOutput', { error: 'No estás autenticado' });
+        return;
+      }
+
+      const propertyId = document.getElementById('imagePropertyId').value;
+      if (!propertyId) {
+        showJson('uploadImagesOutput', { error: 'Ingresa el ID de la propiedad' });
+        return;
+      }
+
+      const files = document.getElementById('propertyImages').files;
+      if (files.length === 0) {
+        showJson('uploadImagesOutput', { error: 'Selecciona al menos una imagen' });
+        return;
+      }
+
+      const progressDiv = document.getElementById('uploadProgress');
+      progressDiv.style.display = 'block';
+      const results = [];
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        progressDiv.innerHTML = '⏳ Subiendo imagen ' + (i + 1) + ' de ' + files.length + ': ' + file.name;
+
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('order', i.toString());
+
+        try {
+          const response = await fetch(BACKEND_URL + '/properties/' + propertyId + '/images', {
+            method: 'POST',
+            headers: {
+              'Authorization': 'Bearer ' + currentSession.access_token
+            },
+            body: formData
+          });
+          const data = await response.json();
+          results.push({ file: file.name, status: response.status, data: data });
+          addLog('POST', '/properties/' + propertyId + '/images', response.status, data);
+        } catch (error) {
+          results.push({ file: file.name, error: error.message });
+        }
+      }
+
+      progressDiv.innerHTML = '✅ Subida completada! ' + results.length + ' imagen(es)';
+      showJson('uploadImagesOutput', results);
+    });
+
+    // Ver propiedad con imágenes
+    document.getElementById('btnViewProperty').addEventListener('click', async function() {
+      const propertyId = document.getElementById('viewPropertyId').value;
+      if (!propertyId) {
+        showJson('viewPropertyOutput', { error: 'Ingresa el ID de la propiedad' });
+        return;
+      }
+
+      const result = await makeRequest('GET', '/properties/' + propertyId, null);
+      showJson('viewPropertyOutput', result.data);
+
+      if (result.ok && result.data.images && result.data.images.length > 0) {
+        const container = document.getElementById('imagesContainer');
+        container.innerHTML = result.data.images.map((img, idx) =>
+          '<div style="text-align: center;">' +
+          '<img src="' + img.url + '" style="width: 150px; height: 150px; object-fit: cover; border-radius: 8px; border: 2px solid ' + (idx === 0 ? '#34a853' : '#ddd') + ';">' +
+          '<div style="font-size: 11px; margin-top: 5px;">' + (idx === 0 ? '📷 Thumbnail' : 'Imagen ' + (idx + 1)) + '</div>' +
+          '</div>'
+        ).join('');
+        document.getElementById('propertyImagesGallery').style.display = 'block';
+      } else {
+        document.getElementById('propertyImagesGallery').style.display = 'none';
+      }
+    });
+
+    // Publicar propiedad
+    document.getElementById('btnPublishProperty').addEventListener('click', async function() {
+      if (!currentSession) {
+        showJson('publishPropertyOutput', { error: 'No estás autenticado' });
+        return;
+      }
+
+      const propertyId = document.getElementById('publishPropertyId').value;
+      if (!propertyId) {
+        showJson('publishPropertyOutput', { error: 'Ingresa el ID de la propiedad' });
+        return;
+      }
+
+      const status = document.getElementById('publishStatus').value;
+      const result = await makeRequest('PATCH', '/properties/' + propertyId, { status: status });
+      showJson('publishPropertyOutput', result.data);
+    });
+
+    // ==================== APLICACIONES (TENANT) ====================
+
+    // Propiedades públicas
+    document.getElementById('btnPublicProperties').addEventListener('click', async function() {
+      // El endpoint público automáticamente excluye propiedades en DRAFT
+      const result = await makeRequest('GET', '/properties', null);
+      showJson('publicPropertiesOutput', result.data);
+
+      if (result.ok && result.data.data && result.data.data.length > 0) {
+        const select = document.getElementById('selectedPublicPropertyId');
+        select.innerHTML = result.data.data.map(p =>
+          '<option value="' + p.id + '">' + p.title + ' - $' + p.monthlyRent.toLocaleString() + '/mes - ' + p.city + '</option>'
+        ).join('');
+        document.getElementById('availablePropertiesList').style.display = 'block';
+      }
+    });
+
+    // Usar propiedad pública seleccionada
+    document.getElementById('btnUsePublicProperty').addEventListener('click', function() {
+      const id = document.getElementById('selectedPublicPropertyId').value;
+      if (id) document.getElementById('applyPropertyId').value = id;
+    });
+
+    // Crear aplicación
+    document.getElementById('btnCreateApplication').addEventListener('click', async function() {
+      if (!currentSession) {
+        showJson('createApplicationOutput', { error: 'No estás autenticado' });
+        return;
+      }
+
+      const propertyId = document.getElementById('applyPropertyId').value;
+      if (!propertyId) {
+        showJson('createApplicationOutput', { error: 'Ingresa el ID de la propiedad' });
+        return;
+      }
+
+      const result = await makeRequest('POST', '/applications', { propertyId: propertyId });
+      showJson('createApplicationOutput', result.data);
+
+      if (result.ok) {
+        document.getElementById('wizardApplicationId').value = result.data.id;
+        document.getElementById('docApplicationId').value = result.data.id;
+        document.getElementById('submitApplicationId').value = result.data.id;
+      }
+    });
+
+    // Mis aplicaciones
+    document.getElementById('btnMyApplications').addEventListener('click', async function() {
+      if (!currentSession) {
+        showJson('myApplicationsOutput', { error: 'No estás autenticado' });
+        return;
+      }
+
+      const result = await makeRequest('GET', '/applications/mine', null);
+      showJson('myApplicationsOutput', result.data);
+
+      if (result.ok && result.data.length > 0) {
+        const select = document.getElementById('selectedApplicationId');
+        select.innerHTML = result.data.map(a =>
+          '<option value="' + a.id + '">App ' + a.id.slice(0, 8) + '... - ' + a.status + ' - Step ' + a.currentStep + '</option>'
+        ).join('');
+        document.getElementById('applicationsList').style.display = 'block';
+      }
+    });
+
+    // Usar aplicación seleccionada
+    function useSelectedApp(targetId) {
+      const id = document.getElementById('selectedApplicationId').value;
+      if (id) document.getElementById(targetId).value = id;
+    }
+    document.getElementById('btnUseSelectedApp').addEventListener('click', () => useSelectedApp('wizardApplicationId'));
+    document.getElementById('btnUseSelectedAppForDocs').addEventListener('click', () => useSelectedApp('docApplicationId'));
+    document.getElementById('btnUseSelectedAppForSubmit').addEventListener('click', () => useSelectedApp('submitApplicationId'));
+
+    // Wizard Step 1
+    document.getElementById('btnStep1').addEventListener('click', async function() {
+      const appId = document.getElementById('wizardApplicationId').value;
+      if (!appId) { showJson('wizardOutput', { error: 'Ingresa Application ID' }); return; }
+
+      const body = {
+        fullName: document.getElementById('step1FullName').value || 'Juan García Pérez',
+        cedula: document.getElementById('step1Cedula').value || '1234567890',
+        dateOfBirth: document.getElementById('step1DateOfBirth').value || '1990-01-15',
+        email: document.getElementById('step1Email').value || 'juan.garcia@email.com',
+        phone: document.getElementById('step1Phone').value || '+573001234567',
+        currentAddress: document.getElementById('step1Address').value || 'Calle 100 #15-20, Bogotá'
+      };
+
+      const result = await makeRequest('PATCH', '/applications/' + appId + '/steps/1', body);
+      showJson('wizardOutput', result.data);
+    });
+
+    // Wizard Step 2
+    document.getElementById('btnStep2').addEventListener('click', async function() {
+      const appId = document.getElementById('wizardApplicationId').value;
+      if (!appId) { showJson('wizardOutput', { error: 'Ingresa Application ID' }); return; }
+
+      const body = {
+        employmentType: document.getElementById('step2EmploymentType').value || 'EMPLOYED',
+        companyName: document.getElementById('step2Company').value || 'Tech Corp SAS',
+        jobTitle: document.getElementById('step2JobTitle').value || 'Desarrollador Senior',
+        startDate: document.getElementById('step2StartDate').value || '2022-03-01',
+        workAddress: document.getElementById('step2WorkAddress').value || 'Cra 7 #71-52, Bogotá',
+        hrContactPhone: document.getElementById('step2HRPhone').value || '+5713001234'
+      };
+
+      const result = await makeRequest('PATCH', '/applications/' + appId + '/steps/2', body);
+      showJson('wizardOutput', result.data);
+    });
+
+    // Wizard Step 3
+    document.getElementById('btnStep3').addEventListener('click', async function() {
+      const appId = document.getElementById('wizardApplicationId').value;
+      if (!appId) { showJson('wizardOutput', { error: 'Ingresa Application ID' }); return; }
+
+      const body = {
+        monthlySalary: parseInt(document.getElementById('step3MonthlySalary').value) || 5000000,
+        additionalIncome: parseInt(document.getElementById('step3AdditionalIncome').value) || 0,
+        additionalIncomeSource: document.getElementById('step3AdditionalSource').value || undefined,
+        monthlyDebtPayments: parseInt(document.getElementById('step3DebtPayments').value) || 0
+      };
+
+      // Remove undefined fields
+      Object.keys(body).forEach(key => body[key] === undefined && delete body[key]);
+
+      const result = await makeRequest('PATCH', '/applications/' + appId + '/steps/3', body);
+      showJson('wizardOutput', result.data);
+    });
+
+    // Wizard Step 4
+    document.getElementById('btnStep4').addEventListener('click', async function() {
+      const appId = document.getElementById('wizardApplicationId').value;
+      if (!appId) { showJson('wizardOutput', { error: 'Ingresa Application ID' }); return; }
+
+      const body = {
+        employmentReference: {
+          name: document.getElementById('step4EmpRefName').value || 'Carlos Rodríguez',
+          phone: document.getElementById('step4EmpRefPhone').value || '+573001112233',
+          relationship: document.getElementById('step4EmpRefRelation').value || 'Jefe directo'
+        },
+        personalReferences: [
+          {
+            name: document.getElementById('step4PersRefName').value || 'María García',
+            phone: document.getElementById('step4PersRefPhone').value || '+573009876543',
+            relationship: document.getElementById('step4PersRefRelation').value || 'Hermana'
+          }
+        ]
+      };
+
+      const result = await makeRequest('PATCH', '/applications/' + appId + '/steps/4', body);
+      showJson('wizardOutput', result.data);
+    });
+
+    // Subir documento
+    document.getElementById('btnUploadDocument').addEventListener('click', async function() {
+      if (!currentSession) {
+        showJson('uploadDocOutput', { error: 'No estás autenticado' });
+        return;
+      }
+
+      const appId = document.getElementById('docApplicationId').value;
+      if (!appId) { showJson('uploadDocOutput', { error: 'Ingresa Application ID' }); return; }
+
+      const file = document.getElementById('documentFile').files[0];
+      if (!file) { showJson('uploadDocOutput', { error: 'Selecciona un archivo' }); return; }
+
+      const docType = document.getElementById('docType').value;
+
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('applicationId', appId);
+      formData.append('type', docType);
+
+      try {
+        const response = await fetch(BACKEND_URL + '/documents/upload', {
+          method: 'POST',
+          headers: {
+            'Authorization': 'Bearer ' + currentSession.access_token
+          },
+          body: formData
+        });
+        const data = await response.json();
+        addLog('POST', '/documents/upload', response.status, data);
+        showJson('uploadDocOutput', data);
+      } catch (error) {
+        showJson('uploadDocOutput', { error: error.message });
+      }
+    });
+
+    // Listar documentos
+    document.getElementById('btnListDocuments').addEventListener('click', async function() {
+      const appId = document.getElementById('docApplicationId').value;
+      if (!appId) { showJson('listDocsOutput', { error: 'Ingresa Application ID' }); return; }
+
+      const result = await makeRequest('GET', '/documents/application/' + appId, null);
+      showJson('listDocsOutput', result.data);
+    });
+
+    // Enviar aplicación
+    document.getElementById('btnSubmitApplication').addEventListener('click', async function() {
+      const appId = document.getElementById('submitApplicationId').value;
+      if (!appId) { showJson('submitOutput', { error: 'Ingresa Application ID' }); return; }
+
+      const result = await makeRequest('POST', '/applications/' + appId + '/submit', {});
+      showJson('submitOutput', result.data);
+    });
+
+    // Timeline
+    document.getElementById('btnTimeline').addEventListener('click', async function() {
+      const appId = document.getElementById('submitApplicationId').value || document.getElementById('wizardApplicationId').value;
+      if (!appId) { showJson('timelineOutput', { error: 'Ingresa Application ID' }); return; }
+
+      const result = await makeRequest('GET', '/applications/' + appId + '/timeline', null);
+      showJson('timelineOutput', result.data);
+    });
+
+    // Retirar aplicación
+    document.getElementById('btnWithdraw').addEventListener('click', async function() {
+      const appId = document.getElementById('submitApplicationId').value;
+      if (!appId) { showJson('withdrawOutput', { error: 'Ingresa Application ID' }); return; }
+
+      const reason = document.getElementById('withdrawReason').value;
+      const result = await makeRequest('POST', '/applications/' + appId + '/withdraw', { reason: reason || undefined });
+      showJson('withdrawOutput', result.data);
+    });
+
+    // ==================== MANEJO DE REGISTRO POST-OAUTH ====================
+    async function handlePendingRegistration() {
+      const pendingData = localStorage.getItem('pendingRegistration');
+      if (!pendingData) return;
+
+      const registration = JSON.parse(pendingData);
+      console.log('Procesando registro pendiente:', registration);
+
+      // Limpiar inmediatamente para evitar re-procesar
+      localStorage.removeItem('pendingRegistration');
+
+      if (!registration.isNewRegistration) return;
+      if (!currentSession) {
+        console.log('No hay sesión activa para completar registro');
+        return;
+      }
+
+      showStatus('authStatus', '⏳ Completando registro con el backend...', 'info');
+
+      // Usar el nuevo endpoint de onboarding
+      const onboardingData = {
+        firstName: registration.firstName || currentSession.user.user_metadata?.full_name?.split(' ')[0] || 'Usuario',
+        lastName: registration.lastName || currentSession.user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || '',
+        userType: registration.role  // TENANT, LANDLORD, or BOTH
+      };
+
+      // Si hay teléfono guardado, incluirlo
+      if (registration.phone) {
+        onboardingData.phone = registration.phone;
+      }
+
+      console.log('Enviando datos de onboarding:', onboardingData);
+
+      const onboardingResult = await makeRequest('POST', '/users/me/onboarding', onboardingData);
+
+      if (onboardingResult.ok) {
+        const user = onboardingResult.data;
+        showJson('profileOutput', user);
+        displayUserInfo(user);
+
+        const roleLabels = {
+          'TENANT': '🏠 Inquilino',
+          'LANDLORD': '🔑 Propietario',
+          'BOTH': '👥 Inquilino y Propietario'
+        };
+
+        showStatus('authStatus',
+          '✅ ¡Registro completado exitosamente!<br><br>' +
+          '<strong>Bienvenido, ' + user.firstName + ' ' + user.lastName + '</strong><br>' +
+          'Tipo de cuenta: ' + (roleLabels[user.role] || user.role) +
+          (user.activeRole ? '<br>Rol activo: ' + user.activeRole : ''),
+          'success'
+        );
+      } else {
+        // Si falla el onboarding, mostrar error pero el usuario ya está autenticado
+        console.error('Error en onboarding:', onboardingResult.data);
+        showStatus('authStatus',
+          '⚠️ Autenticado, pero hubo un error al completar el registro:<br>' +
+          JSON.stringify(onboardingResult.data.message || onboardingResult.data) +
+          '<br><br>Puedes intentar completar tu perfil manualmente.',
+          'error'
+        );
+
+        // Mostrar perfil actual
+        const profileResult = await makeRequest('GET', '/users/me', null);
+        if (profileResult.ok) {
+          showJson('profileOutput', profileResult.data);
+          displayUserInfo(profileResult.data);
+        }
+      }
+
+      // Actualizar metadatos en Supabase Auth (para referencia)
+      try {
+        await supabaseClient.auth.updateUser({
+          data: {
+            role: registration.role,
+            first_name: onboardingData.firstName,
+            last_name: onboardingData.lastName,
+            onboarding_complete: true
+          }
+        });
+        console.log('Metadatos de Supabase Auth actualizados');
+      } catch (e) {
+        console.log('No se pudieron actualizar metadatos de Supabase:', e);
+      }
+    }
+
+    // ==================== INICIALIZACION ====================
+    // Verificar sesion al cargar la pagina
+    updateAuthStatus();
+
+    // Escuchar cambios en la autenticacion
+    supabaseClient.auth.onAuthStateChange(async function(event, session) {
+      console.log('Auth event:', event);
+      currentSession = session;
+      updateAuthStatus();
+
+      // Si es un nuevo login/registro, verificar si hay datos pendientes
+      if (event === 'SIGNED_IN' && session) {
+        // Pequeño delay para asegurar que el trigger de BD haya creado el usuario
+        setTimeout(handlePendingRegistration, 1000);
+      }
+    });
+  </script>
+</body>
+</html>
