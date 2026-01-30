@@ -11,6 +11,13 @@ import { StabilityModel } from './models/stability-model.js';
 import { HistoryModel } from './models/history-model.js';
 import { IntegrityEngine } from './models/integrity-engine.js';
 
+// Score aggregation
+import { ScoreAggregator } from './aggregator/score-aggregator.js';
+
+// Processor and service
+import { ScoringProcessor } from './processors/scoring.processor.js';
+import { ScoringService } from './scoring.service.js';
+
 /**
  * ScoringModule
  *
@@ -31,8 +38,12 @@ import { IntegrityEngine } from './models/integrity-engine.js';
  * - HistoryModel (15): landlord, employment, personal references
  * - IntegrityEngine (25): data consistency checks
  *
- * Remaining providers to be added in 05-03:
- * - ScoringService, ScoringProcessor, ScoringController
+ * Complete provider list:
+ * - FeatureBuilder: Extract scoring features from application data
+ * - FinancialModel, StabilityModel, HistoryModel, IntegrityEngine: Scoring models
+ * - ScoreAggregator: Combine subscores into final result
+ * - ScoringProcessor: BullMQ worker for async job processing
+ * - ScoringService: Queue job creation interface
  */
 @Module({
   imports: [
@@ -73,14 +84,15 @@ import { IntegrityEngine } from './models/integrity-engine.js';
     StabilityModel,
     HistoryModel,
     IntegrityEngine,
+    // Score aggregation
+    ScoreAggregator,
+    // Async processing
+    ScoringProcessor,
+    ScoringService,
   ],
   exports: [
-    // Export for use in scoring service (05-03)
-    FeatureBuilder,
-    FinancialModel,
-    StabilityModel,
-    HistoryModel,
-    IntegrityEngine,
+    // Export ScoringService for use in ApplicationsModule
+    ScoringService,
   ],
 })
 export class ScoringModule {}

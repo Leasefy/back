@@ -20,6 +20,7 @@ import {
   WithdrawApplicationDto,
   RespondInfoRequestDto,
 } from './dto/index.js';
+import { ScoringService } from '../scoring/scoring.service.js';
 
 type StepDto = PersonalInfoDto | EmploymentInfoDto | IncomeInfoDto | ReferencesDto;
 
@@ -33,6 +34,7 @@ export class ApplicationsService {
     private readonly prisma: PrismaService,
     private readonly stateMachine: ApplicationStateMachine,
     private readonly eventService: ApplicationEventService,
+    private readonly scoringService: ScoringService,
   ) {}
 
   /**
@@ -305,6 +307,11 @@ export class ApplicationsService {
       ApplicationStatus.SUBMITTED,
       dto.message,
     );
+
+    // Queue scoring job
+    // Scoring runs async via BullMQ
+    // Application will transition to UNDER_REVIEW when scoring completes
+    await this.scoringService.addScoringJob(applicationId, tenantId);
 
     return updatedApplication;
   }
