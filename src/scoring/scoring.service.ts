@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { ScoringJobData } from './dto/scoring-job.dto.js';
+import { PrismaService } from '../database/prisma.service.js';
+import { RiskScoreResult } from '@prisma/client';
 
 /**
  * ScoringService
@@ -13,6 +15,7 @@ import { ScoringJobData } from './dto/scoring-job.dto.js';
 export class ScoringService {
   constructor(
     @InjectQueue('scoring') private readonly scoringQueue: Queue<ScoringJobData>,
+    private readonly prisma: PrismaService,
   ) {}
 
   /**
@@ -35,5 +38,17 @@ export class ScoringService {
         jobId: `score-${applicationId}`,
       },
     );
+  }
+
+  /**
+   * Get the risk score result for an application.
+   * Returns null if scoring hasn't completed yet.
+   *
+   * @param applicationId - ID of the application
+   */
+  async getScoreResult(applicationId: string): Promise<RiskScoreResult | null> {
+    return this.prisma.riskScoreResult.findUnique({
+      where: { applicationId },
+    });
   }
 }

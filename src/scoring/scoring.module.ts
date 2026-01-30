@@ -14,9 +14,10 @@ import { IntegrityEngine } from './models/integrity-engine.js';
 // Score aggregation
 import { ScoreAggregator } from './aggregator/score-aggregator.js';
 
-// Processor and service
+// Processor, service, and controller
 import { ScoringProcessor } from './processors/scoring.processor.js';
 import { ScoringService } from './scoring.service.js';
+import { ScoringController } from './scoring.controller.js';
 
 /**
  * ScoringModule
@@ -46,6 +47,7 @@ import { ScoringService } from './scoring.service.js';
  * - ScoringService: Queue job creation interface
  */
 @Module({
+  controllers: [ScoringController],
   imports: [
     // Configure BullMQ with Redis connection from environment
     BullModule.forRootAsync({
