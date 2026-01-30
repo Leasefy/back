@@ -2,12 +2,12 @@
 
 ## Current Status
 
-**Phase:** 5 of 15 (Scoring Engine)
-**Plan:** 2 of 3 complete
-**Status:** In progress
-**Last activity:** 2026-01-30 - Executed 05-02-PLAN.md
+**Phase:** 5 of 15 (Scoring Engine) - COMPLETE
+**Plan:** 3 of 3 complete
+**Status:** Phase complete, ready for Phase 6
+**Last activity:** 2026-01-30 - Executed 05-03-PLAN.md
 
-**Progress:** [####------] 31% (17/~55 plans estimated)
+**Progress:** [#####-----] 33% (18/~55 plans estimated)
 
 ## Project Reference
 
@@ -15,7 +15,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 **Core value:** Ejecutar el Risk Score con analisis inteligente de documentos para que propietarios tomen decisiones informadas en minutos, con explicabilidad total.
 
-**Current focus:** Phase 5 (Scoring Engine) - Plan 2 complete, scoring models ready for aggregation.
+**Current focus:** Phase 5 COMPLETE - Scoring engine fully operational. Ready for Phase 6 (Landlord Features).
 
 ## Quick Context
 
@@ -33,7 +33,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 2. Auth & Users | COMPLETE | All 3 plans executed |
 | 3. Properties | COMPLETE | All 4 plans executed |
 | 4. Applications | COMPLETE | All 5 plans executed |
-| 5. Scoring Engine | IN PROGRESS | 2/3 plans complete - scoring models ready |
+| 5. Scoring Engine | COMPLETE | All 3 plans executed - async scoring pipeline |
 | 6. Landlord Features | Pending | Approve/reject candidates |
 | 7. Contracts | Pending | Digital signatures |
 | 8. Leases & Payments | Pending | Payment tracking |
@@ -49,7 +49,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 | Date | Change | Rationale |
 |------|--------|-----------|
-| 2026-01-30 | Reordered phases 6-15 | Logical flow: approve → contract → payments → history scoring |
+| 2026-01-30 | Reordered phases 6-15 | Logical flow: approve -> contract -> payments -> history scoring |
 | 2026-01-30 | Added Phase 9: Payment History Scoring | Enable scoring based on real payment data |
 | 2026-01-30 | Moved AI features to phases 10-11 | PRO+ tier only, after core flow complete |
 | 2026-01-30 | Added tier system | FREE (1-9) vs PRO+ (10-11) |
@@ -120,11 +120,15 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 2026-01-30 | 05-02 | Spanish signal messages | Colombian market - all explainability in Spanish |
 | 2026-01-30 | 05-02 | Deduction-based integrity scoring | IntegrityEngine starts at max, deducts for issues |
 | 2026-01-30 | 05-02 | Score allocation (35+25+15+25=100) | Financial(35), Stability(25), History(15), Integrity(25) |
+| 2026-01-30 | 05-03 | IntegrityEngine.analyze() method | Requires full Application object for context checks |
+| 2026-01-30 | 05-03 | Prisma InputJsonValue cast | Prisma 7.x strict typing requires cast for Driver/Flag/Condition arrays |
+| 2026-01-30 | 05-03 | Job ID = score-{applicationId} | Prevents duplicate scoring jobs for same application |
+| 2026-01-30 | 05-03 | Condition generation by level | C=deposit (recommended), D=cosigner (required), HIGH_RTI=income verification |
 
 ## Session Continuity
 
 **Last session:** 2026-01-30
-**Stopped at:** Completed 05-02-PLAN.md
+**Stopped at:** Completed 05-03-PLAN.md (Phase 5 complete)
 **Resume file:** None
 
 ## Pending User Actions
@@ -155,10 +159,10 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 ## Next Action
 
-Continue Phase 5 execution.
+Begin Phase 6: Landlord Features planning.
 
 ```
-/gsd:execute-plan 05-03
+/gsd:plan-phase 06
 ```
 
 ## Session History
@@ -191,6 +195,7 @@ Continue Phase 5 execution.
 | 2026-01-30 | Phase 9 added | Payment History Scoring - score from real payment data |
 | 2026-01-30 | Executed 05-01-PLAN.md | RiskScoreResult model, RiskLevel enum, BullMQ queue |
 | 2026-01-30 | Executed 05-02-PLAN.md | FeatureBuilder, FinancialModel, StabilityModel, HistoryModel, IntegrityEngine |
+| 2026-01-30 | Executed 05-03-PLAN.md | ScoreAggregator, ScoringProcessor, ScoringService, submit integration |
 
 ---
 *Last updated: 2026-01-30*
