@@ -3,11 +3,11 @@
 ## Current Status
 
 **Phase:** 5 of 15 (Scoring Engine)
-**Plan:** 1 of 3 complete
+**Plan:** 2 of 3 complete
 **Status:** In progress
-**Last activity:** 2026-01-30 - Executed 05-01-PLAN.md
+**Last activity:** 2026-01-30 - Executed 05-02-PLAN.md
 
-**Progress:** [####------] 29% (16/~55 plans estimated)
+**Progress:** [####------] 31% (17/~55 plans estimated)
 
 ## Project Reference
 
@@ -15,7 +15,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 **Core value:** Ejecutar el Risk Score con analisis inteligente de documentos para que propietarios tomen decisiones informadas en minutos, con explicabilidad total.
 
-**Current focus:** Phase 5 (Scoring Engine) - Plan 1 complete, infrastructure ready for scoring calculators.
+**Current focus:** Phase 5 (Scoring Engine) - Plan 2 complete, scoring models ready for aggregation.
 
 ## Quick Context
 
@@ -33,7 +33,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 2. Auth & Users | COMPLETE | All 3 plans executed |
 | 3. Properties | COMPLETE | All 4 plans executed |
 | 4. Applications | COMPLETE | All 5 plans executed |
-| 5. Scoring Engine | IN PROGRESS | 1/3 plans complete - infrastructure ready |
+| 5. Scoring Engine | IN PROGRESS | 2/3 plans complete - scoring models ready |
 | 6. Landlord Features | Pending | Approve/reject candidates |
 | 7. Contracts | Pending | Digital signatures |
 | 8. Leases & Payments | Pending | Payment tracking |
@@ -116,11 +116,15 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 2026-01-30 | 05-01 | RiskLevel A/B/C/D classification | A (80-100), B (65-79), C (50-64), D (0-49) |
 | 2026-01-30 | 05-01 | JSON columns for explainability | signals, drivers, flags, conditions - flexible schema |
 | 2026-01-30 | Roadmap | Tier system (FREE/PRO+) | AI features only for paying customers |
+| 2026-01-30 | 05-02 | Division-by-zero protection | Ratios default to 1.0 when income is 0 |
+| 2026-01-30 | 05-02 | Spanish signal messages | Colombian market - all explainability in Spanish |
+| 2026-01-30 | 05-02 | Deduction-based integrity scoring | IntegrityEngine starts at max, deducts for issues |
+| 2026-01-30 | 05-02 | Score allocation (35+25+15+25=100) | Financial(35), Stability(25), History(15), Integrity(25) |
 
 ## Session Continuity
 
 **Last session:** 2026-01-30
-**Stopped at:** Completed 05-01-PLAN.md
+**Stopped at:** Completed 05-02-PLAN.md
 **Resume file:** None
 
 ## Pending User Actions
@@ -154,7 +158,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 Continue Phase 5 execution.
 
 ```
-/gsd:execute-plan 05-02
+/gsd:execute-plan 05-03
 ```
 
 ## Session History
@@ -186,6 +190,7 @@ Continue Phase 5 execution.
 | 2026-01-30 | Roadmap reordered | Phases 6-15 reorganized for logical flow |
 | 2026-01-30 | Phase 9 added | Payment History Scoring - score from real payment data |
 | 2026-01-30 | Executed 05-01-PLAN.md | RiskScoreResult model, RiskLevel enum, BullMQ queue |
+| 2026-01-30 | Executed 05-02-PLAN.md | FeatureBuilder, FinancialModel, StabilityModel, HistoryModel, IntegrityEngine |
 
 ---
 *Last updated: 2026-01-30*
