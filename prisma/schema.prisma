@@ -83,6 +83,18 @@ enum DocumentType {
   OTHER
 }
 
+/// Risk level classification based on total score
+/// A (80-100): Excellent - approve immediately
+/// B (65-79): Good - approve with standard terms
+/// C (50-64): Fair - approve with conditions
+/// D (0-49): Poor - decline or require cosigner
+enum RiskLevel {
+  A
+  B
+  C
+  D
+}
+
 // ============================================
 // MODELS
 // ============================================
@@ -90,20 +102,20 @@ enum DocumentType {
 /// User model - synced from Supabase Auth via database trigger
 /// The id matches auth.users.id (UUID)
 model User {
-  id         String   @id @db.Uuid // Same UUID as auth.users.id
-  email      String   @unique
-  role       Role     @default(TENANT)
-  activeRole Role?    @map("active_role") // For BOTH users to track current context
-  firstName  String?  @map("first_name")
-  lastName   String?  @map("last_name")
+  id         String  @id @db.Uuid // Same UUID as auth.users.id
+  email      String  @unique
+  role       Role    @default(TENANT)
+  activeRole Role?   @map("active_role") // For BOTH users to track current context
+  firstName  String? @map("first_name")
+  lastName   String? @map("last_name")
   phone      String?
 
   // Subscription
-  subscriptionPlan    SubscriptionPlan @default(FREE) @map("subscription_plan")
-  subscriptionEndsAt  DateTime?        @map("subscription_ends_at") // null = no expiration (free) or lifetime
+  subscriptionPlan   SubscriptionPlan @default(FREE) @map("subscription_plan")
+  subscriptionEndsAt DateTime?        @map("subscription_ends_at") // null = no expiration (free) or lifetime
 
-  createdAt  DateTime @default(now()) @map("created_at")
-  updatedAt  DateTime @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
   properties   Property[]
@@ -115,43 +127,43 @@ model User {
 
 /// Property listing owned by a landlord
 model Property {
-  id           String         @id @default(uuid()) @db.Uuid
-  landlordId   String         @map("landlord_id") @db.Uuid
-  title        String         @db.VarChar(100)
-  description  String         @db.Text
-  type         PropertyType   @default(APARTMENT)
-  status       PropertyStatus @default(DRAFT)
+  id          String         @id @default(uuid()) @db.Uuid
+  landlordId  String         @map("landlord_id") @db.Uuid
+  title       String         @db.VarChar(100)
+  description String         @db.Text
+  type        PropertyType   @default(APARTMENT)
+  status      PropertyStatus @default(DRAFT)
 
   // Location
-  city         String         @db.VarChar(50)
-  neighborhood String         @db.VarChar(100)
-  address      String         @db.VarChar(200)
+  city         String @db.VarChar(50)
+  neighborhood String @db.VarChar(100)
+  address      String @db.VarChar(200)
   latitude     Float?
   longitude    Float?
 
   // Pricing (COP integers)
-  monthlyRent  Int            @map("monthly_rent")
-  adminFee     Int            @default(0) @map("admin_fee")
-  deposit      Int            @default(0)
+  monthlyRent Int @map("monthly_rent")
+  adminFee    Int @default(0) @map("admin_fee")
+  deposit     Int @default(0)
 
   // Characteristics
-  bedrooms     Int            @default(1)
-  bathrooms    Int            @default(1)
-  area         Int            // square meters
-  floor        Int?
-  parkingSpaces Int?          @map("parking_spaces")
-  stratum      Int?           // Colombian stratum 1-6
-  yearBuilt    Int?           @map("year_built")
+  bedrooms      Int  @default(1)
+  bathrooms     Int  @default(1)
+  area          Int // square meters
+  floor         Int?
+  parkingSpaces Int? @map("parking_spaces")
+  stratum       Int? // Colombian stratum 1-6
+  yearBuilt     Int? @map("year_built")
 
   // Amenities stored as array of string IDs
-  amenities    String[]       @default([])
+  amenities String[] @default([])
 
   // Timestamps
-  createdAt    DateTime       @default(now()) @map("created_at")
-  updatedAt    DateTime       @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  landlord     User           @relation(fields: [landlordId], references: [id], onDelete: Cascade)
+  landlord     User            @relation(fields: [landlordId], references: [id], onDelete: Cascade)
   images       PropertyImage[]
   applications Application[]
 
@@ -173,7 +185,7 @@ model PropertyImage {
   createdAt  DateTime @default(now()) @map("created_at")
 
   // Relations
-  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 
   @@unique([propertyId, order])
   @@index([propertyId])
@@ -182,29 +194,30 @@ model PropertyImage {
 
 /// Rental application from tenant to property
 model Application {
-  id              String            @id @default(uuid()) @db.Uuid
-  propertyId      String            @map("property_id") @db.Uuid
-  tenantId        String            @map("tenant_id") @db.Uuid
-  status          ApplicationStatus @default(DRAFT)
-  currentStep     Int               @default(1) @map("current_step")
+  id          String            @id @default(uuid()) @db.Uuid
+  propertyId  String            @map("property_id") @db.Uuid
+  tenantId    String            @map("tenant_id") @db.Uuid
+  status      ApplicationStatus @default(DRAFT)
+  currentStep Int               @default(1) @map("current_step")
 
   // Wizard steps as separate JSON fields (validated in application layer)
-  personalInfo    Json?             @map("personal_info")    // Step 1
-  employmentInfo  Json?             @map("employment_info")  // Step 2
-  incomeInfo      Json?             @map("income_info")      // Step 3
-  referencesInfo  Json?             @map("references_info")  // Step 4
+  personalInfo   Json? @map("personal_info") // Step 1
+  employmentInfo Json? @map("employment_info") // Step 2
+  incomeInfo     Json? @map("income_info") // Step 3
+  referencesInfo Json? @map("references_info") // Step 4
   // Step 5: Documents (separate table)
   // Step 6: Review (no data, just submit)
 
-  submittedAt     DateTime?         @map("submitted_at")
-  createdAt       DateTime          @default(now()) @map("created_at")
-  updatedAt       DateTime          @updatedAt @map("updated_at")
+  submittedAt DateTime? @map("submitted_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
 
   // Relations
-  property        Property          @relation(fields: [propertyId], references: [id])
-  tenant          User              @relation("TenantApplications", fields: [tenantId], references: [id])
-  documents       ApplicationDocument[]
-  events          ApplicationEvent[]
+  property  Property              @relation(fields: [propertyId], references: [id])
+  tenant    User                  @relation("TenantApplications", fields: [tenantId], references: [id])
+  documents ApplicationDocument[]
+  events    ApplicationEvent[]
+  riskScore RiskScoreResult?
 
   @@index([propertyId])
   @@index([tenantId])
@@ -220,11 +233,11 @@ model ApplicationDocument {
   storagePath   String       @map("storage_path") @db.VarChar(500)
   originalName  String       @map("original_name") @db.VarChar(255)
   mimeType      String       @map("mime_type") @db.VarChar(100)
-  size          Int          // bytes
+  size          Int // bytes
   createdAt     DateTime     @default(now()) @map("created_at")
 
   // Relations
-  application   Application  @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
 
   @@index([applicationId])
   @@index([type])
@@ -241,11 +254,46 @@ model ApplicationEvent {
   createdAt     DateTime             @default(now()) @map("created_at")
 
   // Relations
-  application   Application          @relation(fields: [applicationId], references: [id], onDelete: Cascade)
-  actor         User                 @relation("UserEvents", fields: [actorId], references: [id])
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  actor       User        @relation("UserEvents", fields: [actorId], references: [id])
 
   @@index([applicationId])
   @@index([actorId])
   @@index([createdAt])
   @@map("application_events")
+}
+
+/// Risk score result for an application
+/// Stores the computed score and all component scores
+model RiskScoreResult {
+  id            String    @id @default(uuid()) @db.Uuid
+  applicationId String    @unique @map("application_id") @db.Uuid
+  totalScore    Int       @map("total_score")
+  level         RiskLevel
+
+  // Component scores (0-100 each)
+  financialScore Int @map("financial_score")
+  stabilityScore Int @map("stability_score")
+  historyScore   Int @map("history_score")
+  integrityScore Int @map("integrity_score")
+
+  // JSON arrays for explainability
+  signals    Json @default("[]") // Raw signals detected
+  drivers    Json @default("[]") // Main factors affecting score
+  flags      Json @default("[]") // Warning flags
+  conditions Json @default("[]") // Suggested rental conditions
+
+  // AI explanation (for PRO+ tier in Phase 10)
+  explanation String? @db.Text
+
+  // Versioning
+  algorithmVersion String   @default("1.0") @map("algorithm_version")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  // Relations
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@index([applicationId])
+  @@index([level])
+  @@map("risk_score_results")
 }
