@@ -2,12 +2,12 @@
 
 ## Current Status
 
-**Phase:** 4 of 10 (Applications) - COMPLETE
-**Plan:** 5 of 5 complete
-**Status:** Phase complete
-**Last activity:** 2026-01-29 - Completed 04-05-PLAN.md (Application Lifecycle)
+**Phase:** 5 of 15 (Scoring Engine)
+**Plan:** 1 of 3 complete
+**Status:** In progress
+**Last activity:** 2026-01-30 - Executed 05-01-PLAN.md
 
-**Progress:** [########--] 33% (15/~45 plans estimated)
+**Progress:** [####------] 29% (16/~55 plans estimated)
 
 ## Project Reference
 
@@ -15,29 +15,44 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 **Core value:** Ejecutar el Risk Score con analisis inteligente de documentos para que propietarios tomen decisiones informadas en minutos, con explicabilidad total.
 
-**Current focus:** Phase 4 Complete - Applications fully implemented with wizard, state machine, events, document uploads, and lifecycle (submit/withdraw). Ready for Phase 5 (Scoring Engine).
+**Current focus:** Phase 5 (Scoring Engine) - Plan 1 complete, infrastructure ready for scoring calculators.
 
 ## Quick Context
 
 - Backend NestJS para marketplace de arriendos
 - Supabase: PostgreSQL + Auth + Storage
-- Risk Score con AI (Claude) para analisis de documentos
-- 10 fases, 78 requirements
+- Risk Score con AI (Claude) para analisis de documentos (PRO+ tier)
+- 15 fases, ~112 requirements
+- Tier system: FREE (Phases 1-9), PRO+ (Phases 10-11)
 
 ## Phase Progress
 
 | Phase | Status | Notes |
 |-------|--------|-------|
 | 1. Foundation | COMPLETE | All 3 plans executed |
-| 2. Auth & Users | COMPLETE | All 3 plans executed - User model, JWT auth, profile CRUD |
-| 3. Properties | COMPLETE | All 4 plans executed - Data model, CRUD, public listing, images |
-| 4. Applications | COMPLETE | All 5 plans executed - Data models, state machine, events, CRUD, documents, lifecycle |
-| 5. Scoring Engine | - Pending | |
-| 6. AI Document Analysis | - Pending | |
-| 7. Explainability | - Pending | |
-| 8. Landlord Features | - Pending | |
-| 9. Notifications | - Pending | |
-| 10. ML Persistence | - Pending | |
+| 2. Auth & Users | COMPLETE | All 3 plans executed |
+| 3. Properties | COMPLETE | All 4 plans executed |
+| 4. Applications | COMPLETE | All 5 plans executed |
+| 5. Scoring Engine | IN PROGRESS | 1/3 plans complete - infrastructure ready |
+| 6. Landlord Features | Pending | Approve/reject candidates |
+| 7. Contracts | Pending | Digital signatures |
+| 8. Leases & Payments | Pending | Payment tracking |
+| 9. Payment History Scoring | Pending | NEW - Score from payment history |
+| 10. AI Document Analysis | Pending | PRO+ tier - Claude integration |
+| 11. Explainability | Pending | PRO+ tier - AI explanations |
+| 12. Notifications | Pending | Email service |
+| 13. ML Persistence | Pending | Data for ML training |
+| 14. Subscriptions & Plans | Pending | Billing |
+| 15. Insurance | Pending | Optional insurance |
+
+## Roadmap Evolution
+
+| Date | Change | Rationale |
+|------|--------|-----------|
+| 2026-01-30 | Reordered phases 6-15 | Logical flow: approve → contract → payments → history scoring |
+| 2026-01-30 | Added Phase 9: Payment History Scoring | Enable scoring based on real payment data |
+| 2026-01-30 | Moved AI features to phases 10-11 | PRO+ tier only, after core flow complete |
+| 2026-01-30 | Added tier system | FREE (1-9) vs PRO+ (10-11) |
 
 ## Accumulated Decisions
 
@@ -96,11 +111,16 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 2026-01-29 | 04-05 | Dual event logging on withdraw | Logs both WITHDRAWN and STATUS_CHANGED events for completeness |
 | 2026-01-29 | 04-05 | GET /mine before GET /:id | Static routes before parameterized to prevent 'mine' being parsed as UUID |
 | 2026-01-29 | 04-05 | respondToInfoRequest defaults UNDER_REVIEW | Transitions to UNDER_REVIEW by default when tenant responds |
+| 2026-01-30 | 05-01 | BullMQ for async scoring | Industry standard, retries, Redis-backed persistence |
+| 2026-01-30 | 05-01 | Upstash Redis | Serverless, free tier sufficient for MVP |
+| 2026-01-30 | 05-01 | RiskLevel A/B/C/D classification | A (80-100), B (65-79), C (50-64), D (0-49) |
+| 2026-01-30 | 05-01 | JSON columns for explainability | signals, drivers, flags, conditions - flexible schema |
+| 2026-01-30 | Roadmap | Tier system (FREE/PRO+) | AI features only for paying customers |
 
 ## Session Continuity
 
-**Last session:** 2026-01-29
-**Stopped at:** Completed 04-05-PLAN.md - Application lifecycle (submit, withdraw, timeline)
+**Last session:** 2026-01-30
+**Stopped at:** Completed 05-01-PLAN.md
 **Resume file:** None
 
 ## Pending User Actions
@@ -120,9 +140,9 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 2. Create bucket named `application-documents`
 3. Set Public = false (private bucket for sensitive documents)
 
-**Environment variable:**
-1. Add `SUPABASE_SERVICE_KEY` to `.env`
-2. Get from: Supabase Dashboard > Settings > API > service_role key
+**Environment variables:**
+1. Add `SUPABASE_SERVICE_KEY` to `.env` (from: Supabase Dashboard > Settings > API > service_role key)
+2. Add `REDIS_URL` to `.env` (Upstash: rediss://...)
 
 **Database sync for Application tables:**
 1. Run: `npx prisma db push`
@@ -131,10 +151,10 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 ## Next Action
 
-Phase 4 complete. Ready for Phase 5 (Scoring Engine).
+Continue Phase 5 execution.
 
 ```
-/gsd:execute-phase .planning/phases/05-scoring-engine/
+/gsd:execute-plan 05-02
 ```
 
 ## Session History
@@ -162,6 +182,10 @@ Phase 4 complete. Ready for Phase 5 (Scoring Engine).
 | 2026-01-29 | Executed 04-03-PLAN.md | ApplicationsService, ApplicationsController, wizard step DTOs |
 | 2026-01-29 | Executed 04-04-PLAN.md | DocumentsService, DocumentsController, magic number validation |
 | 2026-01-29 | Executed 04-05-PLAN.md | Submit, withdraw, timeline, respond-info endpoints, Phase 4 complete |
+| 2026-01-30 | Phase 5 planned | 3 plans: BullMQ setup, scoring models, aggregator |
+| 2026-01-30 | Roadmap reordered | Phases 6-15 reorganized for logical flow |
+| 2026-01-30 | Phase 9 added | Payment History Scoring - score from real payment data |
+| 2026-01-30 | Executed 05-01-PLAN.md | RiskScoreResult model, RiskLevel enum, BullMQ queue |
 
 ---
-*Last updated: 2026-01-29*
+*Last updated: 2026-01-30*
