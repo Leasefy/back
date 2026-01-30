@@ -41,6 +41,14 @@ export class EnvironmentVariables {
   SUPABASE_JWKS_URL!: string;
 
   // ============================================
+  // Redis (for BullMQ job queue)
+  // ============================================
+
+  /** Redis connection URL for BullMQ (e.g., Upstash: rediss://...) */
+  @IsString()
+  REDIS_URL!: string;
+
+  // ============================================
   // Application
   // ============================================
 
