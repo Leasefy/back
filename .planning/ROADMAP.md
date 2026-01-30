@@ -6,7 +6,7 @@ Backend API en NestJS para el marketplace de arriendos "Arriendo Facil". Provee 
 
 ## Milestones
 
-- **v1.0 Backend MVP** - Phases 1-14 (in progress)
+- **v1.0 Backend MVP** - Phases 1-15 (in progress)
 
 ## Phases
 
@@ -14,20 +14,27 @@ Backend API en NestJS para el marketplace de arriendos "Arriendo Facil". Provee 
 - Integer phases (1, 2, 3): Planned milestone work
 - Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
 
+**Tier System:**
+- Phases 1-8: Core functionality (FREE tier)
+- Phase 9: Payment History Scoring (enhances FREE scoring with real data)
+- Phases 10-11: AI-powered features (PRO/BUSINESS subscription only)
+- Phases 12-15: Supporting features
+
 - [x] **Phase 1: Foundation** - Project scaffold, Prisma, Supabase config
 - [x] **Phase 2: Auth & Users** - Supabase Auth, guards, user management
-- [x] **Phase 3: Properties** - CRUD, filtering, image upload, plans ✓
-- [x] **Phase 4: Applications & Documents** - Wizard, state machine, document upload ✓
-- [ ] **Phase 5: Scoring Engine** - Feature extraction, models, aggregator
-- [ ] **Phase 6: AI Document Analysis** - Claude integration, document analyzers
-- [ ] **Phase 7: Explainability** - Drivers, flags, conditions, AI explanation
-- [ ] **Phase 8: Landlord Features** - Candidates, decisions, notes
-- [ ] **Phase 9: Notifications** - Email service, templates, queue
-- [ ] **Phase 10: ML Persistence** - Feature logging, outcome tracking
-- [ ] **Phase 11: Subscriptions & Plans** - Pricing plans, coupons, billing
-- [ ] **Phase 12: Contracts** - Templates, digital signatures, clauses
-- [ ] **Phase 13: Leases & Payments** - Active leases, payment tracking
-- [ ] **Phase 14: Insurance** - Optional insurance tiers
+- [x] **Phase 3: Properties** - CRUD, filtering, image upload, plans
+- [x] **Phase 4: Applications & Documents** - Wizard, state machine, document upload
+- [x] **Phase 5: Scoring Engine** - Feature extraction, models, aggregator (FREE - rule-based)
+- [ ] **Phase 6: Landlord Features** - Candidates, decisions, approve/reject
+- [ ] **Phase 7: Contracts** - Templates, digital signatures, clauses
+- [ ] **Phase 8: Leases & Payments** - Active leases, payment tracking
+- [ ] **Phase 9: Payment History Scoring** - Score bonus from payment history (NEW)
+- [ ] **Phase 10: AI Document Analysis** - Claude integration, document analyzers (PRO+)
+- [ ] **Phase 11: Explainability** - Drivers, flags, AI explanation (PRO+)
+- [ ] **Phase 12: Notifications** - Email service, templates, queue
+- [ ] **Phase 13: ML Persistence** - Feature logging, outcome tracking
+- [ ] **Phase 14: Subscriptions & Plans** - Pricing plans, coupons, billing
+- [ ] **Phase 15: Insurance** - Optional insurance tiers
 
 ## Phase Details
 
@@ -122,9 +129,10 @@ Plans:
 - [x] 04-05-PLAN.md - Add submit, withdraw, list, timeline, and info response endpoints
 
 ### Phase 5: Scoring Engine
-**Goal**: Basic risk scoring with rule-based models
+**Goal**: Basic risk scoring with rule-based models (FREE tier)
 **Depends on**: Phase 4
 **Requirements**: SCOR-01 through SCOR-09
+**Tier**: FREE (no cost, uses application data only)
 **Success Criteria** (what must be TRUE):
   1. FeatureBuilder extracts features from application
   2. FinancialModel calculates rent-to-income and capacity score
@@ -139,14 +147,80 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 05-01-PLAN.md - Add RiskScoreResult model, RiskLevel enum, BullMQ configuration
-- [ ] 05-02-PLAN.md - Create FeatureBuilder and scoring models (Financial, Stability, History, Integrity)
-- [ ] 05-03-PLAN.md - Create ScoreAggregator, ScoringProcessor, and integrate with application submit
+- [x] 05-01-PLAN.md - Add RiskScoreResult model, RiskLevel enum, BullMQ configuration
+- [x] 05-02-PLAN.md - Create FeatureBuilder and scoring models (Financial, Stability, History, Integrity)
+- [x] 05-03-PLAN.md - Create ScoreAggregator, ScoringProcessor, and integrate with application submit
 
-### Phase 6: AI Document Analysis
-**Goal**: Claude API analyzes documents and extracts structured data
+### Phase 6: Landlord Features
+**Goal**: Landlords can evaluate and decide on candidates
 **Depends on**: Phase 5
+**Requirements**: LAND-01 through LAND-10
+**Success Criteria** (what must be TRUE):
+  1. Landlord sees candidates per property
+  2. Candidates ranked by score
+  3. Candidate detail includes score breakdown
+  4. Landlord can pre-approve/approve/reject
+  5. Landlord can request additional info
+  6. Landlord can add private notes
+  7. Landlord can view candidate documents
+**Research**: Unlikely (builds on previous phases)
+**Plans**: TBD
+
+### Phase 7: Contracts
+**Goal**: Digital contract signing with templates and legal compliance
+**Depends on**: Phase 6 (after candidate approval)
+**Requirements**: CONT-01 through CONT-10
+**Success Criteria** (what must be TRUE):
+  1. Contract templates available
+  2. Landlord can generate contract for approved candidate
+  3. Contract includes custom clauses
+  4. Both parties can sign digitally (Ley 527/1999)
+  5. Signed contract generates PDF
+  6. Contract status tracked (draft, pending, signed, active)
+**Research**: Likely (Colombian digital signature law, PDF generation)
+**Plans**: TBD
+
+### Phase 8: Leases & Payments
+**Goal**: Track active leases and payment history
+**Depends on**: Phase 7 (signed contract creates lease)
+**Requirements**: LEAS-01 through LEAS-08
+**Success Criteria** (what must be TRUE):
+  1. Lease created from signed contract
+  2. Lease status tracked (active, ending_soon, ended)
+  3. Payment records can be added (by reference number)
+  4. Payment methods supported (PSE, transfer, cash)
+  5. Tenant and landlord can view lease details
+  6. Payment history visible
+  7. Payment due dates tracked
+**Research**: Likely (payment integration patterns)
+**Plans**: TBD
+
+### Phase 9: Payment History Scoring
+**Goal**: Enhance scoring with real payment history data
+**Depends on**: Phase 8 (needs payment history)
+**Requirements**: PHSC-01 through PHSC-06 (NEW)
+**Tier**: FREE (enhances basic scoring with real platform data)
+**Success Criteria** (what must be TRUE):
+  1. PaymentHistoryModel calculates score from past payments
+  2. On-time payment percentage tracked per tenant
+  3. Late payment frequency affects score negatively
+  4. Returning tenants get score bonus
+  5. Payment history feeds into Scoring Engine
+  6. Tenant can see their payment reputation score
+**Research**: Likely (payment scoring algorithms)
+**Plans**: TBD
+
+**Scoring Factors:**
+- % pagos a tiempo (max 15 pts bonus)
+- Historial de atrasos (penalty up to -10 pts)
+- Meses como inquilino en plataforma (tenure bonus)
+- Monto total pagado (reliability indicator)
+
+### Phase 10: AI Document Analysis
+**Goal**: Claude API analyzes documents and extracts structured data
+**Depends on**: Phase 5 (scoring infrastructure)
 **Requirements**: AIDOC-01 through AIDOC-08
+**Tier**: PRO/BUSINESS subscription only (~$0.05-0.10 per application)
 **Success Criteria** (what must be TRUE):
   1. Claude API client configured and working
   2. ID document (cedula) analyzed: name, number, dates extracted
@@ -159,10 +233,11 @@ Plans:
 **Research**: Completed (see AI_DOCUMENT_ANALYSIS.md)
 **Plans**: TBD
 
-### Phase 7: Explainability
+### Phase 11: Explainability
 **Goal**: Full scoring explanation with drivers, flags, and suggestions
-**Depends on**: Phase 6
+**Depends on**: Phase 10
 **Requirements**: EXPL-01 through EXPL-05
+**Tier**: PRO/BUSINESS subscription only
 **Success Criteria** (what must be TRUE):
   1. 3-6 driver explanations generated per candidate
   2. Risk flags generated (HIGH_RENT_TO_INCOME, LOW_TENURE, etc.)
@@ -173,24 +248,9 @@ Plans:
 **Research topics**: LLM prompts for explanations
 **Plans**: TBD
 
-### Phase 8: Landlord Features
-**Goal**: Landlords can evaluate and decide on candidates
-**Depends on**: Phase 7
-**Requirements**: LAND-01 through LAND-10
-**Success Criteria** (what must be TRUE):
-  1. Landlord sees candidates per property
-  2. Candidates ranked by score
-  3. Candidate detail includes full score explanation
-  4. Landlord can pre-approve/approve/reject
-  5. Landlord can request additional info (triggers notification)
-  6. Landlord can add private notes
-  7. Landlord can view candidate documents
-**Research**: Unlikely (builds on previous phases)
-**Plans**: TBD
-
-### Phase 9: Notifications
+### Phase 12: Notifications
 **Goal**: Email notifications for key events
-**Depends on**: Phase 8
+**Depends on**: Phase 6 (needs approval/rejection events)
 **Requirements**: NOTF-01 through NOTF-07
 **Success Criteria** (what must be TRUE):
   1. Resend email service configured
@@ -202,9 +262,9 @@ Plans:
 **Research**: Unlikely (Resend well documented)
 **Plans**: TBD
 
-### Phase 10: ML Persistence
+### Phase 13: ML Persistence
 **Goal**: Data infrastructure for future ML model training
-**Depends on**: Phase 9
+**Depends on**: Phase 9 (needs payment history for outcomes)
 **Requirements**: MLPR-01 through MLPR-04
 **Success Criteria** (what must be TRUE):
   1. All extracted features persisted with application
@@ -214,7 +274,7 @@ Plans:
 **Research**: Unlikely (data modeling)
 **Plans**: TBD
 
-### Phase 11: Subscriptions & Plans
+### Phase 14: Subscriptions & Plans
 **Goal**: Pricing plans for landlords with coupon support
 **Depends on**: Phase 3 (landlords need properties first)
 **Requirements**: SUBS-01 through SUBS-08
@@ -228,41 +288,13 @@ Plans:
 **Plans**: TBD
 
 **Plans (from frontend):**
-- Free: 1 property, 1 contract, no AI scoring
+- Free: 1 property, 1 contract, basic scoring only
 - Pro: 10 properties, unlimited contracts, AI scoring ($149,900/month)
 - Business: Unlimited, API access ($499,900/month)
 
-### Phase 12: Contracts
-**Goal**: Digital contract signing with templates and legal compliance
-**Depends on**: Phase 8 (after candidate approval)
-**Requirements**: CONT-01 through CONT-10
-**Success Criteria** (what must be TRUE):
-  1. Contract templates available
-  2. Landlord can generate contract for approved candidate
-  3. Contract includes custom clauses
-  4. Both parties can sign digitally (Ley 527/1999)
-  5. Signed contract generates PDF
-  6. Contract status tracked (draft, pending, signed, active)
-**Research**: Likely (Colombian digital signature law, PDF generation)
-**Plans**: TBD
-
-### Phase 13: Leases & Payments
-**Goal**: Track active leases and payment history
-**Depends on**: Phase 12 (signed contract creates lease)
-**Requirements**: LEAS-01 through LEAS-08
-**Success Criteria** (what must be TRUE):
-  1. Lease created from signed contract
-  2. Lease status tracked (active, ending_soon, ended)
-  3. Payment records can be added
-  4. Payment methods supported (PSE, transfer, cash)
-  5. Tenant and landlord can view lease details
-  6. Payment history visible
-**Research**: Likely (payment integration patterns)
-**Plans**: TBD
-
-### Phase 14: Insurance
+### Phase 15: Insurance
 **Goal**: Optional insurance tiers for contracts
-**Depends on**: Phase 12 (insurance attached to contracts)
+**Depends on**: Phase 7 (insurance attached to contracts)
 **Requirements**: INSU-01 through INSU-04
 **Success Criteria** (what must be TRUE):
   1. Three insurance tiers: none, basic, premium
@@ -275,7 +307,7 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10 -> 11 -> 12 -> 13 -> 14 -> 15
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -283,18 +315,31 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 2. Auth & Users | 3/3 | Complete | 2026-01-26 |
 | 3. Properties | 4/4 | Complete | 2026-01-29 |
 | 4. Applications & Documents | 5/5 | Complete | 2026-01-29 |
-| 5. Scoring Engine | 0/3 | Planned | - |
-| 6. AI Document Analysis | 0/0 | Not started | - |
-| 7. Explainability | 0/0 | Not started | - |
-| 8. Landlord Features | 0/0 | Not started | - |
-| 9. Notifications | 0/0 | Not started | - |
-| 10. ML Persistence | 0/0 | Not started | - |
-| 11. Subscriptions & Plans | 0/0 | Not started | - |
-| 12. Contracts | 0/0 | Not started | - |
-| 13. Leases & Payments | 0/0 | Not started | - |
-| 14. Insurance | 0/0 | Not started | - |
+| 5. Scoring Engine | 3/3 | Complete | 2026-01-30 |
+| 6. Landlord Features | 0/0 | Not started | - |
+| 7. Contracts | 0/0 | Not started | - |
+| 8. Leases & Payments | 0/0 | Not started | - |
+| 9. Payment History Scoring | 0/0 | Not started | - |
+| 10. AI Document Analysis | 0/0 | Not started | - |
+| 11. Explainability | 0/0 | Not started | - |
+| 12. Notifications | 0/0 | Not started | - |
+| 13. ML Persistence | 0/0 | Not started | - |
+| 14. Subscriptions & Plans | 0/0 | Not started | - |
+| 15. Insurance | 0/0 | Not started | - |
 
 ## Notes
+
+### Tier System
+
+**FREE Tier (Phases 1-9):**
+- Basic rule-based scoring from application data
+- Payment history scoring for returning tenants
+- No external API costs
+
+**PRO/BUSINESS Tier (Phases 10-11):**
+- AI document analysis via Claude (~$0.05-0.10/app)
+- AI-generated explanations
+- Cross-document validation
 
 ### Frontend Integration Points
 
@@ -333,18 +378,19 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 }
 ```
 
-**RiskScore (updated 2026-01-29):**
+**RiskScore (updated 2026-01-30):**
 ```typescript
 {
-  total: number,        // 0-100
+  total: number,        // 0-100 (can exceed with payment history bonus)
   level: 'A' | 'B' | 'C' | 'D',
   categories: {
     integrity: number,  // 0-25
     financial: number,  // 0-35
     stability: number,  // 0-25
-    history: number     // 0-15
+    history: number,    // 0-15
+    paymentHistory?: number  // 0-15 bonus (Phase 9)
   },
-  explanation: string,  // AI-generated
+  explanation: string,  // AI-generated (PRO+) or empty
   drivers: { text: string, positive: boolean }[],
   flags: { code: string, severity: string, message: string }[],
   conditions: { type: string, message: string, required: boolean }[]
@@ -353,13 +399,13 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 
 ### External Services
 
-| Service | Purpose | Config |
-|---------|---------|--------|
-| Supabase | DB, Auth, Storage | SUPABASE_URL, SUPABASE_KEY |
-| Claude API | Document analysis | ANTHROPIC_API_KEY |
-| Resend | Email | RESEND_API_KEY |
-| Redis | BullMQ queues | REDIS_URL |
+| Service | Purpose | Config | Tier |
+|---------|---------|--------|------|
+| Supabase | DB, Auth, Storage | SUPABASE_URL, SUPABASE_KEY | All |
+| Redis | BullMQ queues | REDIS_URL | All |
+| Claude API | Document analysis | ANTHROPIC_API_KEY | PRO+ |
+| Resend | Email | RESEND_API_KEY | All |
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-01-30 - Phase 5 planned with 3 plans*
+*Last updated: 2026-01-30 - Reordered phases, added Phase 9 (Payment History Scoring)*
