@@ -135,9 +135,13 @@ Plans:
   7. Score determines level A/B/C/D
   8. Scoring runs async via BullMQ
   9. Results persisted to RiskScoreResult table
-**Research**: Likely (scoring algorithm weights, validation)
-**Research topics**: Weight calibration, edge cases
-**Plans**: TBD
+**Research**: Complete (05-RESEARCH.md)
+**Plans**: 3 plans
+
+Plans:
+- [ ] 05-01-PLAN.md - Add RiskScoreResult model, RiskLevel enum, BullMQ configuration
+- [ ] 05-02-PLAN.md - Create FeatureBuilder and scoring models (Financial, Stability, History, Integrity)
+- [ ] 05-03-PLAN.md - Create ScoreAggregator, ScoringProcessor, and integrate with application submit
 
 ### Phase 6: AI Document Analysis
 **Goal**: Claude API analyzes documents and extracts structured data
@@ -279,7 +283,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 2. Auth & Users | 3/3 | Complete | 2026-01-26 |
 | 3. Properties | 4/4 | Complete | 2026-01-29 |
 | 4. Applications & Documents | 5/5 | Complete | 2026-01-29 |
-| 5. Scoring Engine | 0/0 | Not started | - |
+| 5. Scoring Engine | 0/3 | Planned | - |
 | 6. AI Document Analysis | 0/0 | Not started | - |
 | 7. Explainability | 0/0 | Not started | - |
 | 8. Landlord Features | 0/0 | Not started | - |
@@ -358,4 +362,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-01-29 - Phase 4 complete with 5 plans*
+*Last updated: 2026-01-30 - Phase 5 planned with 3 plans*
