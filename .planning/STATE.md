@@ -3,11 +3,11 @@
 ## Current Status
 
 **Phase:** 7 of 15 (Contracts) - In Progress
-**Plan:** 1 of 3
-**Status:** Plan 07-01 complete - Contract model ready
-**Last activity:** 2026-02-01 - Completed 07-01-PLAN.md (Contract Model)
+**Plan:** 2 of 3
+**Status:** Plan 07-02 complete - Contract services ready
+**Last activity:** 2026-02-01 - Completed 07-02-PLAN.md (Contract Generation)
 
-**Progress:** [########--] 40% (22/~55 plans estimated)
+**Progress:** [########--] 42% (23/~55 plans estimated)
 
 ## Project Reference
 
@@ -35,7 +35,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 4. Applications | COMPLETE | All 5 plans executed |
 | 5. Scoring Engine | COMPLETE | All 3 plans executed - async scoring pipeline |
 | 6. Landlord Features | COMPLETE | All 3 plans - decisions, notes, review |
-| 7. Contracts | In Progress | Plan 1/3 complete - Contract model |
+| 7. Contracts | In Progress | Plan 2/3 complete - Contract services |
 | 8. Leases & Payments | Pending | Payment tracking |
 | 9. Payment History Scoring | Pending | NEW - Score from payment history |
 | 10. AI Document Analysis | Pending | PRO+ tier - Claude integration |
@@ -139,11 +139,17 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 2026-02-01 | 07-01 | paymentDay 1-28 | Avoids month-end edge cases (Feb 29, 30, 31) |
 | 2026-02-01 | 07-01 | customClauses as JSON array | Flexible additional terms without schema changes |
 | 2026-02-01 | 07-01 | Unique applicationId constraint | One contract per approved application (1:1 relation) |
+| 2026-02-01 | 07-02 | State machine mirrors ApplicationStateMachine | Consistency across codebase, proven pattern |
+| 2026-02-01 | 07-02 | Server-side UTC timestamps for signatures | Legal validity - client time can be manipulated |
+| 2026-02-01 | 07-02 | SHA-256 for document hashing | Standard, auditable, built-in Node crypto |
+| 2026-02-01 | 07-02 | Browser instance reuse in PdfGeneratorService | Puppeteer startup is slow (~2-5s), reuse improves performance |
+| 2026-02-01 | 07-02 | Colombian locale (es-CO) formatting | Target market - currency and date formatting in Spanish |
+| 2026-02-01 | 07-02 | nest-cli.json assets config for .hbs | Required to copy template files to dist during build |
 
 ## Session Continuity
 
 **Last session:** 2026-02-01
-**Stopped at:** Completed 07-01-PLAN.md (Contract Model)
+**Stopped at:** Completed 07-02-PLAN.md (Contract Generation)
 **Resume file:** None
 
 ## Pending User Actions
@@ -174,10 +180,10 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 ## Next Action
 
-Continue Phase 7 with plan 07-02: Contract Generation.
+Continue Phase 7 with plan 07-03: Contract Endpoints.
 
 ```
-/gsd:execute-phase 07-02
+/gsd:execute-phase 07-03
 ```
 
 ## Session History
@@ -215,6 +221,7 @@ Continue Phase 7 with plan 07-02: Contract Generation.
 | 2026-02-01 | Executed 06-02-PLAN.md | LandlordModule, review endpoints, candidate sorting |
 | 2026-02-01 | Executed 06-03-PLAN.md | Decision endpoints, notes CRUD, Phase 6 complete |
 | 2026-02-01 | Executed 07-01-PLAN.md | Contract model, ContractStatus enum, Ley 527 compliance fields |
+| 2026-02-01 | Executed 07-02-PLAN.md | ContractStateMachine, SignatureService, ContractTemplateService, PdfGeneratorService |
 
 ---
 *Last updated: 2026-02-01*
