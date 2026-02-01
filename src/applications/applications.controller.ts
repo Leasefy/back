@@ -171,6 +171,22 @@ export class ApplicationsController {
     return this.applicationsService.withdraw(applicationId, user.id, dto);
   }
 
+  @Post(':id/reactivate')
+  @Roles(Role.TENANT, Role.BOTH)
+  @ApiOperation({ summary: 'Reactivate a withdrawn application' })
+  @ApiParam({ name: 'id', description: 'Application ID' })
+  @ApiResponse({ status: 200, description: 'Application reactivated to DRAFT status' })
+  @ApiResponse({ status: 400, description: 'Application not in WITHDRAWN status or property unavailable' })
+  @ApiResponse({ status: 403, description: 'Not application owner' })
+  @ApiResponse({ status: 404, description: 'Application not found' })
+  @ApiResponse({ status: 409, description: 'Another active application exists for this property' })
+  async reactivate(
+    @CurrentUser() user: User,
+    @Param('id', ParseUUIDPipe) applicationId: string,
+  ) {
+    return this.applicationsService.reactivate(applicationId, user.id);
+  }
+
   @Post(':id/respond-info')
   @Roles(Role.TENANT, Role.BOTH)
   @ApiOperation({ summary: 'Respond to landlord info request' })

@@ -9,7 +9,7 @@ import { ApplicationStatus } from '../../common/enums/index.js';
  * DRAFT -> SUBMITTED -> UNDER_REVIEW -> NEEDS_INFO -> UNDER_REVIEW (loop)
  *                    -> PREAPPROVED -> APPROVED (terminal)
  *                                   -> REJECTED (terminal)
- * Any non-terminal -> WITHDRAWN (terminal)
+ * Any non-terminal -> WITHDRAWN -> DRAFT (reactivate)
  */
 @Injectable()
 export class ApplicationStateMachine {
@@ -42,7 +42,9 @@ export class ApplicationStateMachine {
     ],
     [ApplicationStatus.APPROVED]: [], // Terminal
     [ApplicationStatus.REJECTED]: [], // Terminal
-    [ApplicationStatus.WITHDRAWN]: [], // Terminal
+    [ApplicationStatus.WITHDRAWN]: [
+      ApplicationStatus.DRAFT, // Reactivate - allows tenant to re-apply with same data
+    ],
   };
 
   /**

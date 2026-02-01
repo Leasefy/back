@@ -415,6 +415,79 @@ export class ApplicationsService {
   }
 
   /**
+   * Reactivate a withdrawn application.
+   * Returns the application to DRAFT status so tenant can edit and re-submit.
+   * Preserves all existing data, documents, and events.
+   */
+  async reactivate(applicationId: string, tenantId: string): Promise<Application> {
+    const application = await this.findByIdOrThrow(applicationId);
+    this.ensureOwnership(application, tenantId);
+
+    // Validate current state allows reactivation
+    this.stateMachine.validateTransition(
+      application.status as ApplicationStatus,
+      ApplicationStatus.DRAFT,
+    );
+
+    // Verify property is still available
+    const property = await this.prisma.property.findUnique({
+      where: { id: application.propertyId },
+    });
+
+    if (!property) {
+      throw new NotFoundException('Property no longer exists');
+    }
+
+    if (property.status !== 'AVAILABLE') {
+      throw new BadRequestException('Property is no longer available for applications');
+    }
+
+    // Check if tenant has another active application for this property
+    const existingActive = await this.prisma.application.findFirst({
+      where: {
+        propertyId: application.propertyId,
+        tenantId,
+        id: { not: applicationId }, // Exclude this application
+        status: {
+          notIn: [ApplicationStatus.WITHDRAWN, ApplicationStatus.REJECTED],
+        },
+      },
+    });
+
+    if (existingActive) {
+      throw new ConflictException(
+        'You already have another active application for this property',
+      );
+    }
+
+    // Reactivate - return to DRAFT status
+    const updatedApplication = await this.prisma.application.update({
+      where: { id: applicationId },
+      data: {
+        status: ApplicationStatus.DRAFT,
+        // Keep currentStep as-is so user continues where they left off
+        // Clear submittedAt since it's no longer submitted
+        submittedAt: null,
+      },
+      include: {
+        property: true,
+        documents: true,
+      },
+    });
+
+    // Log reactivation event
+    await this.eventService.logStatusChanged(
+      applicationId,
+      tenantId,
+      ApplicationStatus.WITHDRAWN,
+      ApplicationStatus.DRAFT,
+      'Application reactivated by tenant',
+    );
+
+    return updatedApplication;
+  }
+
+  /**
    * Respond to a landlord's info request.
    * Only valid when application is in NEEDS_INFO status.
    */
