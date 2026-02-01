@@ -139,6 +139,20 @@ export class ApplicationsController {
     return this.applicationsService.getTimeline(applicationId, user.id);
   }
 
+  @Get(':id/info-requests')
+  @Roles(Role.TENANT, Role.BOTH)
+  @ApiOperation({ summary: 'Get information requests from landlord' })
+  @ApiParam({ name: 'id', description: 'Application ID' })
+  @ApiResponse({ status: 200, description: 'List of information requests with messages' })
+  @ApiResponse({ status: 403, description: 'Not application owner' })
+  @ApiResponse({ status: 404, description: 'Application not found' })
+  async getInfoRequests(
+    @CurrentUser() user: User,
+    @Param('id', ParseUUIDPipe) applicationId: string,
+  ) {
+    return this.applicationsService.getInfoRequests(applicationId, user.id);
+  }
+
   @Post(':id/submit')
   @Roles(Role.TENANT, Role.BOTH)
   @ApiOperation({ summary: 'Submit a completed application' })

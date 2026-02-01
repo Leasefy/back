@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import type { Application } from '@prisma/client';
 import { PrismaService } from '../database/prisma.service.js';
-import { ApplicationStatus } from '../common/enums/index.js';
+import { ApplicationStatus, ApplicationEventType } from '../common/enums/index.js';
 import { ApplicationStateMachine } from './state-machine/application-state-machine.js';
 import { ApplicationEventService } from './events/application-event.service.js';
 import {
@@ -412,6 +412,43 @@ export class ApplicationsService {
     }
 
     return this.eventService.getTimeline(applicationId);
+  }
+
+  /**
+   * Get information requests for an application.
+   * Returns all INFO_REQUESTED events with the landlord's message.
+   * Only accessible by tenant owner.
+   */
+  async getInfoRequests(applicationId: string, tenantId: string) {
+    const application = await this.findByIdOrThrow(applicationId);
+    this.ensureOwnership(application, tenantId);
+
+    // Get all INFO_REQUESTED events for this application
+    const events = await this.prisma.applicationEvent.findMany({
+      where: {
+        applicationId,
+        type: ApplicationEventType.INFO_REQUESTED,
+      },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        actor: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+    });
+
+    return events.map((event) => ({
+      id: event.id,
+      message: (event.metadata as { message?: string })?.message || '',
+      requestedBy: event.actor
+        ? `${event.actor.firstName || ''} ${event.actor.lastName || ''}`.trim() || 'Propietario'
+        : 'Propietario',
+      requestedAt: event.createdAt,
+    }));
   }
 
   /**

@@ -63,8 +63,12 @@ export class DocumentsService {
       throw new ForbiddenException('You do not own this application');
     }
 
-    if (application.status !== ApplicationStatus.DRAFT) {
-      throw new BadRequestException('Can only upload documents to draft applications');
+    // Allow upload in DRAFT (initial wizard) or NEEDS_INFO (landlord requested more docs)
+    const allowedStatuses: string[] = [ApplicationStatus.DRAFT, ApplicationStatus.NEEDS_INFO];
+    if (!allowedStatuses.includes(application.status)) {
+      throw new BadRequestException(
+        'Can only upload documents to draft or needs-info applications',
+      );
     }
 
     // Validate file size
