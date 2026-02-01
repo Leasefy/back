@@ -6,8 +6,8 @@
     "deleteOutDir": true,
     "assets": [
       {
-        "include": "**/*.hbs",
-        "outDir": "dist",
+        "include": "contracts/templates/*.hbs",
+        "outDir": "dist/src",
         "watchAssets": true
       }
     ]
