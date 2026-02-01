@@ -2,12 +2,12 @@
 
 ## Current Status
 
-**Phase:** 6 of 15 (Landlord Features) - COMPLETE
-**Plan:** 3 of 3
-**Status:** Phase 6 complete - Ready for Phase 7
-**Last activity:** 2026-02-01 - Completed 06-03-PLAN.md (Decision Endpoints)
+**Phase:** 7 of 15 (Contracts) - In Progress
+**Plan:** 1 of 3
+**Status:** Plan 07-01 complete - Contract model ready
+**Last activity:** 2026-02-01 - Completed 07-01-PLAN.md (Contract Model)
 
-**Progress:** [#######---] 38% (21/~55 plans estimated)
+**Progress:** [########--] 40% (22/~55 plans estimated)
 
 ## Project Reference
 
@@ -15,7 +15,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 **Core value:** Ejecutar el Risk Score con analisis inteligente de documentos para que propietarios tomen decisiones informadas en minutos, con explicabilidad total.
 
-**Current focus:** Phase 6 - Landlord Features COMPLETE. Ready for Phase 7 - Contracts.
+**Current focus:** Phase 7 - Contracts. Building digital contract foundation with Ley 527 compliance.
 
 ## Quick Context
 
@@ -35,7 +35,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 4. Applications | COMPLETE | All 5 plans executed |
 | 5. Scoring Engine | COMPLETE | All 3 plans executed - async scoring pipeline |
 | 6. Landlord Features | COMPLETE | All 3 plans - decisions, notes, review |
-| 7. Contracts | Pending | Digital signatures |
+| 7. Contracts | In Progress | Plan 1/3 complete - Contract model |
 | 8. Leases & Payments | Pending | Payment tracking |
 | 9. Payment History Scoring | Pending | NEW - Score from payment history |
 | 10. AI Document Analysis | Pending | PRO+ tier - Claude integration |
@@ -133,11 +133,17 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 2026-02-01 | 06-03 | Reject requires reason | For transparency and legal compliance |
 | 2026-02-01 | 06-03 | requestInfo logs two events | INFO_REQUESTED and STATUS_CHANGED for complete audit trail |
 | 2026-02-01 | 06-03 | Notes upsert pattern | Single POST endpoint creates or updates using compound unique key |
+| 2026-02-01 | 07-01 | ContractStatus with 7 states | Full lifecycle: DRAFT -> PENDING_LANDLORD_SIGNATURE -> PENDING_TENANT_SIGNATURE -> SIGNED -> ACTIVE -> CANCELLED/EXPIRED |
+| 2026-02-01 | 07-01 | JSON for signature audit trails | Ley 527/1999 requires full audit data (IP, timestamp, user agent) - JSON provides flexibility |
+| 2026-02-01 | 07-01 | documentHash field | SHA-256 hash of contractHtml for integrity verification |
+| 2026-02-01 | 07-01 | paymentDay 1-28 | Avoids month-end edge cases (Feb 29, 30, 31) |
+| 2026-02-01 | 07-01 | customClauses as JSON array | Flexible additional terms without schema changes |
+| 2026-02-01 | 07-01 | Unique applicationId constraint | One contract per approved application (1:1 relation) |
 
 ## Session Continuity
 
 **Last session:** 2026-02-01
-**Stopped at:** Completed 06-03-PLAN.md (Decision Endpoints)
+**Stopped at:** Completed 07-01-PLAN.md (Contract Model)
 **Resume file:** None
 
 ## Pending User Actions
@@ -168,10 +174,10 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 ## Next Action
 
-Phase 6 complete. Begin Phase 7: Contracts.
+Continue Phase 7 with plan 07-02: Contract Generation.
 
 ```
-/gsd:plan-phase 07
+/gsd:execute-phase 07-02
 ```
 
 ## Session History
@@ -208,6 +214,7 @@ Phase 6 complete. Begin Phase 7: Contracts.
 | 2026-02-01 | Executed 06-01-PLAN.md | LandlordNote model, database table, relations |
 | 2026-02-01 | Executed 06-02-PLAN.md | LandlordModule, review endpoints, candidate sorting |
 | 2026-02-01 | Executed 06-03-PLAN.md | Decision endpoints, notes CRUD, Phase 6 complete |
+| 2026-02-01 | Executed 07-01-PLAN.md | Contract model, ContractStatus enum, Ley 527 compliance fields |
 
 ---
 *Last updated: 2026-02-01*
