@@ -111,16 +111,16 @@ Requirements for MVP release. Each maps to roadmap phases.
 
 ### Landlord Features (LAND)
 
-- [ ] **LAND-01**: Landlord can view candidates for each property
-- [ ] **LAND-02**: Candidates ranked by score
-- [ ] **LAND-03**: Candidate cards include score, level, key metrics
-- [ ] **LAND-04**: Landlord can view candidate detail with full score
-- [ ] **LAND-05**: Landlord can pre-approve candidate
-- [ ] **LAND-06**: Landlord can approve candidate
-- [ ] **LAND-07**: Landlord can reject candidate
-- [ ] **LAND-08**: Landlord can request additional info
-- [ ] **LAND-09**: Landlord can add private notes to candidates
-- [ ] **LAND-10**: Landlord can view candidate documents
+- [x] **LAND-01**: Landlord can view candidates for each property
+- [x] **LAND-02**: Candidates ranked by score
+- [x] **LAND-03**: Candidate cards include score, level, key metrics
+- [x] **LAND-04**: Landlord can view candidate detail with full score
+- [x] **LAND-05**: Landlord can pre-approve candidate
+- [x] **LAND-06**: Landlord can approve candidate
+- [x] **LAND-07**: Landlord can reject candidate
+- [x] **LAND-08**: Landlord can request additional info
+- [x] **LAND-09**: Landlord can add private notes to candidates
+- [x] **LAND-10**: Landlord can view candidate documents
 
 ### Notifications (NOTF)
 
