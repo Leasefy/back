@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body {
+      font-family: 'Times New Roman', serif;
+      font-size: 12pt;
+      line-height: 1.6;
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 40px;
+    }
+    h1 {
+      text-align: center;
+      font-size: 16pt;
+      margin-bottom: 30px;
+    }
+    .section-title {
+      font-weight: bold;
+      margin-top: 20px;
+      margin-bottom: 10px;
+    }
+    .clause {
+      margin-bottom: 15px;
+      text-align: justify;
+    }
+    .signature-block {
+      margin-top: 50px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .signature {
+      width: 45%;
+      text-align: center;
+    }
+    .signature-line {
+      border-top: 1px solid black;
+      margin-top: 60px;
+      padding-top: 10px;
+    }
+    .signature-details {
+      font-size: 10pt;
+      color: #666;
+      margin-top: 5px;
+    }
+    .footer {
+      margin-top: 40px;
+      font-size: 9pt;
+      color: #888;
+      text-align: center;
+      border-top: 1px solid #ddd;
+      padding-top: 15px;
+    }
+    .signature-image {
+      max-height: 60px;
+      margin-bottom: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h1>CONTRATO DE ARRENDAMIENTO DE VIVIENDA URBANA</h1>
+
+  <p class="clause">
+    Entre <strong>{{landlordName}}</strong>, identificado con cedula de ciudadania
+    No. <strong>{{landlordId}}</strong>, correo electronico <strong>{{landlordEmail}}</strong>,
+    en adelante EL ARRENDADOR, y
+    <strong>{{tenantName}}</strong>, identificado con cedula de ciudadania
+    No. <strong>{{tenantId}}</strong>, correo electronico <strong>{{tenantEmail}}</strong>,
+    en adelante EL ARRENDATARIO, se celebra
+    el presente contrato de arrendamiento de vivienda urbana, el cual se regira
+    por las siguientes clausulas y por lo dispuesto en la Ley 820 de 2003:
+  </p>
+
+  <p class="section-title">PRIMERA. OBJETO</p>
+  <p class="clause">
+    EL ARRENDADOR entrega en arrendamiento al ARRENDATARIO el inmueble ubicado en
+    <strong>{{propertyAddress}}</strong>, ciudad de <strong>{{propertyCity}}</strong>,
+    tipo de inmueble: <strong>{{propertyType}}</strong>.
+  </p>
+
+  <p class="section-title">SEGUNDA. DURACION</p>
+  <p class="clause">
+    El termino de duracion del presente contrato es de <strong>{{durationMonths}}</strong>
+    meses, contados a partir del <strong>{{startDate}}</strong> hasta el
+    <strong>{{endDate}}</strong>.
+  </p>
+
+  <p class="section-title">TERCERA. CANON DE ARRENDAMIENTO</p>
+  <p class="clause">
+    El canon de arrendamiento mensual es de <strong>{{monthlyRent}}</strong>,
+    pagadero los primeros <strong>{{paymentDay}}</strong> dias de cada mes.
+  </p>
+
+  <p class="section-title">CUARTA. DEPOSITO</p>
+  <p class="clause">
+    EL ARRENDATARIO entrega la suma de <strong>{{deposit}}</strong> como deposito
+    de garantia, el cual sera devuelto al terminar el contrato, previa deduccion
+    de los valores adeudados.
+  </p>
+
+  {{#if includesInsurance}}
+  <p class="section-title">QUINTA. SEGURO DE ARRENDAMIENTO</p>
+  <p class="clause">
+    {{insuranceDetails}}
+  </p>
+  {{/if}}
+
+  {{#each customClauses}}
+  <p class="section-title">{{title}}</p>
+  <p class="clause">{{content}}</p>
+  {{/each}}
+
+  <p class="clause" style="margin-top: 30px;">
+    Para constancia se firma en la ciudad de {{propertyCity}}, a los {{generatedAt}}.
+  </p>
+
+  <div class="signature-block">
+    <div class="signature">
+      {{#if signatures.landlord.signatureData}}
+      <img src="{{signatures.landlord.signatureData}}" alt="Firma Arrendador" class="signature-image">
+      {{/if}}
+      <div class="signature-line">
+        EL ARRENDADOR<br>
+        {{landlordName}}<br>
+        C.C. {{landlordId}}
+      </div>
+      {{#if signatures.landlord}}
+      <div class="signature-details">
+        Firmado: {{signatures.landlord.signedAt}}<br>
+        IP: {{signatures.landlord.ipAddress}}
+      </div>
+      {{/if}}
+    </div>
+
+    <div class="signature">
+      {{#if signatures.tenant.signatureData}}
+      <img src="{{signatures.tenant.signatureData}}" alt="Firma Arrendatario" class="signature-image">
+      {{/if}}
+      <div class="signature-line">
+        EL ARRENDATARIO<br>
+        {{tenantName}}<br>
+        C.C. {{tenantId}}
+      </div>
+      {{#if signatures.tenant}}
+      <div class="signature-details">
+        Firmado: {{signatures.tenant.signedAt}}<br>
+        IP: {{signatures.tenant.ipAddress}}
+      </div>
+      {{/if}}
+    </div>
+  </div>
+
+  <div class="footer">
+    Contrato No. {{contractNumber}} | Generado: {{generatedAt}}<br>
+    {{#if documentHash}}
+    Hash del documento: {{documentHash}}<br>
+    {{/if}}
+    Este contrato fue firmado electronicamente conforme a la Ley 527 de 1999.
+  </div>
+</body>
+</html>
