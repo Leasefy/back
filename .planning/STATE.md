@@ -3,11 +3,11 @@
 ## Current Status
 
 **Phase:** 7 of 15 (Contracts) - COMPLETE
-**Plan:** 3 of 3
-**Status:** Phase 7 complete - Contracts module ready
-**Last activity:** 2026-02-01 - Completed 07-03-PLAN.md (Contract Endpoints)
+**Plan:** 4 of 4
+**Status:** Phase 7 complete - Contracts module ready with signatures and PDF
+**Last activity:** 2026-02-01 - Completed 07-04-PLAN.md (Contract Signatures)
 
-**Progress:** [########--] 44% (24/~55 plans estimated)
+**Progress:** [########--] 45% (25/~56 plans estimated)
 
 ## Project Reference
 
@@ -15,7 +15,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 **Core value:** Ejecutar el Risk Score con analisis inteligente de documentos para que propietarios tomen decisiones informadas en minutos, con explicabilidad total.
 
-**Current focus:** Phase 7 complete. Contracts module with create, list, detail, preview, and send endpoints.
+**Current focus:** Phase 7 complete. Contracts module with create, list, detail, preview, send, digital signatures, and PDF generation.
 
 ## Quick Context
 
@@ -35,7 +35,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 4. Applications | COMPLETE | All 5 plans executed |
 | 5. Scoring Engine | COMPLETE | All 3 plans executed - async scoring pipeline |
 | 6. Landlord Features | COMPLETE | All 3 plans - decisions, notes, review |
-| 7. Contracts | COMPLETE | All 3 plans - model, services, endpoints |
+| 7. Contracts | COMPLETE | All 4 plans - model, services, endpoints, signatures |
 | 8. Leases & Payments | Pending | Payment tracking |
 | 9. Payment History Scoring | Pending | NEW - Score from payment history |
 | 10. AI Document Analysis | Pending | PRO+ tier - Claude integration |
@@ -147,11 +147,14 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 2026-02-01 | 07-02 | nest-cli.json assets config for .hbs | Required to copy template files to dist during build |
 | 2026-02-01 | 07-03 | JSON.parse(JSON.stringify()) for Prisma JSON | Converts class instances to plain objects for InputJsonValue |
 | 2026-02-01 | 07-03 | nest-cli.json outDir fix | Changed to "dist/src" for correct .hbs file placement |
+| 2026-02-01 | 07-04 | import type for Express Request | Required for isolatedModules + emitDecoratorMetadata compatibility |
+| 2026-02-01 | 07-04 | 1-hour signed URL expiry for PDF | Balance between security and usability for contract downloads |
+| 2026-02-01 | 07-04 | Reuse PdfGeneratorService | Extended with Supabase Storage methods rather than new service |
 
 ## Session Continuity
 
 **Last session:** 2026-02-01
-**Stopped at:** Completed 07-03-PLAN.md (Contract Endpoints) - Phase 7 complete
+**Stopped at:** Completed 07-04-PLAN.md (Contract Signatures) - Phase 7 complete
 **Resume file:** None
 
 ## Pending User Actions
@@ -170,6 +173,11 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 1. Go to Supabase Dashboard > Storage > New bucket
 2. Create bucket named `application-documents`
 3. Set Public = false (private bucket for sensitive documents)
+
+**Supabase Storage bucket for contracts:**
+1. Go to Supabase Dashboard > Storage > New bucket
+2. Create bucket named `contracts`
+3. Set Public = false (private bucket for signed contract PDFs)
 
 **Environment variables:**
 1. Add `SUPABASE_SERVICE_KEY` to `.env` (from: Supabase Dashboard > Settings > API > service_role key)
@@ -224,7 +232,8 @@ Phase 7 complete. Begin Phase 8: Leases & Payments.
 | 2026-02-01 | Executed 06-03-PLAN.md | Decision endpoints, notes CRUD, Phase 6 complete |
 | 2026-02-01 | Executed 07-01-PLAN.md | Contract model, ContractStatus enum, Ley 527 compliance fields |
 | 2026-02-01 | Executed 07-02-PLAN.md | ContractStateMachine, SignatureService, ContractTemplateService, PdfGeneratorService |
-| 2026-02-01 | Executed 07-03-PLAN.md | ContractsModule, endpoints, Phase 7 complete |
+| 2026-02-01 | Executed 07-03-PLAN.md | ContractsModule, endpoints |
+| 2026-02-01 | Executed 07-04-PLAN.md | Digital signatures, PDF generation to Supabase Storage, Phase 7 complete |
 
 ---
 *Last updated: 2026-02-01*
