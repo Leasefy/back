@@ -8,8 +8,10 @@ import { PrismaService } from '../database/prisma.service.js';
 import { ContractStateMachine } from './state-machine/contract-state-machine.js';
 import { ContractTemplateService, ContractTemplateData } from './templates/contract-template.service.js';
 import { SignatureService } from './signature/signature.service.js';
+import { PdfGeneratorService } from './pdf/pdf-generator.service.js';
 import { ApplicationStatus, ContractStatus } from '../common/enums/index.js';
 import { CreateContractDto } from './dto/create-contract.dto.js';
+import { SignContractDto } from './dto/sign-contract.dto.js';
 import type { Contract, Prisma } from '@prisma/client';
 
 /**
@@ -27,6 +29,7 @@ export class ContractsService {
     private readonly stateMachine: ContractStateMachine,
     private readonly templateService: ContractTemplateService,
     private readonly signatureService: SignatureService,
+    private readonly pdfGenerator: PdfGeneratorService,
   ) {}
 
   /**
@@ -218,6 +221,158 @@ export class ContractsService {
     });
   }
 
+  /**
+   * Landlord signs the contract.
+   * Transition: PENDING_LANDLORD_SIGNATURE -> PENDING_TENANT_SIGNATURE
+   * Captures full audit trail per Ley 527/1999.
+   *
+   * Requirements: CONT-06, CONT-08
+   */
+  async signAsLandlord(
+    contractId: string,
+    landlordId: string,
+    dto: SignContractDto,
+    ipAddress: string,
+    userAgent: string,
+  ): Promise<Contract> {
+    const contract = await this.verifyLandlordAccess(contractId, landlordId);
+
+    this.stateMachine.validateTransition(
+      contract.status as ContractStatus,
+      ContractStatus.PENDING_TENANT_SIGNATURE,
+    );
+
+    if (!contract.contractHtml) {
+      throw new BadRequestException('Contract HTML not generated');
+    }
+
+    // Get landlord info for audit trail
+    const landlord = await this.prisma.user.findUnique({
+      where: { id: landlordId },
+      select: { id: true, email: true, firstName: true, lastName: true },
+    });
+
+    if (!landlord) {
+      throw new NotFoundException('Landlord not found');
+    }
+
+    // Create audit trail
+    const signatureAudit = this.signatureService.createAuditTrail(
+      landlordId,
+      landlord.email,
+      [landlord.firstName, landlord.lastName].filter(Boolean).join(' ') || 'N/A',
+      'LANDLORD',
+      contract.contractHtml,
+      dto,
+      ipAddress,
+      userAgent,
+    );
+
+    // Update contract with signature and new status
+    return this.prisma.contract.update({
+      where: { id: contractId },
+      data: {
+        status: ContractStatus.PENDING_TENANT_SIGNATURE,
+        landlordSignature: signatureAudit as unknown as Prisma.InputJsonValue,
+        documentHash: signatureAudit.documentHash,
+      },
+    });
+  }
+
+  /**
+   * Tenant signs the contract.
+   * Transition: PENDING_TENANT_SIGNATURE -> SIGNED
+   * Generates PDF after both signatures.
+   *
+   * Requirements: CONT-07, CONT-08, CONT-09
+   */
+  async signAsTenant(
+    contractId: string,
+    tenantId: string,
+    dto: SignContractDto,
+    ipAddress: string,
+    userAgent: string,
+  ): Promise<Contract> {
+    const contract = await this.verifyTenantAccess(contractId, tenantId);
+
+    this.stateMachine.validateTransition(
+      contract.status as ContractStatus,
+      ContractStatus.SIGNED,
+    );
+
+    if (!contract.contractHtml) {
+      throw new BadRequestException('Contract HTML not generated');
+    }
+
+    // Verify landlord already signed
+    if (!contract.landlordSignature) {
+      throw new BadRequestException('Landlord must sign first');
+    }
+
+    // Get tenant info for audit trail
+    const tenant = await this.prisma.user.findUnique({
+      where: { id: tenantId },
+      select: { id: true, email: true, firstName: true, lastName: true },
+    });
+
+    if (!tenant) {
+      throw new NotFoundException('Tenant not found');
+    }
+
+    // Create audit trail
+    const signatureAudit = this.signatureService.createAuditTrail(
+      tenantId,
+      tenant.email,
+      [tenant.firstName, tenant.lastName].filter(Boolean).join(' ') || 'N/A',
+      'TENANT',
+      contract.contractHtml,
+      dto,
+      ipAddress,
+      userAgent,
+    );
+
+    // Update contract with signature
+    const signedContract = await this.prisma.contract.update({
+      where: { id: contractId },
+      data: {
+        status: ContractStatus.SIGNED,
+        tenantSignature: signatureAudit as unknown as Prisma.InputJsonValue,
+        signedAt: new Date(),
+      },
+    });
+
+    // Generate PDF with signatures
+    const pdfPath = await this.pdfGenerator.generateContractPdf(
+      contractId,
+      contract.contractHtml,
+    );
+
+    // Update with PDF path
+    return this.prisma.contract.update({
+      where: { id: contractId },
+      data: { signedPdfPath: pdfPath },
+    });
+  }
+
+  /**
+   * Get signed URL to download the signed PDF.
+   * Either party can download.
+   *
+   * Requirements: CONT-09
+   */
+  async getSignedPdfUrl(
+    contractId: string,
+    userId: string,
+  ): Promise<{ url: string; expiresAt: Date }> {
+    const contract = await this.verifyAccess(contractId, userId);
+
+    if (!contract.signedPdfPath) {
+      throw new BadRequestException('Contract has not been signed yet');
+    }
+
+    return this.pdfGenerator.getSignedPdfUrl(contract.signedPdfPath);
+  }
+
   // === Private helpers ===
 
   private async verifyAccess(contractId: string, userId: string): Promise<Contract> {
@@ -247,6 +402,22 @@ export class ContractsService {
 
     if (contract.landlordId !== landlordId) {
       throw new ForbiddenException('Only the landlord can perform this action');
+    }
+
+    return contract;
+  }
+
+  private async verifyTenantAccess(contractId: string, tenantId: string): Promise<Contract> {
+    const contract = await this.prisma.contract.findUnique({
+      where: { id: contractId },
+    });
+
+    if (!contract) {
+      throw new NotFoundException('Contract not found');
+    }
+
+    if (contract.tenantId !== tenantId) {
+      throw new ForbiddenException('Only the tenant can perform this action');
     }
 
     return contract;
