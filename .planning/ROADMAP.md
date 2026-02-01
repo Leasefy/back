@@ -163,8 +163,13 @@ Plans:
   5. Landlord can request additional info
   6. Landlord can add private notes
   7. Landlord can view candidate documents
-**Research**: Unlikely (builds on previous phases)
-**Plans**: TBD
+**Research**: Complete (06-RESEARCH.md)
+**Plans**: 3 plans
+
+Plans:
+- [ ] 06-01-PLAN.md - Add LandlordNote model to Prisma schema
+- [ ] 06-02-PLAN.md - Create LandlordModule with candidate list and detail endpoints
+- [ ] 06-03-PLAN.md - Add decision endpoints and notes CRUD
 
 ### Phase 7: Contracts
 **Goal**: Digital contract signing with templates and legal compliance
@@ -316,7 +321,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 3. Properties | 4/4 | Complete | 2026-01-29 |
 | 4. Applications & Documents | 5/5 | Complete | 2026-01-29 |
 | 5. Scoring Engine | 3/3 | Complete | 2026-01-30 |
-| 6. Landlord Features | 0/0 | Not started | - |
+| 6. Landlord Features | 0/3 | Ready | - |
 | 7. Contracts | 0/0 | Not started | - |
 | 8. Leases & Payments | 0/0 | Not started | - |
 | 9. Payment History Scoring | 0/0 | Not started | - |
@@ -408,4 +413,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-01-30 - Reordered phases, added Phase 9 (Payment History Scoring)*
+*Last updated: 2026-02-01 - Added Phase 6 plans (Landlord Features)*
