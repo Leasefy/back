@@ -10,3 +10,4 @@ export {
   RISK_LEVEL_RANGES,
   getRiskLevelFromScore,
 } from './risk-level.enum.js';
+export { ContractStatus } from './contract-status.enum.js';

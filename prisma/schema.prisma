@@ -95,6 +95,24 @@ enum RiskLevel {
   D
 }
 
+/// Status of a rental contract
+/// DRAFT: Contract created, not yet sent for signatures
+/// PENDING_LANDLORD_SIGNATURE: Waiting for landlord to sign
+/// PENDING_TENANT_SIGNATURE: Landlord signed, waiting for tenant
+/// SIGNED: Both parties have signed
+/// ACTIVE: Contract is in effect (start date has passed)
+/// CANCELLED: Contract cancelled before activation
+/// EXPIRED: Contract term has ended
+enum ContractStatus {
+  DRAFT
+  PENDING_LANDLORD_SIGNATURE
+  PENDING_TENANT_SIGNATURE
+  SIGNED
+  ACTIVE
+  CANCELLED
+  EXPIRED
+}
+
 // ============================================
 // MODELS
 // ============================================
