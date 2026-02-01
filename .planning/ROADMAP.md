@@ -172,18 +172,25 @@ Plans:
 - [x] 06-03-PLAN.md - Add decision endpoints and notes CRUD
 
 ### Phase 7: Contracts
-**Goal**: Digital contract signing with templates and legal compliance
+**Goal**: Digital contract signing with templates and Ley 527/1999 compliance
 **Depends on**: Phase 6 (after candidate approval)
 **Requirements**: CONT-01 through CONT-10
 **Success Criteria** (what must be TRUE):
-  1. Contract templates available
+  1. Contract templates available with variable substitution
   2. Landlord can generate contract for approved candidate
-  3. Contract includes custom clauses
-  4. Both parties can sign digitally (Ley 527/1999)
-  5. Signed contract generates PDF
-  6. Contract status tracked (draft, pending, signed, active)
-**Research**: Likely (Colombian digital signature law, PDF generation)
-**Plans**: TBD
+  3. Contract includes custom clauses and optional insurance
+  4. Both parties can sign digitally with full audit trail
+  5. Signatures comply with Ley 527/1999 (IP, timestamp, consent, hash)
+  6. Signed contract generates PDF stored in Supabase
+  7. Contract status tracked (DRAFT, PENDING_LANDLORD_SIGNATURE, PENDING_TENANT_SIGNATURE, SIGNED, ACTIVE)
+**Research**: Complete (07-RESEARCH.md)
+**Plans**: 4 plans
+
+Plans:
+- [ ] 07-01-PLAN.md - Add Contract model, ContractStatus enum, database relations
+- [ ] 07-02-PLAN.md - Create ContractStateMachine, ContractTemplateService, SignatureService
+- [ ] 07-03-PLAN.md - Create ContractsModule with create, preview, list endpoints
+- [ ] 07-04-PLAN.md - Add digital signature endpoints and PDF generation
 
 ### Phase 8: Leases & Payments
 **Goal**: Track active leases and payment history
@@ -322,7 +329,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 4. Applications & Documents | 5/5 | Complete | 2026-01-29 |
 | 5. Scoring Engine | 3/3 | Complete | 2026-01-30 |
 | 6. Landlord Features | 3/3 | Complete | 2026-02-01 |
-| 7. Contracts | 0/0 | Not started | - |
+| 7. Contracts | 0/4 | Planned | - |
 | 8. Leases & Payments | 0/0 | Not started | - |
 | 9. Payment History Scoring | 0/0 | Not started | - |
 | 10. AI Document Analysis | 0/0 | Not started | - |
@@ -413,4 +420,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-02-01 - Added Phase 6 plans (Landlord Features)*
+*Last updated: 2026-02-01 - Added Phase 7 plans (Contracts)*
