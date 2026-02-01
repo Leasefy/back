@@ -5,9 +5,19 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service.js';
 import { ApplicationEventService } from '../applications/events/application-event.service.js';
+import { ApplicationStateMachine } from '../applications/state-machine/application-state-machine.js';
 import { DocumentsService } from '../documents/documents.service.js';
 import { ApplicationStatus, RiskLevel, DocumentType, ApplicationEventType } from '../common/enums/index.js';
-import { CandidateCardDto, CandidateDetailDto } from './dto/index.js';
+import {
+  CandidateCardDto,
+  CandidateDetailDto,
+  PreapproveCandidateDto,
+  ApproveCandidateDto,
+  RejectCandidateDto,
+  RequestInfoDto,
+  CreateNoteDto,
+} from './dto/index.js';
+import type { Application, LandlordNote } from '@prisma/client';
 
 /**
  * LandlordService
@@ -25,6 +35,7 @@ import { CandidateCardDto, CandidateDetailDto } from './dto/index.js';
 export class LandlordService {
   constructor(
     private readonly prisma: PrismaService,
+    private readonly stateMachine: ApplicationStateMachine,
     private readonly eventService: ApplicationEventService,
     private readonly documentsService: DocumentsService,
   ) {}
@@ -243,5 +254,206 @@ export class LandlordService {
   ): Promise<{ url: string; expiresAt: Date }> {
     // DocumentsService.getSignedUrl already verifies landlord access
     return this.documentsService.getSignedUrl(applicationId, documentId, landlordId);
+  }
+
+  /**
+   * Pre-approve a candidate.
+   * Transition: UNDER_REVIEW -> PREAPPROVED
+   *
+   * Requirements: LAND-05
+   */
+  async preapprove(
+    applicationId: string,
+    landlordId: string,
+    dto: PreapproveCandidateDto,
+  ): Promise<Application> {
+    const app = await this.verifyApplicationOwnership(applicationId, landlordId);
+
+    // Validate transition using existing state machine
+    this.stateMachine.validateTransition(
+      app.status as ApplicationStatus,
+      ApplicationStatus.PREAPPROVED,
+    );
+
+    // Update status
+    const updated = await this.prisma.application.update({
+      where: { id: applicationId },
+      data: { status: ApplicationStatus.PREAPPROVED },
+    });
+
+    // Log event using existing event service
+    await this.eventService.logStatusChanged(
+      applicationId,
+      landlordId,
+      app.status as ApplicationStatus,
+      ApplicationStatus.PREAPPROVED,
+      dto.message,
+    );
+
+    return updated;
+  }
+
+  /**
+   * Approve a candidate.
+   * Transition: UNDER_REVIEW -> APPROVED or PREAPPROVED -> APPROVED
+   *
+   * Requirements: LAND-06
+   */
+  async approve(
+    applicationId: string,
+    landlordId: string,
+    dto: ApproveCandidateDto,
+  ): Promise<Application> {
+    const app = await this.verifyApplicationOwnership(applicationId, landlordId);
+
+    // Validate transition
+    this.stateMachine.validateTransition(
+      app.status as ApplicationStatus,
+      ApplicationStatus.APPROVED,
+    );
+
+    // Update status
+    const updated = await this.prisma.application.update({
+      where: { id: applicationId },
+      data: { status: ApplicationStatus.APPROVED },
+    });
+
+    // Log event
+    await this.eventService.logStatusChanged(
+      applicationId,
+      landlordId,
+      app.status as ApplicationStatus,
+      ApplicationStatus.APPROVED,
+      dto.message,
+    );
+
+    return updated;
+  }
+
+  /**
+   * Reject a candidate.
+   * Transition: UNDER_REVIEW -> REJECTED or PREAPPROVED -> REJECTED
+   *
+   * Requirements: LAND-07
+   */
+  async reject(
+    applicationId: string,
+    landlordId: string,
+    dto: RejectCandidateDto,
+  ): Promise<Application> {
+    const app = await this.verifyApplicationOwnership(applicationId, landlordId);
+
+    // Validate transition
+    this.stateMachine.validateTransition(
+      app.status as ApplicationStatus,
+      ApplicationStatus.REJECTED,
+    );
+
+    // Update status
+    const updated = await this.prisma.application.update({
+      where: { id: applicationId },
+      data: { status: ApplicationStatus.REJECTED },
+    });
+
+    // Log event with rejection reason
+    await this.eventService.logStatusChanged(
+      applicationId,
+      landlordId,
+      app.status as ApplicationStatus,
+      ApplicationStatus.REJECTED,
+      dto.reason,
+    );
+
+    return updated;
+  }
+
+  /**
+   * Request additional information from candidate.
+   * Transition: UNDER_REVIEW -> NEEDS_INFO
+   *
+   * Requirements: LAND-08
+   */
+  async requestInfo(
+    applicationId: string,
+    landlordId: string,
+    dto: RequestInfoDto,
+  ): Promise<Application> {
+    const app = await this.verifyApplicationOwnership(applicationId, landlordId);
+
+    // Validate transition
+    this.stateMachine.validateTransition(
+      app.status as ApplicationStatus,
+      ApplicationStatus.NEEDS_INFO,
+    );
+
+    // Update status
+    const updated = await this.prisma.application.update({
+      where: { id: applicationId },
+      data: { status: ApplicationStatus.NEEDS_INFO },
+    });
+
+    // Log INFO_REQUESTED event with the specific request
+    await this.eventService.logInfoRequested(applicationId, landlordId, dto.message);
+
+    // Log status change event
+    await this.eventService.logStatusChanged(
+      applicationId,
+      landlordId,
+      app.status as ApplicationStatus,
+      ApplicationStatus.NEEDS_INFO,
+      dto.message,
+    );
+
+    return updated;
+  }
+
+  /**
+   * Create or update a private note on a candidate.
+   * Uses upsert - creates if not exists, updates if exists.
+   *
+   * Requirements: LAND-09
+   */
+  async upsertNote(
+    applicationId: string,
+    landlordId: string,
+    dto: CreateNoteDto,
+  ): Promise<LandlordNote> {
+    await this.verifyApplicationOwnership(applicationId, landlordId);
+
+    return this.prisma.landlordNote.upsert({
+      where: {
+        applicationId_landlordId: {
+          applicationId,
+          landlordId,
+        },
+      },
+      update: {
+        content: dto.content,
+      },
+      create: {
+        applicationId,
+        landlordId,
+        content: dto.content,
+      },
+    });
+  }
+
+  /**
+   * Delete a private note from a candidate.
+   *
+   * Requirements: LAND-09
+   */
+  async deleteNote(
+    applicationId: string,
+    landlordId: string,
+  ): Promise<void> {
+    await this.verifyApplicationOwnership(applicationId, landlordId);
+
+    await this.prisma.landlordNote.deleteMany({
+      where: {
+        applicationId,
+        landlordId,
+      },
+    });
   }
 }
