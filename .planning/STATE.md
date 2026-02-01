@@ -2,12 +2,12 @@
 
 ## Current Status
 
-**Phase:** 6 of 15 (Landlord Features) - NOT STARTED
-**Plan:** 0 of ? (needs planning)
-**Status:** Ready for Phase 6 planning
-**Last activity:** 2026-01-30 - Phase 5 verified and complete
+**Phase:** 6 of 15 (Landlord Features) - IN PROGRESS
+**Plan:** 1 of 3
+**Status:** Executing Phase 6 plans
+**Last activity:** 2026-02-01 - Completed 06-01-PLAN.md (LandlordNote model)
 
-**Progress:** [#####-----] 33% (18/~55 plans estimated)
+**Progress:** [######----] 35% (19/~55 plans estimated)
 
 ## Project Reference
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 3. Properties | COMPLETE | All 4 plans executed |
 | 4. Applications | COMPLETE | All 5 plans executed |
 | 5. Scoring Engine | COMPLETE | All 3 plans executed - async scoring pipeline |
-| 6. Landlord Features | Pending | Approve/reject candidates |
+| 6. Landlord Features | IN PROGRESS | 1/3 plans - LandlordNote model added |
 | 7. Contracts | Pending | Digital signatures |
 | 8. Leases & Payments | Pending | Payment tracking |
 | 9. Payment History Scoring | Pending | NEW - Score from payment history |
@@ -124,11 +124,14 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 2026-01-30 | 05-03 | Prisma InputJsonValue cast | Prisma 7.x strict typing requires cast for Driver/Flag/Condition arrays |
 | 2026-01-30 | 05-03 | Job ID = score-{applicationId} | Prevents duplicate scoring jobs for same application |
 | 2026-01-30 | 05-03 | Condition generation by level | C=deposit (recommended), D=cosigner (required), HIGH_RTI=income verification |
+| 2026-02-01 | 06-01 | LandlordNote unique constraint | One note per landlord per application via [applicationId, landlordId] |
+| 2026-02-01 | 06-01 | Cascade delete on notes | LandlordNote deleted when Application is deleted |
+| 2026-02-01 | 06-01 | Text field for note content | No length limit for flexible note-taking |
 
 ## Session Continuity
 
-**Last session:** 2026-01-30
-**Stopped at:** Phase 5 complete, verified 9/9 must-haves
+**Last session:** 2026-02-01
+**Stopped at:** Completed 06-01-PLAN.md (LandlordNote model)
 **Resume file:** None
 
 ## Pending User Actions
@@ -159,10 +162,10 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 ## Next Action
 
-Plan Phase 6: Landlord Features.
+Execute Phase 6 Plan 02: Landlord Review Endpoints.
 
 ```
-/gsd:plan-phase 6
+/gsd:execute-phase 06-02
 ```
 
 ## Session History
@@ -196,6 +199,7 @@ Plan Phase 6: Landlord Features.
 | 2026-01-30 | Executed 05-01-PLAN.md | RiskScoreResult model, RiskLevel enum, BullMQ queue |
 | 2026-01-30 | Executed 05-02-PLAN.md | FeatureBuilder, FinancialModel, StabilityModel, HistoryModel, IntegrityEngine |
 | 2026-01-30 | Executed 05-03-PLAN.md | ScoreAggregator, ScoringProcessor, ScoringService, submit integration |
+| 2026-02-01 | Executed 06-01-PLAN.md | LandlordNote model, database table, relations |
 
 ---
-*Last updated: 2026-01-30*
+*Last updated: 2026-02-01*
