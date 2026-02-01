@@ -5,10 +5,12 @@ import {
   Body,
   Param,
   ParseUUIDPipe,
+  Req,
 } from '@nestjs/common';
+import type { Request } from 'express';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { ContractsService } from './contracts.service.js';
-import { CreateContractDto } from './dto/create-contract.dto.js';
+import { CreateContractDto, SignContractDto } from './dto/index.js';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import { Roles } from '../auth/decorators/roles.decorator.js';
 import { Role } from '../common/enums/index.js';
@@ -23,6 +25,8 @@ import type { User } from '@prisma/client';
  * Role-based access:
  * - POST /contracts - LANDLORD or BOTH
  * - POST /contracts/:id/send - LANDLORD or BOTH
+ * - POST /contracts/:id/sign/landlord - LANDLORD or BOTH
+ * - POST /contracts/:id/sign/tenant - TENANT or BOTH
  * - GET endpoints - any authenticated user (access validated in service)
  */
 @ApiTags('Contracts')
@@ -105,5 +109,67 @@ export class ContractsController {
     @Param('id', ParseUUIDPipe) id: string,
   ) {
     return this.contractsService.sendForSigning(id, user.id);
+  }
+
+  /**
+   * Landlord signs the contract.
+   * Transition: PENDING_LANDLORD_SIGNATURE -> PENDING_TENANT_SIGNATURE
+   *
+   * Requirements: CONT-06, CONT-08
+   */
+  @Post(':id/sign/landlord')
+  @Roles(Role.LANDLORD, Role.BOTH)
+  @ApiOperation({ summary: 'Landlord signs contract' })
+  @ApiResponse({ status: 200, description: 'Contract signed by landlord' })
+  @ApiResponse({ status: 400, description: 'Invalid state or missing consent' })
+  async signAsLandlord(
+    @CurrentUser() user: User,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: SignContractDto,
+    @Req() req: Request,
+  ) {
+    const ip = (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress || 'unknown';
+    const userAgent = req.headers['user-agent'] || 'unknown';
+    return this.contractsService.signAsLandlord(id, user.id, dto, ip, userAgent);
+  }
+
+  /**
+   * Tenant signs the contract.
+   * Transition: PENDING_TENANT_SIGNATURE -> SIGNED
+   * Generates PDF after signing.
+   *
+   * Requirements: CONT-07, CONT-08, CONT-09
+   */
+  @Post(':id/sign/tenant')
+  @Roles(Role.TENANT, Role.BOTH)
+  @ApiOperation({ summary: 'Tenant signs contract' })
+  @ApiResponse({ status: 200, description: 'Contract signed by tenant, PDF generated' })
+  @ApiResponse({ status: 400, description: 'Invalid state or missing consent' })
+  async signAsTenant(
+    @CurrentUser() user: User,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: SignContractDto,
+    @Req() req: Request,
+  ) {
+    const ip = (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress || 'unknown';
+    const userAgent = req.headers['user-agent'] || 'unknown';
+    return this.contractsService.signAsTenant(id, user.id, dto, ip, userAgent);
+  }
+
+  /**
+   * Download signed contract PDF.
+   * Returns signed URL with 1-hour expiry.
+   *
+   * Requirements: CONT-09
+   */
+  @Get(':id/pdf')
+  @ApiOperation({ summary: 'Download signed contract PDF' })
+  @ApiResponse({ status: 200, description: 'Signed URL for PDF download' })
+  @ApiResponse({ status: 400, description: 'Contract not signed yet' })
+  async getPdf(
+    @CurrentUser() user: User,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.contractsService.getSignedPdfUrl(id, user.id);
   }
 }
