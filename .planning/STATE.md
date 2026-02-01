@@ -2,12 +2,12 @@
 
 ## Current Status
 
-**Phase:** 6 of 15 (Landlord Features) - IN PROGRESS
-**Plan:** 2 of 3
-**Status:** Executing Phase 6 plans
-**Last activity:** 2026-02-01 - Completed 06-02-PLAN.md (Landlord Review Endpoints)
+**Phase:** 6 of 15 (Landlord Features) - COMPLETE
+**Plan:** 3 of 3
+**Status:** Phase 6 complete - Ready for Phase 7
+**Last activity:** 2026-02-01 - Completed 06-03-PLAN.md (Decision Endpoints)
 
-**Progress:** [######----] 36% (20/~55 plans estimated)
+**Progress:** [#######---] 38% (21/~55 plans estimated)
 
 ## Project Reference
 
@@ -15,7 +15,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 **Core value:** Ejecutar el Risk Score con analisis inteligente de documentos para que propietarios tomen decisiones informadas en minutos, con explicabilidad total.
 
-**Current focus:** Phase 6 - Landlord Features. Landlords need to view, approve/reject candidates.
+**Current focus:** Phase 6 - Landlord Features COMPLETE. Ready for Phase 7 - Contracts.
 
 ## Quick Context
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 3. Properties | COMPLETE | All 4 plans executed |
 | 4. Applications | COMPLETE | All 5 plans executed |
 | 5. Scoring Engine | COMPLETE | All 3 plans executed - async scoring pipeline |
-| 6. Landlord Features | IN PROGRESS | 2/3 plans - Review endpoints added |
+| 6. Landlord Features | COMPLETE | All 3 plans - decisions, notes, review |
 | 7. Contracts | Pending | Digital signatures |
 | 8. Leases & Payments | Pending | Payment tracking |
 | 9. Payment History Scoring | Pending | NEW - Score from payment history |
@@ -130,11 +130,14 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 2026-02-01 | 06-02 | Reviewable statuses filter | SUBMITTED, UNDER_REVIEW, NEEDS_INFO, PREAPPROVED |
 | 2026-02-01 | 06-02 | Candidate sort order | Score desc, then submission date asc |
 | 2026-02-01 | 06-02 | Document URL delegation | Reuse DocumentsService.getSignedUrl() for landlord access |
+| 2026-02-01 | 06-03 | Reject requires reason | For transparency and legal compliance |
+| 2026-02-01 | 06-03 | requestInfo logs two events | INFO_REQUESTED and STATUS_CHANGED for complete audit trail |
+| 2026-02-01 | 06-03 | Notes upsert pattern | Single POST endpoint creates or updates using compound unique key |
 
 ## Session Continuity
 
 **Last session:** 2026-02-01
-**Stopped at:** Completed 06-02-PLAN.md (Landlord Review Endpoints)
+**Stopped at:** Completed 06-03-PLAN.md (Decision Endpoints)
 **Resume file:** None
 
 ## Pending User Actions
@@ -165,10 +168,10 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 ## Next Action
 
-Execute Phase 6 Plan 03: Landlord Decision Endpoints (approve, reject, preapprove, request-info).
+Phase 6 complete. Begin Phase 7: Contracts.
 
 ```
-/gsd:execute-phase 06-03
+/gsd:plan-phase 07
 ```
 
 ## Session History
@@ -204,6 +207,7 @@ Execute Phase 6 Plan 03: Landlord Decision Endpoints (approve, reject, preapprov
 | 2026-01-30 | Executed 05-03-PLAN.md | ScoreAggregator, ScoringProcessor, ScoringService, submit integration |
 | 2026-02-01 | Executed 06-01-PLAN.md | LandlordNote model, database table, relations |
 | 2026-02-01 | Executed 06-02-PLAN.md | LandlordModule, review endpoints, candidate sorting |
+| 2026-02-01 | Executed 06-03-PLAN.md | Decision endpoints, notes CRUD, Phase 6 complete |
 
 ---
 *Last updated: 2026-02-01*
