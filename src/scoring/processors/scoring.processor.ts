@@ -9,7 +9,9 @@ import { FinancialModel } from '../models/financial-model.js';
 import { StabilityModel } from '../models/stability-model.js';
 import { HistoryModel } from '../models/history-model.js';
 import { IntegrityEngine } from '../models/integrity-engine.js';
+import { PaymentHistoryModel } from '../models/payment-history-model.js';
 import { ScoreAggregator } from '../aggregator/score-aggregator.js';
+import { PaymentHistoryService } from '../services/payment-history.service.js';
 import { ScoringJobData } from '../dto/scoring-job.dto.js';
 
 /**
@@ -37,6 +39,8 @@ export class ScoringProcessor extends WorkerHost {
     private readonly historyModel: HistoryModel,
     private readonly integrityEngine: IntegrityEngine,
     private readonly scoreAggregator: ScoreAggregator,
+    private readonly paymentHistoryService: PaymentHistoryService,
+    private readonly paymentHistoryModel: PaymentHistoryModel,
   ) {
     super();
   }
@@ -58,22 +62,29 @@ export class ScoringProcessor extends WorkerHost {
       include: { property: true },
     });
 
-    // 2. Extract features from application data
+    // 2. Get payment history metrics for tenant
+    const paymentMetrics = await this.paymentHistoryService.getMetricsForTenant(
+      application.tenantId,
+    );
+    const paymentHistoryResult = this.paymentHistoryModel.calculate(paymentMetrics);
+
+    // 3. Extract features from application data
     const features = this.featureBuilder.build(application, application.property);
 
-    // 3. Run all scoring models
+    // 4. Run all scoring models
     const financialResult = this.financialModel.calculate(features);
     const stabilityResult = this.stabilityModel.calculate(features);
     const historyResult = this.historyModel.calculate(features);
     // IntegrityEngine uses analyze() which requires the full application for context
     const integrityResult = this.integrityEngine.analyze(application, features);
 
-    // 4. Aggregate scores into final result
+    // 5. Aggregate scores into final result (including payment history bonus)
     const result = this.scoreAggregator.combine({
       financial: financialResult,
       stability: stabilityResult,
       history: historyResult,
       integrity: integrityResult,
+      paymentHistory: paymentHistoryResult,
     });
 
     // Collect all raw signals for debugging and analysis
@@ -82,9 +93,10 @@ export class ScoringProcessor extends WorkerHost {
       ...stabilityResult.signals,
       ...historyResult.signals,
       ...integrityResult.signals,
+      ...paymentHistoryResult.signals,
     ];
 
-    // 5. Persist result to database
+    // 6. Persist result to database
     // Cast arrays to InputJsonValue for Prisma 7.x strict JSON typing
     await this.prisma.riskScoreResult.create({
       data: {
@@ -95,15 +107,16 @@ export class ScoringProcessor extends WorkerHost {
         stabilityScore: result.categories.stability,
         historyScore: result.categories.history,
         integrityScore: result.categories.integrity,
+        paymentHistoryScore: result.categories.paymentHistory ?? 0,
         signals: allSignals as unknown as Prisma.InputJsonValue,
         drivers: result.drivers as unknown as Prisma.InputJsonValue,
         flags: result.flags as unknown as Prisma.InputJsonValue,
         conditions: result.conditions as unknown as Prisma.InputJsonValue,
-        algorithmVersion: '1.0',
+        algorithmVersion: '1.1',
       },
     });
 
-    // 6. Update application status to UNDER_REVIEW
+    // 7. Update application status to UNDER_REVIEW
     // Scoring runs async via BullMQ
     // Application transitions from SUBMITTED to UNDER_REVIEW when scoring completes
     await this.prisma.application.update({

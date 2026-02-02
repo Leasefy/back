@@ -14,6 +14,10 @@ import { IntegrityEngine } from './models/integrity-engine.js';
 // Score aggregation
 import { ScoreAggregator } from './aggregator/score-aggregator.js';
 
+// Payment history scoring
+import { PaymentHistoryService } from './services/payment-history.service.js';
+import { PaymentHistoryModel } from './models/payment-history-model.js';
+
 // Processor, service, and controller
 import { ScoringProcessor } from './processors/scoring.processor.js';
 import { ScoringService } from './scoring.service.js';
@@ -27,22 +31,25 @@ import { ScoringController } from './scoring.controller.js';
  * - Redis connection via Upstash
  * - Feature extraction from application data
  * - Scoring models for different risk dimensions
+ * - Payment history bonus scoring
  *
  * The queue 'scoring' is used to:
  * - Process applications asynchronously
  * - Retry failed scoring attempts (3 attempts, exponential backoff)
  * - Keep history of completed/failed jobs for debugging
  *
- * Scoring Models (total 100 points):
+ * Scoring Models (total 100 points base + 15 bonus):
  * - FinancialModel (35): RTI, DTI, disposable buffer
  * - StabilityModel (25): employment type, tenure, employer contact
  * - HistoryModel (15): landlord, employment, personal references
  * - IntegrityEngine (25): data consistency checks
+ * - PaymentHistoryModel (+0-15 bonus): platform payment track record
  *
  * Complete provider list:
  * - FeatureBuilder: Extract scoring features from application data
- * - FinancialModel, StabilityModel, HistoryModel, IntegrityEngine: Scoring models
- * - ScoreAggregator: Combine subscores into final result
+ * - FinancialModel, StabilityModel, HistoryModel, IntegrityEngine: Base scoring models
+ * - PaymentHistoryService, PaymentHistoryModel: Payment history bonus scoring
+ * - ScoreAggregator: Combine subscores into final result (capped at 100)
  * - ScoringProcessor: BullMQ worker for async job processing
  * - ScoringService: Queue job creation interface
  */
@@ -86,6 +93,9 @@ import { ScoringController } from './scoring.controller.js';
     StabilityModel,
     HistoryModel,
     IntegrityEngine,
+    // Payment history scoring
+    PaymentHistoryService,
+    PaymentHistoryModel,
     // Score aggregation
     ScoreAggregator,
     // Async processing
@@ -95,6 +105,9 @@ import { ScoringController } from './scoring.controller.js';
   exports: [
     // Export ScoringService for use in ApplicationsModule
     ScoringService,
+    // Export PaymentHistoryService for controller use
+    PaymentHistoryService,
+    PaymentHistoryModel,
   ],
 })
 export class ScoringModule {}
