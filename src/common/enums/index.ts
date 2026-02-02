@@ -13,3 +13,7 @@ export {
 export { ContractStatus } from './contract-status.enum.js';
 export { LeaseStatus } from './lease-status.enum.js';
 export { PaymentMethod } from './payment-method.enum.js';
+export { TenantPaymentRequestStatus } from './tenant-payment-request-status.enum.js';
+export { PaymentDisputeStatus } from './payment-dispute-status.enum.js';
+export { ColombianBank, BANK_DISPLAY_NAMES } from './colombian-banks.enum.js';
+export { AccountType, ACCOUNT_TYPE_DISPLAY } from './account-type.enum.js';
