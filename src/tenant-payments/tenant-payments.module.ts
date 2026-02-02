@@ -8,6 +8,8 @@ import { PseMockService } from './pse-mock/pse-mock.service.js';
 import { PseMockController } from './pse-mock/pse-mock.controller.js';
 import { PaymentValidationService } from './validation/payment-validation.service.js';
 import { PaymentValidationController } from './validation/payment-validation.controller.js';
+import { DisputesService } from './disputes/disputes.service.js';
+import { DisputesController } from './disputes/disputes.controller.js';
 import { LeasesModule } from '../leases/leases.module.js';
 
 /**
@@ -19,10 +21,11 @@ import { LeasesModule } from '../leases/leases.module.js';
  * - Tenant payment requests with receipt upload
  * - PSE mock payment processing
  * - Landlord payment validation (approve/reject)
+ * - Payment dispute workflow for rejected payments
  *
  * Note: PrismaModule is global, so no need to import.
  *
- * Requirements: TPAY-01 through TPAY-10
+ * Requirements: TPAY-01 through TPAY-12
  */
 @Module({
   imports: [LeasesModule],
@@ -31,6 +34,7 @@ import { LeasesModule } from '../leases/leases.module.js';
     TenantPaymentsController,
     PseMockController,
     PaymentValidationController,
+    DisputesController,
   ],
   providers: [
     LandlordPaymentMethodsService,
@@ -38,6 +42,7 @@ import { LeasesModule } from '../leases/leases.module.js';
     ReceiptStorageService,
     PseMockService,
     PaymentValidationService,
+    DisputesService,
   ],
   exports: [LandlordPaymentMethodsService, TenantPaymentsService],
 })
