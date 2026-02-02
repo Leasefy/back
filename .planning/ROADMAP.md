@@ -28,7 +28,7 @@ Backend API en NestJS para el marketplace de arriendos "Arriendo Facil". Provee 
 - [x] **Phase 6: Landlord Features** - Candidates, decisions, approve/reject
 - [x] **Phase 7: Contracts** - Templates, digital signatures, clauses
 - [x] **Phase 8: Leases & Payments** - Active leases, payment tracking
-- [ ] **Phase 9: Payment History Scoring** - Score bonus from payment history (NEW)
+- [x] **Phase 9: Payment History Scoring** - Score bonus from payment history (NEW)
 - [ ] **Phase 10: AI Document Analysis** - Claude integration, document analyzers (PRO+)
 - [ ] **Phase 11: Explainability** - Drivers, flags, AI explanation (PRO+)
 - [ ] **Phase 12: Notifications** - Email service, templates, queue
@@ -228,8 +228,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 09-01-PLAN.md - Create PaymentHistoryService and PaymentHistoryModel
-- [ ] 09-02-PLAN.md - Integrate into ScoringProcessor and add tenant reputation endpoint
+- [x] 09-01-PLAN.md - Create PaymentHistoryService and PaymentHistoryModel
+- [x] 09-02-PLAN.md - Integrate into ScoringProcessor and add tenant reputation endpoint
 
 **Scoring Factors:**
 - % pagos a tiempo (max 8 pts bonus)
@@ -341,7 +341,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 6. Landlord Features | 3/3 | Complete | 2026-02-01 |
 | 7. Contracts | 4/4 | Complete | 2026-02-01 |
 | 8. Leases & Payments | 3/3 | Complete | 2026-02-01 |
-| 9. Payment History Scoring | 0/2 | Planned | - |
+| 9. Payment History Scoring | 2/2 | Complete | 2026-02-02 |
 | 10. AI Document Analysis | 0/0 | Not started | - |
 | 11. Explainability | 0/0 | Not started | - |
 | 12. Notifications | 0/0 | Not started | - |
@@ -430,4 +430,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-02-02 - Phase 9 planned (2 plans)*
+*Last updated: 2026-02-02 - Completed Phase 9 (Payment History Scoring)*
