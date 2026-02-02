@@ -189,18 +189,18 @@ Requirements for MVP release. Each maps to roadmap phases.
 
 ### Tenant Payment Simulation (TPAY)
 
-- [ ] **TPAY-01**: Landlord can configure payment methods (bank accounts, Nequi, Daviplata)
-- [ ] **TPAY-02**: Payment method configuration includes bank name, account type, account number
-- [ ] **TPAY-03**: Tenant can view landlord's configured payment methods
-- [ ] **TPAY-04**: Tenant can select payment type: Transfer or PSE
-- [ ] **TPAY-05**: Payment form auto-fills amount from lease rent value
-- [ ] **TPAY-06**: For Transfer: tenant uploads payment receipt (comprobante) to Supabase Storage
-- [ ] **TPAY-07**: For PSE: tenant fills mock form (name, document type/number, bank selection)
-- [ ] **TPAY-08**: PSE mock form validates and returns simulated response
-- [ ] **TPAY-09**: Receipt upload creates pending payment record (status: PENDING_VALIDATION)
-- [ ] **TPAY-10**: Approved payments integrate with existing payment recording flow
-- [ ] **TPAY-11**: If landlord rejects payment, tenant can open dispute (solicitud de inconformidad)
-- [ ] **TPAY-12**: Dispute creates support ticket with reason and evidence for review
+- [x] **TPAY-01**: Landlord can configure payment methods (bank accounts, Nequi, Daviplata)
+- [x] **TPAY-02**: Payment method configuration includes bank name, account type, account number
+- [x] **TPAY-03**: Tenant can view landlord's configured payment methods
+- [x] **TPAY-04**: Tenant can select payment type: Transfer or PSE
+- [x] **TPAY-05**: Payment form auto-fills amount from lease rent value
+- [x] **TPAY-06**: For Transfer: tenant uploads payment receipt (comprobante) to Supabase Storage
+- [x] **TPAY-07**: For PSE: tenant fills mock form (name, document type/number, bank selection)
+- [x] **TPAY-08**: PSE mock form validates and returns simulated response
+- [x] **TPAY-09**: Receipt upload creates pending payment record (status: PENDING_VALIDATION)
+- [x] **TPAY-10**: Approved payments integrate with existing payment recording flow
+- [x] **TPAY-11**: If landlord rejects payment, tenant can open dispute (solicitud de inconformidad)
+- [x] **TPAY-12**: Dispute creates support ticket with reason and evidence for review
 
 ### Insurance (INSU)
 
@@ -387,18 +387,18 @@ Which phases cover which requirements. Updated by roadmap creation.
 | PHSC-04 | Phase 9 | Complete |
 | PHSC-05 | Phase 9 | Complete |
 | PHSC-06 | Phase 9 | Complete |
-| TPAY-01 | Phase 10 | Pending |
-| TPAY-02 | Phase 10 | Pending |
-| TPAY-03 | Phase 10 | Pending |
-| TPAY-04 | Phase 10 | Pending |
-| TPAY-05 | Phase 10 | Pending |
-| TPAY-06 | Phase 10 | Pending |
-| TPAY-07 | Phase 10 | Pending |
-| TPAY-08 | Phase 10 | Pending |
-| TPAY-09 | Phase 10 | Pending |
-| TPAY-10 | Phase 10 | Pending |
-| TPAY-11 | Phase 10 | Pending |
-| TPAY-12 | Phase 10 | Pending |
+| TPAY-01 | Phase 10 | Complete |
+| TPAY-02 | Phase 10 | Complete |
+| TPAY-03 | Phase 10 | Complete |
+| TPAY-04 | Phase 10 | Complete |
+| TPAY-05 | Phase 10 | Complete |
+| TPAY-06 | Phase 10 | Complete |
+| TPAY-07 | Phase 10 | Complete |
+| TPAY-08 | Phase 10 | Complete |
+| TPAY-09 | Phase 10 | Complete |
+| TPAY-10 | Phase 10 | Complete |
+| TPAY-11 | Phase 10 | Complete |
+| TPAY-12 | Phase 10 | Complete |
 | INSU-01 | Phase 16 | Pending |
 | INSU-02 | Phase 16 | Pending |
 | INSU-03 | Phase 16 | Pending |

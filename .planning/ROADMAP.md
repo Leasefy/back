@@ -30,7 +30,7 @@ Backend API en NestJS para el marketplace de arriendos "Arriendo Facil". Provee 
 - [x] **Phase 7: Contracts** - Templates, digital signatures, clauses
 - [x] **Phase 8: Leases & Payments** - Active leases, payment tracking
 - [x] **Phase 9: Payment History Scoring** - Score bonus from payment history (NEW)
-- [ ] **Phase 10: Tenant Payment Simulation** - Payment form, receipt upload, landlord validation (NEW)
+- [x] **Phase 10: Tenant Payment Simulation** - Payment form, receipt upload, landlord validation (NEW)
 - [ ] **Phase 11: AI Document Analysis** - Claude integration, document analyzers (PRO+)
 - [ ] **Phase 12: Explainability** - Drivers, flags, AI explanation (PRO+)
 - [ ] **Phase 13: Notifications** - Email service, templates, queue
@@ -262,12 +262,12 @@ Plans:
 **Plans**: 6 plans
 
 Plans:
-- [ ] 10-01-PLAN.md - Create database models and enums for tenant payment simulation
-- [ ] 10-02-PLAN.md - Create landlord payment methods configuration endpoints
-- [ ] 10-03-PLAN.md - Create tenant payment request with receipt upload
-- [ ] 10-04-PLAN.md - Create PSE mock payment flow
-- [ ] 10-05-PLAN.md - Create landlord payment validation with approval flow
-- [ ] 10-06-PLAN.md - Create disputes workflow for rejected payments
+- [x] 10-01-PLAN.md - Create database models and enums for tenant payment simulation
+- [x] 10-02-PLAN.md - Create landlord payment methods configuration endpoints
+- [x] 10-03-PLAN.md - Create tenant payment request with receipt upload
+- [x] 10-04-PLAN.md - Create PSE mock payment flow
+- [x] 10-05-PLAN.md - Create landlord payment validation with approval flow
+- [x] 10-06-PLAN.md - Create disputes workflow for rejected payments
 
 **Note**: Notifications (push + email) for payment events handled in Phase 13.
 
@@ -399,7 +399,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 7. Contracts | 4/4 | Complete | 2026-02-01 |
 | 8. Leases & Payments | 3/3 | Complete | 2026-02-01 |
 | 9. Payment History Scoring | 2/2 | Complete | 2026-02-02 |
-| 10. Tenant Payment Simulation | 0/6 | Planned | - |
+| 10. Tenant Payment Simulation | 6/6 | Complete | 2026-02-02 |
 | 11. AI Document Analysis | 0/0 | Not started | - |
 | 12. Explainability | 0/0 | Not started | - |
 | 13. Notifications | 0/0 | Not started | - |
@@ -489,4 +489,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-02-02 - Phase 10 plans created (6 plans in 3 waves)*
+*Last updated: 2026-02-02 - Completed Phase 10 (Tenant Payment Simulation)*
