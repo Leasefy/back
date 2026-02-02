@@ -165,14 +165,14 @@ Requirements for MVP release. Each maps to roadmap phases.
 
 ### Leases & Payments (LEAS)
 
-- [ ] **LEAS-01**: Lease created automatically from signed contract
-- [ ] **LEAS-02**: Lease status tracked (active, ending_soon, ended, terminated)
-- [ ] **LEAS-03**: Lease includes denormalized property/tenant/landlord info
-- [ ] **LEAS-04**: Landlord can record payment received
-- [ ] **LEAS-05**: Payment methods supported (transfer, PSE, cash)
-- [ ] **LEAS-06**: Payment history visible to both parties
-- [ ] **LEAS-07**: Tenant can view active lease details
-- [ ] **LEAS-08**: Landlord can view all their leases
+- [x] **LEAS-01**: Lease created automatically from signed contract
+- [x] **LEAS-02**: Lease status tracked (active, ending_soon, ended, terminated)
+- [x] **LEAS-03**: Lease includes denormalized property/tenant/landlord info
+- [x] **LEAS-04**: Landlord can record payment received
+- [x] **LEAS-05**: Payment methods supported (transfer, PSE, cash)
+- [x] **LEAS-06**: Payment history visible to both parties
+- [x] **LEAS-07**: Tenant can view active lease details
+- [x] **LEAS-08**: Landlord can view all their leases
 
 ### Insurance (INSU)
 
@@ -341,14 +341,14 @@ Which phases cover which requirements. Updated by roadmap creation.
 | CONT-08 | Phase 12 | Pending |
 | CONT-09 | Phase 12 | Pending |
 | CONT-10 | Phase 12 | Pending |
-| LEAS-01 | Phase 13 | Pending |
-| LEAS-02 | Phase 13 | Pending |
-| LEAS-03 | Phase 13 | Pending |
-| LEAS-04 | Phase 13 | Pending |
-| LEAS-05 | Phase 13 | Pending |
-| LEAS-06 | Phase 13 | Pending |
-| LEAS-07 | Phase 13 | Pending |
-| LEAS-08 | Phase 13 | Pending |
+| LEAS-01 | Phase 8 | Complete |
+| LEAS-02 | Phase 8 | Complete |
+| LEAS-03 | Phase 8 | Complete |
+| LEAS-04 | Phase 8 | Complete |
+| LEAS-05 | Phase 8 | Complete |
+| LEAS-06 | Phase 8 | Complete |
+| LEAS-07 | Phase 8 | Complete |
+| LEAS-08 | Phase 8 | Complete |
 | INSU-01 | Phase 14 | Pending |
 | INSU-02 | Phase 14 | Pending |
 | INSU-03 | Phase 14 | Pending |
