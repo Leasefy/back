@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ConfigModule } from './config/config.module.js';
 import { PrismaModule } from './database/prisma.module.js';
 import { HealthModule } from './health/health.module.js';
@@ -19,6 +20,12 @@ import { AppService } from './app.service.js';
 @Module({
   imports: [
     ConfigModule,
+    EventEmitterModule.forRoot({
+      // No wildcards needed, using explicit event names
+      wildcard: false,
+      // Throw errors from listeners (for debugging)
+      ignoreErrors: false,
+    }),
     PrismaModule,
     HealthModule,
     AuthModule,
