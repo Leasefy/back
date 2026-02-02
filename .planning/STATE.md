@@ -2,12 +2,12 @@
 
 ## Current Status
 
-**Phase:** 7 of 15 (Contracts) - COMPLETE
-**Plan:** 4 of 4
-**Status:** Phase 7 complete - Contracts module ready with signatures and PDF
-**Last activity:** 2026-02-01 - Completed 07-04-PLAN.md (Contract Signatures)
+**Phase:** 8 of 15 (Leases & Payments) - In Progress
+**Plan:** 1 of 3
+**Status:** Plan 08-01 complete - Lease and Payment models ready
+**Last activity:** 2026-02-02 - Completed 08-01-PLAN.md (Lease & Payment Models)
 
-**Progress:** [########--] 45% (25/~56 plans estimated)
+**Progress:** [########--] 46% (26/~56 plans estimated)
 
 ## Project Reference
 
@@ -15,7 +15,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 **Core value:** Ejecutar el Risk Score con analisis inteligente de documentos para que propietarios tomen decisiones informadas en minutos, con explicabilidad total.
 
-**Current focus:** Phase 7 complete. Contracts module with create, list, detail, preview, send, digital signatures, and PDF generation.
+**Current focus:** Phase 8 in progress. Lease and Payment database models created. Next: lease services and DTOs.
 
 ## Quick Context
 
@@ -36,7 +36,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 5. Scoring Engine | COMPLETE | All 3 plans executed - async scoring pipeline |
 | 6. Landlord Features | COMPLETE | All 3 plans - decisions, notes, review |
 | 7. Contracts | COMPLETE | All 4 plans - model, services, endpoints, signatures |
-| 8. Leases & Payments | Pending | Payment tracking |
+| 8. Leases & Payments | In Progress | Plan 1/3 complete - models ready |
 | 9. Payment History Scoring | Pending | NEW - Score from payment history |
 | 10. AI Document Analysis | Pending | PRO+ tier - Claude integration |
 | 11. Explainability | Pending | PRO+ tier - AI explanations |
@@ -150,11 +150,15 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 2026-02-01 | 07-04 | import type for Express Request | Required for isolatedModules + emitDecoratorMetadata compatibility |
 | 2026-02-01 | 07-04 | 1-hour signed URL expiry for PDF | Balance between security and usability for contract downloads |
 | 2026-02-01 | 07-04 | Reuse PdfGeneratorService | Extended with Supabase Storage methods rather than new service |
+| 2026-02-02 | 08-01 | Denormalized lease fields | Snapshot property/tenant/landlord data at lease creation for stable audit |
+| 2026-02-02 | 08-01 | Colombian payment methods | PSE, NEQUI, DAVIPLATA, BANK_TRANSFER, CASH, CHECK |
+| 2026-02-02 | 08-01 | Unique payment constraint | [leaseId, periodMonth, periodYear] prevents duplicate period payments |
+| 2026-02-02 | 08-01 | paymentDay 1-28 | Avoids month-end edge cases (Feb 29, 30, 31) |
 
 ## Session Continuity
 
-**Last session:** 2026-02-01
-**Stopped at:** Completed 07-04-PLAN.md (Contract Signatures) - Phase 7 complete
+**Last session:** 2026-02-02
+**Stopped at:** Completed 08-01-PLAN.md (Lease & Payment Models)
 **Resume file:** None
 
 ## Pending User Actions
@@ -190,10 +194,10 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 ## Next Action
 
-Phase 7 complete. Begin Phase 8: Leases & Payments.
+Continue Phase 8: Leases & Payments with Plan 02 (Lease Services).
 
 ```
-/gsd:plan-phase 08
+/gsd:execute-phase 08-02
 ```
 
 ## Session History
@@ -234,6 +238,7 @@ Phase 7 complete. Begin Phase 8: Leases & Payments.
 | 2026-02-01 | Executed 07-02-PLAN.md | ContractStateMachine, SignatureService, ContractTemplateService, PdfGeneratorService |
 | 2026-02-01 | Executed 07-03-PLAN.md | ContractsModule, endpoints |
 | 2026-02-01 | Executed 07-04-PLAN.md | Digital signatures, PDF generation to Supabase Storage, Phase 7 complete |
+| 2026-02-02 | Executed 08-01-PLAN.md | Lease/Payment models, LeaseStatus/PaymentMethod enums |
 
 ---
-*Last updated: 2026-02-01*
+*Last updated: 2026-02-02*
