@@ -10,7 +10,12 @@ import { LeasesService } from '../leases/leases.service.js';
 import { ReceiptStorageService } from './receipt-storage/receipt-storage.service.js';
 import { CreatePaymentRequestDto } from './dto/create-payment-request.dto.js';
 import { PaymentInfoResponseDto } from './dto/payment-info-response.dto.js';
-import { TenantPaymentRequestStatus, LeaseStatus } from '../common/enums/index.js';
+import {
+  TenantPaymentRequestStatus,
+  LeaseStatus,
+  PaymentMethod,
+  ColombianBank,
+} from '../common/enums/index.js';
 import type { TenantPaymentRequest, LandlordPaymentMethod } from '@prisma/client';
 
 /**
@@ -29,6 +34,58 @@ export class TenantPaymentsService {
     private readonly leasesService: LeasesService,
     private readonly receiptStorage: ReceiptStorageService,
   ) {}
+
+  /**
+   * TPAY-08: Create payment request from successful PSE mock.
+   *
+   * No receipt needed - PSE transaction ID serves as reference.
+   * Called by PseMockController after successful PSE processing.
+   */
+  async createFromPse(
+    tenantId: string,
+    leaseId: string,
+    data: {
+      amount?: number;
+      periodMonth: number;
+      periodYear: number;
+      pseTransactionId: string;
+      pseBankCode: ColombianBank;
+    },
+  ): Promise<TenantPaymentRequest> {
+    // Verify tenant access to lease
+    const lease = await this.verifyTenantAccess(leaseId, tenantId);
+
+    // Check lease is active
+    if (
+      lease.status !== LeaseStatus.ACTIVE &&
+      lease.status !== LeaseStatus.ENDING_SOON
+    ) {
+      throw new BadRequestException('Can only submit payments for active leases');
+    }
+
+    // Check for duplicates
+    await this.checkNoDuplicates(leaseId, data.periodMonth, data.periodYear);
+
+    // Use lease rent if amount not provided
+    const amount = data.amount ?? lease.monthlyRent;
+
+    // Create payment request with PSE data
+    return this.prisma.tenantPaymentRequest.create({
+      data: {
+        leaseId,
+        tenantId,
+        amount,
+        paymentMethod: PaymentMethod.PSE,
+        periodMonth: data.periodMonth,
+        periodYear: data.periodYear,
+        paymentDate: new Date(),
+        pseTransactionId: data.pseTransactionId,
+        pseBankCode: data.pseBankCode,
+        referenceNumber: data.pseTransactionId,
+        status: TenantPaymentRequestStatus.PENDING_VALIDATION,
+      },
+    });
+  }
 
   /**
    * TPAY-03: Get landlord's payment methods for a lease.
