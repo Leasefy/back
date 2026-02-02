@@ -204,8 +204,13 @@ Plans:
   5. Tenant and landlord can view lease details
   6. Payment history visible
   7. Payment due dates tracked
-**Research**: Likely (payment integration patterns)
-**Plans**: TBD
+**Research**: Complete (08-RESEARCH.md)
+**Plans**: 3 plans
+
+Plans:
+- [ ] 08-01-PLAN.md - Add Lease/Payment models, LeaseStatus/PaymentMethod enums
+- [ ] 08-02-PLAN.md - Configure event emitter, create lease on contract activation
+- [ ] 08-03-PLAN.md - Create LeasesModule with endpoints for lease and payment management
 
 ### Phase 9: Payment History Scoring
 **Goal**: Enhance scoring with real payment history data
@@ -330,7 +335,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 5. Scoring Engine | 3/3 | Complete | 2026-01-30 |
 | 6. Landlord Features | 3/3 | Complete | 2026-02-01 |
 | 7. Contracts | 4/4 | Complete | 2026-02-01 |
-| 8. Leases & Payments | 0/0 | Not started | - |
+| 8. Leases & Payments | 0/3 | Planned | - |
 | 9. Payment History Scoring | 0/0 | Not started | - |
 | 10. AI Document Analysis | 0/0 | Not started | - |
 | 11. Explainability | 0/0 | Not started | - |
@@ -420,4 +425,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-02-01 - Added Phase 7 plans (Contracts)*
+*Last updated: 2026-02-01 - Added Phase 8 plans (Leases & Payments)*
