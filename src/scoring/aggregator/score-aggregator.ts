@@ -48,16 +48,23 @@ export class ScoreAggregator {
     stability: ModelResult;
     history: ModelResult;
     integrity: ModelResult;
+    paymentHistory?: ModelResult; // Optional for backward compatibility
   }): RiskScoreResultData {
-    // Sum all scores
-    const total =
+    // Sum base scores (max 100)
+    const baseTotal =
       results.financial.score +
       results.stability.score +
       results.history.score +
       results.integrity.score;
 
-    // Bound total to 0-100 range
-    const boundedTotal = Math.max(0, Math.min(100, total));
+    // Add payment history bonus if available (up to +15)
+    const paymentBonus = results.paymentHistory?.score ?? 0;
+
+    // Total with bonus, capped at 100 to maintain risk level calibration
+    const total = Math.min(100, baseTotal + paymentBonus);
+
+    // Bound total to 0-100 range (redundant with min above, but explicit)
+    const boundedTotal = Math.max(0, total);
 
     // Calculate level using helper function
     const level = getRiskLevelFromScore(boundedTotal);
@@ -68,6 +75,7 @@ export class ScoreAggregator {
       ...results.stability.signals,
       ...results.history.signals,
       ...results.integrity.signals,
+      ...(results.paymentHistory?.signals ?? []),
     ];
 
     const drivers: Driver[] = allSignals.map((s) => ({
@@ -95,6 +103,7 @@ export class ScoreAggregator {
         financial: results.financial.score,
         stability: results.stability.score,
         history: results.history.score,
+        paymentHistory: paymentBonus,
       },
       drivers,
       flags,
