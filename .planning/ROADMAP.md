@@ -258,24 +258,32 @@ Plans:
   10. PSE mock returns simulated success/failure
   11. If landlord rejects: tenant can open dispute (solicitud de inconformidad)
   12. Dispute creates support ticket for review
-**Research**: Likely (dispute workflow, receipt validation)
-**Plans**: TBD
+**Research**: Complete (10-RESEARCH.md)
+**Plans**: 6 plans
+
+Plans:
+- [ ] 10-01-PLAN.md - Create database models and enums for tenant payment simulation
+- [ ] 10-02-PLAN.md - Create landlord payment methods configuration endpoints
+- [ ] 10-03-PLAN.md - Create tenant payment request with receipt upload
+- [ ] 10-04-PLAN.md - Create PSE mock payment flow
+- [ ] 10-05-PLAN.md - Create landlord payment validation with approval flow
+- [ ] 10-06-PLAN.md - Create disputes workflow for rejected payments
 
 **Note**: Notifications (push + email) for payment events handled in Phase 13.
 
 **Payment Methods (Landlord configures):**
 - Bancolombia (Cuenta Ahorros/Corriente)
 - Davivienda (Cuenta Ahorros/Corriente)
-- Nequi (número celular)
-- Daviplata (número celular)
+- Nequi (numero celular)
+- Daviplata (numero celular)
 - BBVA (Cuenta Ahorros/Corriente)
-- Banco de Bogotá (Cuenta Ahorros/Corriente)
+- Banco de Bogota (Cuenta Ahorros/Corriente)
 
 **PSE Mock Banks:**
 - Bancolombia
 - Davivienda
 - BBVA
-- Banco de Bogotá
+- Banco de Bogota
 - Banco de Occidente
 - Banco Popular
 - Banco AV Villas
@@ -391,7 +399,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 7. Contracts | 4/4 | Complete | 2026-02-01 |
 | 8. Leases & Payments | 3/3 | Complete | 2026-02-01 |
 | 9. Payment History Scoring | 2/2 | Complete | 2026-02-02 |
-| 10. Tenant Payment Simulation | 0/0 | Not started | - |
+| 10. Tenant Payment Simulation | 0/6 | Planned | - |
 | 11. AI Document Analysis | 0/0 | Not started | - |
 | 12. Explainability | 0/0 | Not started | - |
 | 13. Notifications | 0/0 | Not started | - |
@@ -481,4 +489,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-02-02 - Inserted Phase 10 (Tenant Payment Simulation), renumbered phases 10-15 to 11-16*
+*Last updated: 2026-02-02 - Phase 10 plans created (6 plans in 3 waves)*
