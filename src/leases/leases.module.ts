@@ -23,6 +23,6 @@ import { ContractActivatedListener } from './events/contract-activated.listener.
     PaymentsService,
     ContractActivatedListener,
   ],
-  exports: [LeasesService],
+  exports: [LeasesService, PaymentsService],
 })
 export class LeasesModule {}
