@@ -321,11 +321,12 @@ model RiskScoreResult {
   totalScore    Int       @map("total_score")
   level         RiskLevel
 
-  // Component scores (0-100 each)
-  financialScore Int @map("financial_score")
-  stabilityScore Int @map("stability_score")
-  historyScore   Int @map("history_score")
-  integrityScore Int @map("integrity_score")
+  // Component scores (0-100 each, except paymentHistory which is 0-15 bonus)
+  financialScore       Int @map("financial_score")
+  stabilityScore       Int @map("stability_score")
+  historyScore         Int @map("history_score")
+  integrityScore       Int @map("integrity_score")
+  paymentHistoryScore  Int @default(0) @map("payment_history_score")
 
   // JSON arrays for explainability
   signals    Json @default("[]") // Raw signals detected

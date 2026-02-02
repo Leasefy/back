@@ -64,6 +64,8 @@ export interface RiskScoreResultData {
     stability: number;
     /** History score (0-15): References and rental history */
     history: number;
+    /** Payment history bonus (0-15): Platform payment track record */
+    paymentHistory?: number;
   };
   /** Key factors that drove the score (3-6 explanations) */
   drivers: Driver[];
