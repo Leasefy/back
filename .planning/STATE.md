@@ -3,11 +3,11 @@
 ## Current Status
 
 **Phase:** 8 of 15 (Leases & Payments) - In Progress
-**Plan:** 1 of 3
-**Status:** Plan 08-01 complete - Lease and Payment models ready
-**Last activity:** 2026-02-02 - Completed 08-01-PLAN.md (Lease & Payment Models)
+**Plan:** 2 of 3
+**Status:** Plan 08-02 complete - Event-driven lease creation ready
+**Last activity:** 2026-02-02 - Completed 08-02-PLAN.md (Event-Driven Lease Creation)
 
-**Progress:** [########--] 46% (26/~56 plans estimated)
+**Progress:** [########--] 48% (27/~56 plans estimated)
 
 ## Project Reference
 
@@ -15,7 +15,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 **Core value:** Ejecutar el Risk Score con analisis inteligente de documentos para que propietarios tomen decisiones informadas en minutos, con explicabilidad total.
 
-**Current focus:** Phase 8 in progress. Lease and Payment database models created. Next: lease services and DTOs.
+**Current focus:** Phase 8 in progress. Event-driven lease creation complete. Contract activation triggers Lease creation via event emitter. Next: lease services and payment endpoints.
 
 ## Quick Context
 
@@ -36,7 +36,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 5. Scoring Engine | COMPLETE | All 3 plans executed - async scoring pipeline |
 | 6. Landlord Features | COMPLETE | All 3 plans - decisions, notes, review |
 | 7. Contracts | COMPLETE | All 4 plans - model, services, endpoints, signatures |
-| 8. Leases & Payments | In Progress | Plan 1/3 complete - models ready |
+| 8. Leases & Payments | In Progress | Plan 2/3 complete - event-driven lease creation |
 | 9. Payment History Scoring | Pending | NEW - Score from payment history |
 | 10. AI Document Analysis | Pending | PRO+ tier - Claude integration |
 | 11. Explainability | Pending | PRO+ tier - AI explanations |
@@ -154,11 +154,15 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 2026-02-02 | 08-01 | Colombian payment methods | PSE, NEQUI, DAVIPLATA, BANK_TRANSFER, CASH, CHECK |
 | 2026-02-02 | 08-01 | Unique payment constraint | [leaseId, periodMonth, periodYear] prevents duplicate period payments |
 | 2026-02-02 | 08-01 | paymentDay 1-28 | Avoids month-end edge cases (Feb 29, 30, 31) |
+| 2026-02-02 | 08-02 | EventEmitterModule with ignoreErrors: false | Fail fast during development |
+| 2026-02-02 | 08-02 | Lease creation in transaction | Atomic creation of lease + property status update |
+| 2026-02-02 | 08-02 | Only landlord can activate | Explicit control over when lease begins |
+| 2026-02-02 | 08-02 | Denormalized data in event | Lease stores snapshot for stable reporting |
 
 ## Session Continuity
 
 **Last session:** 2026-02-02
-**Stopped at:** Completed 08-01-PLAN.md (Lease & Payment Models)
+**Stopped at:** Completed 08-02-PLAN.md (Event-Driven Lease Creation)
 **Resume file:** None
 
 ## Pending User Actions
@@ -194,10 +198,10 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 ## Next Action
 
-Continue Phase 8: Leases & Payments with Plan 02 (Lease Services).
+Continue Phase 8: Leases & Payments with Plan 03 (Lease Services and Payment Endpoints).
 
 ```
-/gsd:execute-phase 08-02
+/gsd:execute-phase 08-03
 ```
 
 ## Session History
@@ -239,6 +243,7 @@ Continue Phase 8: Leases & Payments with Plan 02 (Lease Services).
 | 2026-02-01 | Executed 07-03-PLAN.md | ContractsModule, endpoints |
 | 2026-02-01 | Executed 07-04-PLAN.md | Digital signatures, PDF generation to Supabase Storage, Phase 7 complete |
 | 2026-02-02 | Executed 08-01-PLAN.md | Lease/Payment models, LeaseStatus/PaymentMethod enums |
+| 2026-02-02 | Executed 08-02-PLAN.md | @nestjs/event-emitter, ContractActivatedEvent, lease creation on activation |
 
 ---
 *Last updated: 2026-02-02*
