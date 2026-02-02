@@ -243,7 +243,7 @@ Plans:
 ### Phase 10: Tenant Payment Simulation
 **Goal**: Tenants can initiate simulated payments with receipt upload for landlord validation
 **Depends on**: Phase 8 (leases and payments infrastructure)
-**Requirements**: TPAY-01 through TPAY-10
+**Requirements**: TPAY-01 through TPAY-12
 **Tier**: FREE (no real payment processing, landlord validates manually)
 **Success Criteria** (what must be TRUE):
   1. Landlord can configure payment methods (bank accounts: Bancolombia, Davivienda, Nequi, Daviplata, etc.)
@@ -252,12 +252,16 @@ Plans:
   4. Payment form auto-fills amount from lease rent value
   5. For Transfer: tenant uploads payment receipt (comprobante)
   6. For PSE: tenant fills mock form (name, document type/number, bank selection)
-  7. Receipt upload triggers notification to landlord (push + email)
-  8. Landlord validates and approves/rejects payment (existing flow)
+  7. Receipt upload creates pending payment record
+  8. Landlord validates and approves/rejects payment
   9. Approved payments feed into Payment History Scoring (Phase 9)
   10. PSE mock returns simulated success/failure
-**Research**: Likely (notification patterns, receipt validation)
+  11. If landlord rejects: tenant can open dispute (solicitud de inconformidad)
+  12. Dispute creates support ticket for review
+**Research**: Likely (dispute workflow, receipt validation)
 **Plans**: TBD
+
+**Note**: Notifications (push + email) for payment events handled in Phase 13.
 
 **Payment Methods (Landlord configures):**
 - Bancolombia (Cuenta Ahorros/Corriente)
@@ -312,9 +316,9 @@ Plans:
 **Plans**: TBD
 
 ### Phase 13: Notifications
-**Goal**: Email notifications for key events
-**Depends on**: Phase 6 (needs approval/rejection events), Phase 10 (payment receipt notifications)
-**Requirements**: NOTF-01 through NOTF-07
+**Goal**: Email and push notifications for key events
+**Depends on**: Phase 6 (needs approval/rejection events), Phase 10 (payment events)
+**Requirements**: NOTF-01 through NOTF-10
 **Success Criteria** (what must be TRUE):
   1. Resend email service configured
   2. Email templates with Arriendo Facil branding
@@ -322,7 +326,11 @@ Plans:
   4. Email sent when approved/rejected (to tenant)
   5. Email sent when info requested (to tenant)
   6. Emails sent async via BullMQ queue
-**Research**: Unlikely (Resend well documented)
+  7. Email sent when payment receipt uploaded (to landlord)
+  8. Email sent when payment approved/rejected (to tenant)
+  9. Email sent when dispute opened (to support + landlord)
+  10. Push notification infrastructure (Firebase or similar)
+**Research**: Likely (push notifications, Firebase)
 **Plans**: TBD
 
 ### Phase 14: ML Persistence

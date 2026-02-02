@@ -131,6 +131,10 @@ Requirements for MVP release. Each maps to roadmap phases.
 - [ ] **NOTF-05**: Email sent when info requested (to tenant)
 - [ ] **NOTF-06**: Emails sent async via BullMQ queue
 - [ ] **NOTF-07**: Email templates with branding
+- [ ] **NOTF-08**: Email sent when payment receipt uploaded (to landlord)
+- [ ] **NOTF-09**: Email sent when payment approved/rejected (to tenant)
+- [ ] **NOTF-10**: Email sent when dispute opened (to support + landlord)
+- [ ] **NOTF-11**: Push notification infrastructure configured (Firebase or similar)
 
 ### Persistence for ML (MLPR)
 
@@ -193,8 +197,10 @@ Requirements for MVP release. Each maps to roadmap phases.
 - [ ] **TPAY-06**: For Transfer: tenant uploads payment receipt (comprobante) to Supabase Storage
 - [ ] **TPAY-07**: For PSE: tenant fills mock form (name, document type/number, bank selection)
 - [ ] **TPAY-08**: PSE mock form validates and returns simulated response
-- [ ] **TPAY-09**: Receipt upload creates pending payment and notifies landlord (push + email placeholder)
+- [ ] **TPAY-09**: Receipt upload creates pending payment record (status: PENDING_VALIDATION)
 - [ ] **TPAY-10**: Approved payments integrate with existing payment recording flow
+- [ ] **TPAY-11**: If landlord rejects payment, tenant can open dispute (solicitud de inconformidad)
+- [ ] **TPAY-12**: Dispute creates support ticket with reason and evidence for review
 
 ### Insurance (INSU)
 
@@ -334,25 +340,29 @@ Which phases cover which requirements. Updated by roadmap creation.
 | LAND-08 | Phase 8 | Pending |
 | LAND-09 | Phase 8 | Pending |
 | LAND-10 | Phase 8 | Pending |
-| NOTF-01 | Phase 9 | Pending |
-| NOTF-02 | Phase 9 | Pending |
-| NOTF-03 | Phase 9 | Pending |
-| NOTF-04 | Phase 9 | Pending |
-| NOTF-05 | Phase 9 | Pending |
-| NOTF-06 | Phase 9 | Pending |
-| NOTF-07 | Phase 9 | Pending |
-| MLPR-01 | Phase 10 | Pending |
-| MLPR-02 | Phase 10 | Pending |
-| MLPR-03 | Phase 10 | Pending |
-| MLPR-04 | Phase 10 | Pending |
-| SUBS-01 | Phase 11 | Pending |
-| SUBS-02 | Phase 11 | Pending |
-| SUBS-03 | Phase 11 | Pending |
-| SUBS-04 | Phase 11 | Pending |
-| SUBS-05 | Phase 11 | Pending |
-| SUBS-06 | Phase 11 | Pending |
-| SUBS-07 | Phase 11 | Pending |
-| SUBS-08 | Phase 11 | Pending |
+| NOTF-01 | Phase 13 | Pending |
+| NOTF-02 | Phase 13 | Pending |
+| NOTF-03 | Phase 13 | Pending |
+| NOTF-04 | Phase 13 | Pending |
+| NOTF-05 | Phase 13 | Pending |
+| NOTF-06 | Phase 13 | Pending |
+| NOTF-07 | Phase 13 | Pending |
+| NOTF-08 | Phase 13 | Pending |
+| NOTF-09 | Phase 13 | Pending |
+| NOTF-10 | Phase 13 | Pending |
+| NOTF-11 | Phase 13 | Pending |
+| MLPR-01 | Phase 14 | Pending |
+| MLPR-02 | Phase 14 | Pending |
+| MLPR-03 | Phase 14 | Pending |
+| MLPR-04 | Phase 14 | Pending |
+| SUBS-01 | Phase 15 | Pending |
+| SUBS-02 | Phase 15 | Pending |
+| SUBS-03 | Phase 15 | Pending |
+| SUBS-04 | Phase 15 | Pending |
+| SUBS-05 | Phase 15 | Pending |
+| SUBS-06 | Phase 15 | Pending |
+| SUBS-07 | Phase 15 | Pending |
+| SUBS-08 | Phase 15 | Pending |
 | CONT-01 | Phase 12 | Pending |
 | CONT-02 | Phase 12 | Pending |
 | CONT-03 | Phase 12 | Pending |
@@ -387,6 +397,8 @@ Which phases cover which requirements. Updated by roadmap creation.
 | TPAY-08 | Phase 10 | Pending |
 | TPAY-09 | Phase 10 | Pending |
 | TPAY-10 | Phase 10 | Pending |
+| TPAY-11 | Phase 10 | Pending |
+| TPAY-12 | Phase 10 | Pending |
 | INSU-01 | Phase 16 | Pending |
 | INSU-02 | Phase 16 | Pending |
 | INSU-03 | Phase 16 | Pending |
@@ -397,7 +409,7 @@ Which phases cover which requirements. Updated by roadmap creation.
 | PROP-16 | Phase 3 | Complete |
 
 **Coverage:**
-- v1 requirements: 128 total (was 112, added 16 new: 6 PHSC + 10 TPAY)
+- v1 requirements: 134 total (was 112, added 22 new: 6 PHSC + 12 TPAY + 4 NOTF)
 - Mapped to phases: 112
 - Unmapped: 0 ✓
 
