@@ -2,12 +2,12 @@
 
 ## Current Status
 
-**Phase:** 9 of 15 (Payment History Scoring) - COMPLETE
-**Plan:** 2 of 2
-**Status:** Phase 9 complete - Payment history scoring integrated into scoring pipeline
-**Last activity:** 2026-02-02 - Completed 09-02-PLAN.md (Integration with ScoreAggregator)
+**Phase:** 10 of 16 (Tenant Payment Simulation) - READY TO PLAN
+**Plan:** 0 of TBD
+**Status:** Phase 10 inserted - Tenant payment simulation with receipt upload
+**Last activity:** 2026-02-02 - Inserted Phase 10, renumbered phases 10-15 to 11-16
 
-**Progress:** [##########] 54% (30/~56 plans estimated)
+**Progress:** [##########] 54% (30/~60 plans estimated)
 
 ## Project Reference
 
@@ -15,15 +15,15 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 **Core value:** Ejecutar el Risk Score con analisis inteligente de documentos para que propietarios tomen decisiones informadas en minutos, con explicabilidad total.
 
-**Current focus:** Phase 9 complete. Payment history bonus scoring integrated into pipeline with tenant reputation endpoint. Ready for Phase 10: AI Document Analysis (PRO+ tier).
+**Current focus:** Phase 10: Tenant Payment Simulation. Simulated payment flow where tenant can pay via Transfer (upload receipt) or PSE (mock). Landlord configures payment methods. Receipt upload notifies landlord for validation.
 
 ## Quick Context
 
 - Backend NestJS para marketplace de arriendos
 - Supabase: PostgreSQL + Auth + Storage
 - Risk Score con AI (Claude) para analisis de documentos (PRO+ tier)
-- 15 fases, ~112 requirements
-- Tier system: FREE (Phases 1-9), PRO+ (Phases 10-11)
+- 16 fases, ~128 requirements
+- Tier system: FREE (Phases 1-10), PRO+ (Phases 11-12)
 
 ## Phase Progress
 
@@ -38,12 +38,13 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 7. Contracts | COMPLETE | All 4 plans - model, services, endpoints, signatures |
 | 8. Leases & Payments | COMPLETE | All 3 plans - models, events, services, endpoints |
 | 9. Payment History Scoring | COMPLETE | All 2 plans - metrics, model, aggregator integration |
-| 10. AI Document Analysis | Pending | PRO+ tier - Claude integration |
-| 11. Explainability | Pending | PRO+ tier - AI explanations |
-| 12. Notifications | Pending | Email service |
-| 13. ML Persistence | Pending | Data for ML training |
-| 14. Subscriptions & Plans | Pending | Billing |
-| 15. Insurance | Pending | Optional insurance |
+| 10. Tenant Payment Simulation | Pending | Payment form, receipt upload, landlord validation |
+| 11. AI Document Analysis | Pending | PRO+ tier - Claude integration |
+| 12. Explainability | Pending | PRO+ tier - AI explanations |
+| 13. Notifications | Pending | Email service |
+| 14. ML Persistence | Pending | Data for ML training |
+| 15. Subscriptions & Plans | Pending | Billing |
+| 16. Insurance | Pending | Optional insurance |
 
 ## Roadmap Evolution
 
@@ -209,7 +210,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 ## Next Action
 
-Begin Phase 10: AI Document Analysis (PRO+ tier).
+Begin Phase 10: Tenant Payment Simulation.
 
 ```
 /gsd:plan-phase 10

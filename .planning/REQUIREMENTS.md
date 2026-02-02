@@ -174,6 +174,28 @@ Requirements for MVP release. Each maps to roadmap phases.
 - [x] **LEAS-07**: Tenant can view active lease details
 - [x] **LEAS-08**: Landlord can view all their leases
 
+### Payment History Scoring (PHSC)
+
+- [x] **PHSC-01**: PaymentHistoryService calculates metrics from past payments
+- [x] **PHSC-02**: On-time payment percentage tracked (5-day grace period)
+- [x] **PHSC-03**: Late payment frequency affects score negatively
+- [x] **PHSC-04**: Returning tenants (2+ leases) get score bonus
+- [x] **PHSC-05**: Payment history feeds into Scoring Engine as bonus (0-15 pts)
+- [x] **PHSC-06**: Tenant can view their payment reputation and tier (GOLD/SILVER/BRONZE/NEW)
+
+### Tenant Payment Simulation (TPAY)
+
+- [ ] **TPAY-01**: Landlord can configure payment methods (bank accounts, Nequi, Daviplata)
+- [ ] **TPAY-02**: Payment method configuration includes bank name, account type, account number
+- [ ] **TPAY-03**: Tenant can view landlord's configured payment methods
+- [ ] **TPAY-04**: Tenant can select payment type: Transfer or PSE
+- [ ] **TPAY-05**: Payment form auto-fills amount from lease rent value
+- [ ] **TPAY-06**: For Transfer: tenant uploads payment receipt (comprobante) to Supabase Storage
+- [ ] **TPAY-07**: For PSE: tenant fills mock form (name, document type/number, bank selection)
+- [ ] **TPAY-08**: PSE mock form validates and returns simulated response
+- [ ] **TPAY-09**: Receipt upload creates pending payment and notifies landlord (push + email placeholder)
+- [ ] **TPAY-10**: Approved payments integrate with existing payment recording flow
+
 ### Insurance (INSU)
 
 - [ ] **INSU-01**: Three insurance tiers: none, basic, premium
@@ -349,17 +371,33 @@ Which phases cover which requirements. Updated by roadmap creation.
 | LEAS-06 | Phase 8 | Complete |
 | LEAS-07 | Phase 8 | Complete |
 | LEAS-08 | Phase 8 | Complete |
-| INSU-01 | Phase 14 | Pending |
-| INSU-02 | Phase 14 | Pending |
-| INSU-03 | Phase 14 | Pending |
-| INSU-04 | Phase 14 | Pending |
+| PHSC-01 | Phase 9 | Complete |
+| PHSC-02 | Phase 9 | Complete |
+| PHSC-03 | Phase 9 | Complete |
+| PHSC-04 | Phase 9 | Complete |
+| PHSC-05 | Phase 9 | Complete |
+| PHSC-06 | Phase 9 | Complete |
+| TPAY-01 | Phase 10 | Pending |
+| TPAY-02 | Phase 10 | Pending |
+| TPAY-03 | Phase 10 | Pending |
+| TPAY-04 | Phase 10 | Pending |
+| TPAY-05 | Phase 10 | Pending |
+| TPAY-06 | Phase 10 | Pending |
+| TPAY-07 | Phase 10 | Pending |
+| TPAY-08 | Phase 10 | Pending |
+| TPAY-09 | Phase 10 | Pending |
+| TPAY-10 | Phase 10 | Pending |
+| INSU-01 | Phase 16 | Pending |
+| INSU-02 | Phase 16 | Pending |
+| INSU-03 | Phase 16 | Pending |
+| INSU-04 | Phase 16 | Pending |
 | PROP-13 | Phase 3 | Complete |
 | PROP-14 | Phase 3 | Complete |
 | PROP-15 | Phase 3 | Complete |
 | PROP-16 | Phase 3 | Complete |
 
 **Coverage:**
-- v1 requirements: 112 total (was 78, added 34 new)
+- v1 requirements: 128 total (was 112, added 16 new: 6 PHSC + 10 TPAY)
 - Mapped to phases: 112
 - Unmapped: 0 ✓
 

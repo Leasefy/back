@@ -6,7 +6,7 @@ Backend API en NestJS para el marketplace de arriendos "Arriendo Facil". Provee 
 
 ## Milestones
 
-- **v1.0 Backend MVP** - Phases 1-15 (in progress)
+- **v1.0 Backend MVP** - Phases 1-16 (in progress)
 
 ## Phases
 
@@ -17,8 +17,9 @@ Backend API en NestJS para el marketplace de arriendos "Arriendo Facil". Provee 
 **Tier System:**
 - Phases 1-8: Core functionality (FREE tier)
 - Phase 9: Payment History Scoring (enhances FREE scoring with real data)
-- Phases 10-11: AI-powered features (PRO/BUSINESS subscription only)
-- Phases 12-15: Supporting features
+- Phase 10: Tenant Payment Simulation (simulated payment flow)
+- Phases 11-12: AI-powered features (PRO/BUSINESS subscription only)
+- Phases 13-16: Supporting features
 
 - [x] **Phase 1: Foundation** - Project scaffold, Prisma, Supabase config
 - [x] **Phase 2: Auth & Users** - Supabase Auth, guards, user management
@@ -29,12 +30,13 @@ Backend API en NestJS para el marketplace de arriendos "Arriendo Facil". Provee 
 - [x] **Phase 7: Contracts** - Templates, digital signatures, clauses
 - [x] **Phase 8: Leases & Payments** - Active leases, payment tracking
 - [x] **Phase 9: Payment History Scoring** - Score bonus from payment history (NEW)
-- [ ] **Phase 10: AI Document Analysis** - Claude integration, document analyzers (PRO+)
-- [ ] **Phase 11: Explainability** - Drivers, flags, AI explanation (PRO+)
-- [ ] **Phase 12: Notifications** - Email service, templates, queue
-- [ ] **Phase 13: ML Persistence** - Feature logging, outcome tracking
-- [ ] **Phase 14: Subscriptions & Plans** - Pricing plans, coupons, billing
-- [ ] **Phase 15: Insurance** - Optional insurance tiers
+- [ ] **Phase 10: Tenant Payment Simulation** - Payment form, receipt upload, landlord validation (NEW)
+- [ ] **Phase 11: AI Document Analysis** - Claude integration, document analyzers (PRO+)
+- [ ] **Phase 12: Explainability** - Drivers, flags, AI explanation (PRO+)
+- [ ] **Phase 13: Notifications** - Email service, templates, queue
+- [ ] **Phase 14: ML Persistence** - Feature logging, outcome tracking
+- [ ] **Phase 15: Subscriptions & Plans** - Pricing plans, coupons, billing
+- [ ] **Phase 16: Insurance** - Optional insurance tiers
 
 ## Phase Details
 
@@ -238,9 +240,48 @@ Plans:
 - Inquilino recurrente (2 pts returning tenant bonus)
 - Max total: 15 pts bonus (capped)
 
-### Phase 10: AI Document Analysis
+### Phase 10: Tenant Payment Simulation
+**Goal**: Tenants can initiate simulated payments with receipt upload for landlord validation
+**Depends on**: Phase 8 (leases and payments infrastructure)
+**Requirements**: TPAY-01 through TPAY-10
+**Tier**: FREE (no real payment processing, landlord validates manually)
+**Success Criteria** (what must be TRUE):
+  1. Landlord can configure payment methods (bank accounts: Bancolombia, Davivienda, Nequi, Daviplata, etc.)
+  2. Tenant sees landlord's configured payment methods for transfer option
+  3. Tenant can select payment method: Transfer or PSE
+  4. Payment form auto-fills amount from lease rent value
+  5. For Transfer: tenant uploads payment receipt (comprobante)
+  6. For PSE: tenant fills mock form (name, document type/number, bank selection)
+  7. Receipt upload triggers notification to landlord (push + email)
+  8. Landlord validates and approves/rejects payment (existing flow)
+  9. Approved payments feed into Payment History Scoring (Phase 9)
+  10. PSE mock returns simulated success/failure
+**Research**: Likely (notification patterns, receipt validation)
+**Plans**: TBD
+
+**Payment Methods (Landlord configures):**
+- Bancolombia (Cuenta Ahorros/Corriente)
+- Davivienda (Cuenta Ahorros/Corriente)
+- Nequi (número celular)
+- Daviplata (número celular)
+- BBVA (Cuenta Ahorros/Corriente)
+- Banco de Bogotá (Cuenta Ahorros/Corriente)
+
+**PSE Mock Banks:**
+- Bancolombia
+- Davivienda
+- BBVA
+- Banco de Bogotá
+- Banco de Occidente
+- Banco Popular
+- Banco AV Villas
+- Banco Caja Social
+- Nequi
+- Daviplata
+
+### Phase 11: AI Document Analysis
 **Goal**: Claude API analyzes documents and extracts structured data
-**Depends on**: Phase 5 (scoring infrastructure)
+**Depends on**: Phase 5 (scoring infrastructure), Phase 10 (complete payment flow)
 **Requirements**: AIDOC-01 through AIDOC-08
 **Tier**: PRO/BUSINESS subscription only (~$0.05-0.10 per application)
 **Success Criteria** (what must be TRUE):
@@ -255,9 +296,9 @@ Plans:
 **Research**: Completed (see AI_DOCUMENT_ANALYSIS.md)
 **Plans**: TBD
 
-### Phase 11: Explainability
+### Phase 12: Explainability
 **Goal**: Full scoring explanation with drivers, flags, and suggestions
-**Depends on**: Phase 10
+**Depends on**: Phase 11
 **Requirements**: EXPL-01 through EXPL-05
 **Tier**: PRO/BUSINESS subscription only
 **Success Criteria** (what must be TRUE):
@@ -270,9 +311,9 @@ Plans:
 **Research topics**: LLM prompts for explanations
 **Plans**: TBD
 
-### Phase 12: Notifications
+### Phase 13: Notifications
 **Goal**: Email notifications for key events
-**Depends on**: Phase 6 (needs approval/rejection events)
+**Depends on**: Phase 6 (needs approval/rejection events), Phase 10 (payment receipt notifications)
 **Requirements**: NOTF-01 through NOTF-07
 **Success Criteria** (what must be TRUE):
   1. Resend email service configured
@@ -284,9 +325,9 @@ Plans:
 **Research**: Unlikely (Resend well documented)
 **Plans**: TBD
 
-### Phase 13: ML Persistence
+### Phase 14: ML Persistence
 **Goal**: Data infrastructure for future ML model training
-**Depends on**: Phase 9 (needs payment history for outcomes)
+**Depends on**: Phase 9 (needs payment history for outcomes), Phase 10 (complete payment flow)
 **Requirements**: MLPR-01 through MLPR-04
 **Success Criteria** (what must be TRUE):
   1. All extracted features persisted with application
@@ -296,7 +337,7 @@ Plans:
 **Research**: Unlikely (data modeling)
 **Plans**: TBD
 
-### Phase 14: Subscriptions & Plans
+### Phase 15: Subscriptions & Plans
 **Goal**: Pricing plans for landlords with coupon support
 **Depends on**: Phase 3 (landlords need properties first)
 **Requirements**: SUBS-01 through SUBS-08
@@ -314,7 +355,7 @@ Plans:
 - Pro: 10 properties, unlimited contracts, AI scoring ($149,900/month)
 - Business: Unlimited, API access ($499,900/month)
 
-### Phase 15: Insurance
+### Phase 16: Insurance
 **Goal**: Optional insurance tiers for contracts
 **Depends on**: Phase 7 (insurance attached to contracts)
 **Requirements**: INSU-01 through INSU-04
@@ -329,7 +370,7 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10 -> 11 -> 12 -> 13 -> 14 -> 15
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10 -> 11 -> 12 -> 13 -> 14 -> 15 -> 16
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -342,23 +383,25 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 7. Contracts | 4/4 | Complete | 2026-02-01 |
 | 8. Leases & Payments | 3/3 | Complete | 2026-02-01 |
 | 9. Payment History Scoring | 2/2 | Complete | 2026-02-02 |
-| 10. AI Document Analysis | 0/0 | Not started | - |
-| 11. Explainability | 0/0 | Not started | - |
-| 12. Notifications | 0/0 | Not started | - |
-| 13. ML Persistence | 0/0 | Not started | - |
-| 14. Subscriptions & Plans | 0/0 | Not started | - |
-| 15. Insurance | 0/0 | Not started | - |
+| 10. Tenant Payment Simulation | 0/0 | Not started | - |
+| 11. AI Document Analysis | 0/0 | Not started | - |
+| 12. Explainability | 0/0 | Not started | - |
+| 13. Notifications | 0/0 | Not started | - |
+| 14. ML Persistence | 0/0 | Not started | - |
+| 15. Subscriptions & Plans | 0/0 | Not started | - |
+| 16. Insurance | 0/0 | Not started | - |
 
 ## Notes
 
 ### Tier System
 
-**FREE Tier (Phases 1-9):**
+**FREE Tier (Phases 1-10):**
 - Basic rule-based scoring from application data
 - Payment history scoring for returning tenants
+- Simulated payment flow with receipt upload
 - No external API costs
 
-**PRO/BUSINESS Tier (Phases 10-11):**
+**PRO/BUSINESS Tier (Phases 11-12):**
 - AI document analysis via Claude (~$0.05-0.10/app)
 - AI-generated explanations
 - Cross-document validation
@@ -430,4 +473,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-02-02 - Completed Phase 9 (Payment History Scoring)*
+*Last updated: 2026-02-02 - Inserted Phase 10 (Tenant Payment Simulation), renumbered phases 10-15 to 11-16*
