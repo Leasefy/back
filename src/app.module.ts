@@ -12,6 +12,7 @@ import { DocumentsModule } from './documents/documents.module.js';
 import { ScoringModule } from './scoring/scoring.module.js';
 import { LandlordModule } from './landlord/landlord.module.js';
 import { ContractsModule } from './contracts/contracts.module.js';
+import { LeasesModule } from './leases/leases.module.js';
 import { SupabaseAuthGuard } from './auth/guards/supabase-auth.guard.js';
 import { RolesGuard } from './auth/guards/roles.guard.js';
 import { AppController } from './app.controller.js';
@@ -36,6 +37,7 @@ import { AppService } from './app.service.js';
     ScoringModule,
     LandlordModule,
     ContractsModule,
+    LeasesModule,
   ],
   controllers: [AppController],
   providers: [
