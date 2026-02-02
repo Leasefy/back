@@ -113,6 +113,28 @@ enum ContractStatus {
   EXPIRED
 }
 
+/// Status of an active lease
+/// ACTIVE: Lease in effect, tenant occupying
+/// ENDING_SOON: Within 30 days of end date
+/// ENDED: Natural termination at end date
+/// TERMINATED: Early termination
+enum LeaseStatus {
+  ACTIVE
+  ENDING_SOON
+  ENDED
+  TERMINATED
+}
+
+/// Payment method used for rent payment
+enum PaymentMethod {
+  PSE
+  BANK_TRANSFER
+  CASH
+  NEQUI
+  DAVIPLATA
+  CHECK
+}
+
 // ============================================
 // MODELS
 // ============================================
@@ -142,6 +164,9 @@ model User {
   landlordNotes     LandlordNote[]     @relation("LandlordNotes")
   landlordContracts Contract[]         @relation("LandlordContracts")
   tenantContracts   Contract[]         @relation("TenantContracts")
+  landlordLeases    Lease[]            @relation("LandlordLeases")
+  tenantLeases      Lease[]            @relation("TenantLeases")
+  recordedPayments  Payment[]          @relation("RecordedPayments")
 
   @@map("users")
 }
@@ -188,6 +213,7 @@ model Property {
   images       PropertyImage[]
   applications Application[]
   contracts    Contract[]
+  leases       Lease[]
 
   @@index([landlordId])
   @@index([city])
@@ -387,10 +413,87 @@ model Contract {
   property      Property       @relation(fields: [propertyId], references: [id])
   landlord      User           @relation("LandlordContracts", fields: [landlordId], references: [id])
   tenant        User           @relation("TenantContracts", fields: [tenantId], references: [id])
+  lease         Lease?
 
   @@index([landlordId])
   @@index([tenantId])
   @@index([propertyId])
   @@index([status])
   @@map("contracts")
+}
+
+/// Active lease tracking the rental relationship
+/// Created automatically when Contract becomes ACTIVE
+model Lease {
+  id         String      @id @default(uuid()) @db.Uuid
+  contractId String      @unique @map("contract_id") @db.Uuid
+  propertyId String      @map("property_id") @db.Uuid
+  landlordId String      @map("landlord_id") @db.Uuid
+  tenantId   String      @map("tenant_id") @db.Uuid
+  status     LeaseStatus @default(ACTIVE)
+
+  // Denormalized data (snapshot at lease creation)
+  propertyAddress String  @map("property_address") @db.VarChar(300)
+  propertyCity    String  @map("property_city") @db.VarChar(50)
+  landlordName    String  @map("landlord_name") @db.VarChar(100)
+  landlordEmail   String  @map("landlord_email") @db.VarChar(255)
+  tenantName      String  @map("tenant_name") @db.VarChar(100)
+  tenantEmail     String  @map("tenant_email") @db.VarChar(255)
+  tenantPhone     String? @map("tenant_phone") @db.VarChar(20)
+
+  // Contract terms (immutable copy)
+  startDate   DateTime @map("start_date") @db.Date
+  endDate     DateTime @map("end_date") @db.Date
+  monthlyRent Int      @map("monthly_rent")
+  deposit     Int
+  paymentDay  Int      @map("payment_day") // 1-28
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  contract Contract  @relation(fields: [contractId], references: [id])
+  property Property  @relation(fields: [propertyId], references: [id])
+  landlord User      @relation("LandlordLeases", fields: [landlordId], references: [id])
+  tenant   User      @relation("TenantLeases", fields: [tenantId], references: [id])
+  payments Payment[]
+
+  @@index([landlordId])
+  @@index([tenantId])
+  @@index([propertyId])
+  @@index([status])
+  @@map("leases")
+}
+
+/// Payment record for lease rent
+/// Recorded manually by landlord when payment received
+model Payment {
+  id              String        @id @default(uuid()) @db.Uuid
+  leaseId         String        @map("lease_id") @db.Uuid
+  amount          Int           // COP amount
+  method          PaymentMethod
+  referenceNumber String        @map("reference_number") @db.VarChar(100)
+
+  // Payment timing
+  paymentDate DateTime @map("payment_date") @db.Date
+  periodMonth Int      @map("period_month") // 1-12
+  periodYear  Int      @map("period_year") // e.g., 2026
+
+  // Optional notes
+  notes String? @db.VarChar(500)
+
+  // Audit
+  recordedBy String   @map("recorded_by") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  // Relations
+  lease    Lease @relation(fields: [leaseId], references: [id], onDelete: Cascade)
+  recorder User  @relation("RecordedPayments", fields: [recordedBy], references: [id])
+
+  // Prevent duplicate payment records for same month
+  @@unique([leaseId, periodMonth, periodYear])
+  @@index([leaseId])
+  @@index([paymentDate])
+  @@map("payments")
 }
