@@ -214,8 +214,8 @@ Plans:
 
 ### Phase 9: Payment History Scoring
 **Goal**: Enhance scoring with real payment history data
-**Depends on**: Phase 8 (needs payment history)
-**Requirements**: PHSC-01 through PHSC-06 (NEW)
+**Depends on**: Phase 8 (needs payment history), Phase 5 (scoring infrastructure)
+**Requirements**: PHSC-01 through PHSC-06
 **Tier**: FREE (enhances basic scoring with real platform data)
 **Success Criteria** (what must be TRUE):
   1. PaymentHistoryModel calculates score from past payments
@@ -224,14 +224,19 @@ Plans:
   4. Returning tenants get score bonus
   5. Payment history feeds into Scoring Engine
   6. Tenant can see their payment reputation score
-**Research**: Likely (payment scoring algorithms)
-**Plans**: TBD
+**Research**: Complete (09-RESEARCH.md)
+**Plans**: 2 plans
+
+Plans:
+- [ ] 09-01-PLAN.md - Create PaymentHistoryService and PaymentHistoryModel
+- [ ] 09-02-PLAN.md - Integrate into ScoringProcessor and add tenant reputation endpoint
 
 **Scoring Factors:**
-- % pagos a tiempo (max 15 pts bonus)
+- % pagos a tiempo (max 8 pts bonus)
 - Historial de atrasos (penalty up to -10 pts)
-- Meses como inquilino en plataforma (tenure bonus)
-- Monto total pagado (reliability indicator)
+- Meses como inquilino en plataforma (max 5 pts tenure bonus)
+- Inquilino recurrente (2 pts returning tenant bonus)
+- Max total: 15 pts bonus (capped)
 
 ### Phase 10: AI Document Analysis
 **Goal**: Claude API analyzes documents and extracts structured data
@@ -336,7 +341,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 6. Landlord Features | 3/3 | Complete | 2026-02-01 |
 | 7. Contracts | 4/4 | Complete | 2026-02-01 |
 | 8. Leases & Payments | 3/3 | Complete | 2026-02-01 |
-| 9. Payment History Scoring | 0/0 | Not started | - |
+| 9. Payment History Scoring | 0/2 | Planned | - |
 | 10. AI Document Analysis | 0/0 | Not started | - |
 | 11. Explainability | 0/0 | Not started | - |
 | 12. Notifications | 0/0 | Not started | - |
@@ -425,4 +430,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-02-01 - Completed Phase 8 (Leases & Payments)*
+*Last updated: 2026-02-02 - Phase 9 planned (2 plans)*
