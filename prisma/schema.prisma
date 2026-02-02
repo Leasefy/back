@@ -135,6 +135,30 @@ enum PaymentMethod {
   CHECK
 }
 
+/// Status of a tenant payment request
+enum TenantPaymentRequestStatus {
+  PENDING_VALIDATION
+  APPROVED
+  REJECTED
+  DISPUTED
+  CANCELLED
+}
+
+/// Status of a payment dispute
+enum PaymentDisputeStatus {
+  OPEN
+  UNDER_REVIEW
+  RESOLVED_FAVOR_TENANT
+  RESOLVED_FAVOR_LANDLORD
+  CLOSED
+}
+
+/// Account type for bank accounts
+enum AccountType {
+  AHORROS
+  CORRIENTE
+}
+
 // ============================================
 // MODELS
 // ============================================
@@ -167,6 +191,12 @@ model User {
   landlordLeases    Lease[]            @relation("LandlordLeases")
   tenantLeases      Lease[]            @relation("TenantLeases")
   recordedPayments  Payment[]          @relation("RecordedPayments")
+
+  // Tenant payment simulation relations
+  landlordPaymentMethods LandlordPaymentMethod[] @relation("LandlordPaymentMethods")
+  tenantPaymentRequests  TenantPaymentRequest[]  @relation("TenantPaymentRequests")
+  paymentValidations     TenantPaymentRequest[]  @relation("PaymentValidations")
+  disputeResolutions     PaymentDispute[]        @relation("DisputeResolutions")
 
   @@map("users")
 }
@@ -322,11 +352,11 @@ model RiskScoreResult {
   level         RiskLevel
 
   // Component scores (0-100 each, except paymentHistory which is 0-15 bonus)
-  financialScore       Int @map("financial_score")
-  stabilityScore       Int @map("stability_score")
-  historyScore         Int @map("history_score")
-  integrityScore       Int @map("integrity_score")
-  paymentHistoryScore  Int @default(0) @map("payment_history_score")
+  financialScore      Int @map("financial_score")
+  stabilityScore      Int @map("stability_score")
+  historyScore        Int @map("history_score")
+  integrityScore      Int @map("integrity_score")
+  paymentHistoryScore Int @default(0) @map("payment_history_score")
 
   // JSON arrays for explainability
   signals    Json @default("[]") // Raw signals detected
@@ -381,40 +411,40 @@ model Contract {
   status        ContractStatus @default(DRAFT)
 
   // Contract terms
-  startDate     DateTime       @map("start_date") @db.Date
-  endDate       DateTime       @map("end_date") @db.Date
-  monthlyRent   Int            @map("monthly_rent")
-  deposit       Int
-  paymentDay    Int            @map("payment_day") // 1-28
+  startDate   DateTime @map("start_date") @db.Date
+  endDate     DateTime @map("end_date") @db.Date
+  monthlyRent Int      @map("monthly_rent")
+  deposit     Int
+  paymentDay  Int      @map("payment_day") // 1-28
 
   // Optional insurance
-  includesInsurance Boolean    @default(false) @map("includes_insurance")
-  insuranceDetails  String?    @map("insurance_details") @db.Text
+  includesInsurance Boolean @default(false) @map("includes_insurance")
+  insuranceDetails  String? @map("insurance_details") @db.Text
 
   // Custom clauses as JSON array: [{ title: string, content: string }]
-  customClauses Json           @default("[]") @map("custom_clauses")
+  customClauses Json @default("[]") @map("custom_clauses")
 
   // Document storage
-  contractHtml  String?        @map("contract_html") @db.Text  // HTML for preview/signature
-  signedPdfPath String?        @map("signed_pdf_path")         // Supabase Storage path
-  documentHash  String?        @map("document_hash")           // SHA-256 of contractHtml at signing
+  contractHtml  String? @map("contract_html") @db.Text // HTML for preview/signature
+  signedPdfPath String? @map("signed_pdf_path") // Supabase Storage path
+  documentHash  String? @map("document_hash") // SHA-256 of contractHtml at signing
 
   // Signature audit trails (JSON with full Ley 527 compliance data)
-  landlordSignature Json?      @map("landlord_signature")
-  tenantSignature   Json?      @map("tenant_signature")
+  landlordSignature Json? @map("landlord_signature")
+  tenantSignature   Json? @map("tenant_signature")
 
   // Timestamps
-  createdAt     DateTime       @default(now()) @map("created_at")
-  updatedAt     DateTime       @updatedAt @map("updated_at")
-  signedAt      DateTime?      @map("signed_at")      // When both parties signed
-  activatedAt   DateTime?      @map("activated_at")   // When start_date arrived
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  signedAt    DateTime? @map("signed_at") // When both parties signed
+  activatedAt DateTime? @map("activated_at") // When start_date arrived
 
   // Relations
-  application   Application    @relation(fields: [applicationId], references: [id])
-  property      Property       @relation(fields: [propertyId], references: [id])
-  landlord      User           @relation("LandlordContracts", fields: [landlordId], references: [id])
-  tenant        User           @relation("TenantContracts", fields: [tenantId], references: [id])
-  lease         Lease?
+  application Application @relation(fields: [applicationId], references: [id])
+  property    Property    @relation(fields: [propertyId], references: [id])
+  landlord    User        @relation("LandlordContracts", fields: [landlordId], references: [id])
+  tenant      User        @relation("TenantContracts", fields: [tenantId], references: [id])
+  lease       Lease?
 
   @@index([landlordId])
   @@index([tenantId])
@@ -454,11 +484,12 @@ model Lease {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  contract Contract  @relation(fields: [contractId], references: [id])
-  property Property  @relation(fields: [propertyId], references: [id])
-  landlord User      @relation("LandlordLeases", fields: [landlordId], references: [id])
-  tenant   User      @relation("TenantLeases", fields: [tenantId], references: [id])
-  payments Payment[]
+  contract        Contract               @relation(fields: [contractId], references: [id])
+  property        Property               @relation(fields: [propertyId], references: [id])
+  landlord        User                   @relation("LandlordLeases", fields: [landlordId], references: [id])
+  tenant          User                   @relation("TenantLeases", fields: [tenantId], references: [id])
+  payments        Payment[]
+  paymentRequests TenantPaymentRequest[]
 
   @@index([landlordId])
   @@index([tenantId])
@@ -472,7 +503,7 @@ model Lease {
 model Payment {
   id              String        @id @default(uuid()) @db.Uuid
   leaseId         String        @map("lease_id") @db.Uuid
-  amount          Int           // COP amount
+  amount          Int // COP amount
   method          PaymentMethod
   referenceNumber String        @map("reference_number") @db.VarChar(100)
 
@@ -489,12 +520,131 @@ model Payment {
   createdAt  DateTime @default(now()) @map("created_at")
 
   // Relations
-  lease    Lease @relation(fields: [leaseId], references: [id], onDelete: Cascade)
-  recorder User  @relation("RecordedPayments", fields: [recordedBy], references: [id])
+  lease          Lease                 @relation(fields: [leaseId], references: [id], onDelete: Cascade)
+  recorder       User                  @relation("RecordedPayments", fields: [recordedBy], references: [id])
+  paymentRequest TenantPaymentRequest?
 
   // Prevent duplicate payment records for same month
   @@unique([leaseId, periodMonth, periodYear])
   @@index([leaseId])
   @@index([paymentDate])
   @@map("payments")
+}
+
+/// Landlord's configured payment methods for tenants to use
+/// Landlords set up their bank accounts for tenants to transfer rent payments
+model LandlordPaymentMethod {
+  id         String @id @default(uuid()) @db.Uuid
+  landlordId String @map("landlord_id") @db.Uuid
+
+  // Bank account details
+  bankName      String      @map("bank_name") @db.VarChar(100)
+  accountType   AccountType @map("account_type")
+  accountNumber String      @map("account_number") @db.VarChar(50)
+  holderName    String      @map("holder_name") @db.VarChar(200)
+
+  // For Nequi/Daviplata
+  phoneNumber String? @map("phone_number") @db.VarChar(20)
+
+  // Payment method type
+  methodType PaymentMethod @map("method_type")
+
+  // Instructions from landlord
+  instructions String? @db.VarChar(500)
+
+  // Status
+  isActive Boolean @default(true) @map("is_active")
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  landlord User @relation("LandlordPaymentMethods", fields: [landlordId], references: [id])
+
+  @@index([landlordId])
+  @@index([methodType])
+  @@map("landlord_payment_methods")
+}
+
+/// Tenant-initiated payment request (pending landlord validation)
+/// Tenants submit payment requests with receipts, landlord approves/rejects
+model TenantPaymentRequest {
+  id       String @id @default(uuid()) @db.Uuid
+  leaseId  String @map("lease_id") @db.Uuid
+  tenantId String @map("tenant_id") @db.Uuid
+
+  // Payment details
+  amount        Int // COP amount
+  paymentMethod PaymentMethod @map("payment_method")
+  periodMonth   Int           @map("period_month") // 1-12
+  periodYear    Int           @map("period_year")
+  paymentDate   DateTime      @map("payment_date") @db.Date
+
+  // For bank transfer: receipt path in Supabase Storage
+  receiptPath String? @map("receipt_path") @db.VarChar(500)
+
+  // For PSE: mock transaction reference
+  pseTransactionId String? @map("pse_transaction_id") @db.VarChar(100)
+  pseBankCode      String? @map("pse_bank_code") @db.VarChar(20)
+
+  // Reference number (from receipt or PSE)
+  referenceNumber String? @map("reference_number") @db.VarChar(100)
+
+  // Status
+  status TenantPaymentRequestStatus @default(PENDING_VALIDATION)
+
+  // Validation
+  validatedAt     DateTime? @map("validated_at")
+  validatedBy     String?   @map("validated_by") @db.Uuid
+  rejectionReason String?   @map("rejection_reason") @db.VarChar(500)
+
+  // Link to created Payment (if approved)
+  paymentId String? @unique @map("payment_id") @db.Uuid
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  lease     Lease           @relation(fields: [leaseId], references: [id])
+  tenant    User            @relation("TenantPaymentRequests", fields: [tenantId], references: [id])
+  validator User?           @relation("PaymentValidations", fields: [validatedBy], references: [id])
+  payment   Payment?        @relation(fields: [paymentId], references: [id])
+  dispute   PaymentDispute?
+
+  @@index([leaseId])
+  @@index([tenantId])
+  @@index([status])
+  @@map("tenant_payment_requests")
+}
+
+/// Dispute for rejected payment request
+/// Tenant can open dispute when landlord rejects their payment
+model PaymentDispute {
+  id               String @id @default(uuid()) @db.Uuid
+  paymentRequestId String @unique @map("payment_request_id") @db.Uuid
+
+  // Dispute details
+  reason                 String  @db.Text
+  additionalEvidencePath String? @map("additional_evidence_path") @db.VarChar(500)
+
+  // Status
+  status PaymentDisputeStatus @default(OPEN)
+
+  // Resolution
+  resolvedAt DateTime? @map("resolved_at")
+  resolvedBy String?   @map("resolved_by") @db.Uuid
+  resolution String?   @db.Text
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  paymentRequest TenantPaymentRequest @relation(fields: [paymentRequestId], references: [id])
+  resolver       User?                @relation("DisputeResolutions", fields: [resolvedBy], references: [id])
+
+  @@index([status])
+  @@map("payment_disputes")
 }
