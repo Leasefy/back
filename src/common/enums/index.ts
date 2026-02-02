@@ -11,3 +11,5 @@ export {
   getRiskLevelFromScore,
 } from './risk-level.enum.js';
 export { ContractStatus } from './contract-status.enum.js';
+export { LeaseStatus } from './lease-status.enum.js';
+export { PaymentMethod } from './payment-method.enum.js';
