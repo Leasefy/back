@@ -8,7 +8,7 @@ import {
   Req,
 } from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { ContractsService } from './contracts.service.js';
 import { CreateContractDto, SignContractDto } from './dto/index.js';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
@@ -154,6 +154,28 @@ export class ContractsController {
     const ip = (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress || 'unknown';
     const userAgent = req.headers['user-agent'] || 'unknown';
     return this.contractsService.signAsTenant(id, user.id, dto, ip, userAgent);
+  }
+
+  /**
+   * POST /contracts/:id/activate
+   * Activate a signed contract (creates lease).
+   * Only landlord can activate.
+   *
+   * Requirements: LEAS-01
+   */
+  @Post(':id/activate')
+  @Roles(Role.LANDLORD, Role.BOTH)
+  @ApiOperation({ summary: 'Activate a signed contract (creates lease)' })
+  @ApiParam({ name: 'id', type: String, description: 'Contract ID' })
+  @ApiResponse({ status: 200, description: 'Contract activated, lease created' })
+  @ApiResponse({ status: 400, description: 'Invalid state transition' })
+  @ApiResponse({ status: 403, description: 'Only landlord can activate' })
+  @ApiResponse({ status: 404, description: 'Contract not found' })
+  async activateContract(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: User,
+  ) {
+    return this.contractsService.activateContract(id, user.id);
   }
 
   /**

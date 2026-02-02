@@ -9,9 +9,11 @@ import { ContractStateMachine } from './state-machine/contract-state-machine.js'
 import { ContractTemplateService, ContractTemplateData } from './templates/contract-template.service.js';
 import { SignatureService } from './signature/signature.service.js';
 import { PdfGeneratorService } from './pdf/pdf-generator.service.js';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApplicationStatus, ContractStatus } from '../common/enums/index.js';
 import { CreateContractDto } from './dto/create-contract.dto.js';
 import { SignContractDto } from './dto/sign-contract.dto.js';
+import { ContractActivatedEvent } from '../leases/events/contract-activated.event.js';
 import type { Contract, Prisma } from '@prisma/client';
 
 /**
@@ -30,6 +32,7 @@ export class ContractsService {
     private readonly templateService: ContractTemplateService,
     private readonly signatureService: SignatureService,
     private readonly pdfGenerator: PdfGeneratorService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   /**
@@ -352,6 +355,101 @@ export class ContractsService {
       where: { id: contractId },
       data: { signedPdfPath: pdfPath },
     });
+  }
+
+  /**
+   * Activate a signed contract.
+   * Transition: SIGNED -> ACTIVE
+   * Emits event for lease creation.
+   * Only landlord can activate (typically when tenant moves in or start date arrives).
+   *
+   * Requirements: LEAS-01
+   */
+  async activateContract(contractId: string, landlordId: string): Promise<Contract> {
+    const contract = await this.prisma.contract.findUnique({
+      where: { id: contractId },
+      include: {
+        property: {
+          select: {
+            id: true,
+            address: true,
+            city: true,
+          },
+        },
+        landlord: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+        tenant: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+            phone: true,
+          },
+        },
+      },
+    });
+
+    if (!contract) {
+      throw new NotFoundException('Contract not found');
+    }
+
+    if (contract.landlordId !== landlordId) {
+      throw new ForbiddenException('Only the landlord can activate the contract');
+    }
+
+    // Validate state transition
+    this.stateMachine.validateTransition(
+      contract.status as ContractStatus,
+      ContractStatus.ACTIVE,
+    );
+
+    // Update contract status
+    const updatedContract = await this.prisma.contract.update({
+      where: { id: contractId },
+      data: {
+        status: ContractStatus.ACTIVE,
+        activatedAt: new Date(),
+      },
+    });
+
+    // Emit event for lease creation
+    const landlordName = [contract.landlord.firstName, contract.landlord.lastName]
+      .filter(Boolean)
+      .join(' ') || 'N/A';
+    const tenantName = [contract.tenant.firstName, contract.tenant.lastName]
+      .filter(Boolean)
+      .join(' ') || 'N/A';
+
+    this.eventEmitter.emit(
+      'contract.activated',
+      new ContractActivatedEvent(
+        contract.id,
+        contract.property.id,
+        contract.landlordId,
+        contract.tenantId,
+        contract.startDate,
+        contract.endDate,
+        contract.monthlyRent,
+        contract.deposit,
+        contract.paymentDay,
+        contract.property.address,
+        contract.property.city,
+        landlordName,
+        contract.landlord.email,
+        tenantName,
+        contract.tenant.email,
+        contract.tenant.phone,
+      ),
+    );
+
+    return updatedContract;
   }
 
   /**
