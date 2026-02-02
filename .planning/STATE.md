@@ -2,12 +2,12 @@
 
 ## Current Status
 
-**Phase:** 9 of 15 (Payment History Scoring)
-**Plan:** 1 of 2
-**Status:** Plan 09-01 complete - PaymentHistoryService and PaymentHistoryModel created
-**Last activity:** 2026-02-02 - Completed 09-01-PLAN.md (Payment History Metrics and Model)
+**Phase:** 9 of 15 (Payment History Scoring) - COMPLETE
+**Plan:** 2 of 2
+**Status:** Phase 9 complete - Payment history scoring integrated into scoring pipeline
+**Last activity:** 2026-02-02 - Completed 09-02-PLAN.md (Integration with ScoreAggregator)
 
-**Progress:** [#########-] 52% (29/~56 plans estimated)
+**Progress:** [##########] 54% (30/~56 plans estimated)
 
 ## Project Reference
 
@@ -15,7 +15,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 **Core value:** Ejecutar el Risk Score con analisis inteligente de documentos para que propietarios tomen decisiones informadas en minutos, con explicabilidad total.
 
-**Current focus:** Phase 9 in progress. PaymentHistoryService and PaymentHistoryModel created. Ready for Plan 09-02: Integration with ScoreAggregator.
+**Current focus:** Phase 9 complete. Payment history bonus scoring integrated into pipeline with tenant reputation endpoint. Ready for Phase 10: AI Document Analysis (PRO+ tier).
 
 ## Quick Context
 
@@ -37,7 +37,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 6. Landlord Features | COMPLETE | All 3 plans - decisions, notes, review |
 | 7. Contracts | COMPLETE | All 4 plans - model, services, endpoints, signatures |
 | 8. Leases & Payments | COMPLETE | All 3 plans - models, events, services, endpoints |
-| 9. Payment History Scoring | In Progress | Plan 01 complete - metrics and model |
+| 9. Payment History Scoring | COMPLETE | All 2 plans - metrics, model, aggregator integration |
 | 10. AI Document Analysis | Pending | PRO+ tier - Claude integration |
 | 11. Explainability | Pending | PRO+ tier - AI explanations |
 | 12. Notifications | Pending | Email service |
@@ -166,11 +166,14 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 2026-02-02 | 09-01 | Bonus model (0-15 pts) not penalty | New tenants get 0 bonus, not penalized |
 | 2026-02-02 | 09-01 | isReturningTenant = 2+ leases | Conservative threshold for returning tenant bonus |
 | 2026-02-02 | 09-01 | Optional paymentHistory in interface | Backward compatibility with existing scores |
+| 2026-02-02 | 09-02 | Score capped at 100 with bonus | Payment bonus adds to base but total capped at 100 |
+| 2026-02-02 | 09-02 | Algorithm version 1.1 | Version bump indicates new scoring model with payment history |
+| 2026-02-02 | 09-02 | Tier thresholds GOLD/SILVER/BRONZE/NEW | GOLD>=12, SILVER>=8, BRONZE>=4, NEW<4 or <3 months |
 
 ## Session Continuity
 
 **Last session:** 2026-02-02
-**Stopped at:** Completed 09-01-PLAN.md (Payment History Metrics and Model)
+**Stopped at:** Completed 09-02-PLAN.md (Integration with ScoreAggregator)
 **Resume file:** None
 
 ## Pending User Actions
@@ -206,10 +209,10 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 ## Next Action
 
-Continue Phase 9 with Plan 02: Integration with ScoreAggregator.
+Begin Phase 10: AI Document Analysis (PRO+ tier).
 
 ```
-/gsd:execute-phase 09-02
+/gsd:plan-phase 10
 ```
 
 ## Session History
@@ -254,6 +257,7 @@ Continue Phase 9 with Plan 02: Integration with ScoreAggregator.
 | 2026-02-02 | Executed 08-02-PLAN.md | @nestjs/event-emitter, ContractActivatedEvent, lease creation on activation |
 | 2026-02-02 | Executed 08-03-PLAN.md | LeasesService, PaymentsService, REST endpoints, Phase 8 complete |
 | 2026-02-02 | Executed 09-01-PLAN.md | PaymentHistoryMetrics, PaymentHistoryService, PaymentHistoryModel |
+| 2026-02-02 | Executed 09-02-PLAN.md | ScoreAggregator integration, tenant reputation endpoint, Phase 9 complete |
 
 ---
 *Last updated: 2026-02-02*
