@@ -26,7 +26,7 @@ Backend API en NestJS para el marketplace de arriendos "Arriendo Facil". Provee 
 - [x] **Phase 4: Applications & Documents** - Wizard, state machine, document upload
 - [x] **Phase 5: Scoring Engine** - Feature extraction, models, aggregator (FREE - rule-based)
 - [x] **Phase 6: Landlord Features** - Candidates, decisions, approve/reject
-- [ ] **Phase 7: Contracts** - Templates, digital signatures, clauses
+- [x] **Phase 7: Contracts** - Templates, digital signatures, clauses
 - [ ] **Phase 8: Leases & Payments** - Active leases, payment tracking
 - [ ] **Phase 9: Payment History Scoring** - Score bonus from payment history (NEW)
 - [ ] **Phase 10: AI Document Analysis** - Claude integration, document analyzers (PRO+)
@@ -187,10 +187,10 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 07-01-PLAN.md - Add Contract model, ContractStatus enum, database relations
-- [ ] 07-02-PLAN.md - Create ContractStateMachine, ContractTemplateService, SignatureService
-- [ ] 07-03-PLAN.md - Create ContractsModule with create, preview, list endpoints
-- [ ] 07-04-PLAN.md - Add digital signature endpoints and PDF generation
+- [x] 07-01-PLAN.md - Add Contract model, ContractStatus enum, database relations
+- [x] 07-02-PLAN.md - Create ContractStateMachine, ContractTemplateService, SignatureService
+- [x] 07-03-PLAN.md - Create ContractsModule with create, preview, list endpoints
+- [x] 07-04-PLAN.md - Add digital signature endpoints and PDF generation
 
 ### Phase 8: Leases & Payments
 **Goal**: Track active leases and payment history
@@ -329,7 +329,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 4. Applications & Documents | 5/5 | Complete | 2026-01-29 |
 | 5. Scoring Engine | 3/3 | Complete | 2026-01-30 |
 | 6. Landlord Features | 3/3 | Complete | 2026-02-01 |
-| 7. Contracts | 0/4 | Planned | - |
+| 7. Contracts | 4/4 | Complete | 2026-02-01 |
 | 8. Leases & Payments | 0/0 | Not started | - |
 | 9. Payment History Scoring | 0/0 | Not started | - |
 | 10. AI Document Analysis | 0/0 | Not started | - |

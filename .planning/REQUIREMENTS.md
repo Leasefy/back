@@ -152,16 +152,16 @@ Requirements for MVP release. Each maps to roadmap phases.
 
 ### Contracts (CONT)
 
-- [ ] **CONT-01**: Contract templates available
-- [ ] **CONT-02**: Landlord can create contract for approved candidate
-- [ ] **CONT-03**: Contract includes start/end dates, rent, deposit, payment day
-- [ ] **CONT-04**: Contract supports custom clauses
-- [ ] **CONT-05**: Contract supports optional insurance selection
-- [ ] **CONT-06**: Landlord can sign contract digitally
-- [ ] **CONT-07**: Tenant can sign contract digitally
-- [ ] **CONT-08**: Digital signatures comply with Ley 527/1999
-- [ ] **CONT-09**: Signed contract generates PDF document
-- [ ] **CONT-10**: Contract status tracked (draft, pending_signature, signed, active)
+- [x] **CONT-01**: Contract templates available
+- [x] **CONT-02**: Landlord can create contract for approved candidate
+- [x] **CONT-03**: Contract includes start/end dates, rent, deposit, payment day
+- [x] **CONT-04**: Contract supports custom clauses
+- [x] **CONT-05**: Contract supports optional insurance selection
+- [x] **CONT-06**: Landlord can sign contract digitally
+- [x] **CONT-07**: Tenant can sign contract digitally
+- [x] **CONT-08**: Digital signatures comply with Ley 527/1999
+- [x] **CONT-09**: Signed contract generates PDF document
+- [x] **CONT-10**: Contract status tracked (draft, pending_signature, signed, active)
 
 ### Leases & Payments (LEAS)
 
