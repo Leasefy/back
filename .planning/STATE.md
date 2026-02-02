@@ -2,12 +2,12 @@
 
 ## Current Status
 
-**Phase:** 8 of 15 (Leases & Payments) - In Progress
-**Plan:** 2 of 3
-**Status:** Plan 08-02 complete - Event-driven lease creation ready
-**Last activity:** 2026-02-02 - Completed 08-02-PLAN.md (Event-Driven Lease Creation)
+**Phase:** 8 of 15 (Leases & Payments) - COMPLETE
+**Plan:** 3 of 3
+**Status:** Phase 8 complete - Leases and Payments fully implemented
+**Last activity:** 2026-02-02 - Completed 08-03-PLAN.md (Lease Services and Payment Endpoints)
 
-**Progress:** [########--] 48% (27/~56 plans estimated)
+**Progress:** [########--] 50% (28/~56 plans estimated)
 
 ## Project Reference
 
@@ -15,7 +15,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 **Core value:** Ejecutar el Risk Score con analisis inteligente de documentos para que propietarios tomen decisiones informadas en minutos, con explicabilidad total.
 
-**Current focus:** Phase 8 in progress. Event-driven lease creation complete. Contract activation triggers Lease creation via event emitter. Next: lease services and payment endpoints.
+**Current focus:** Phase 8 complete. Full lease and payment management with REST APIs. Ready for Phase 9: Payment History Scoring.
 
 ## Quick Context
 
@@ -36,7 +36,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 5. Scoring Engine | COMPLETE | All 3 plans executed - async scoring pipeline |
 | 6. Landlord Features | COMPLETE | All 3 plans - decisions, notes, review |
 | 7. Contracts | COMPLETE | All 4 plans - model, services, endpoints, signatures |
-| 8. Leases & Payments | In Progress | Plan 2/3 complete - event-driven lease creation |
+| 8. Leases & Payments | COMPLETE | All 3 plans - models, events, services, endpoints |
 | 9. Payment History Scoring | Pending | NEW - Score from payment history |
 | 10. AI Document Analysis | Pending | PRO+ tier - Claude integration |
 | 11. Explainability | Pending | PRO+ tier - AI explanations |
@@ -158,11 +158,15 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 2026-02-02 | 08-02 | Lease creation in transaction | Atomic creation of lease + property status update |
 | 2026-02-02 | 08-02 | Only landlord can activate | Explicit control over when lease begins |
 | 2026-02-02 | 08-02 | Denormalized data in event | Lease stores snapshot for stable reporting |
+| 2026-02-02 | 08-03 | Lazy status updates for leases | Evaluate ENDING_SOON/ENDED on read, no cron needed for MVP |
+| 2026-02-02 | 08-03 | Pre-check for duplicate payments | Friendlier error message than Prisma unique constraint violation |
+| 2026-02-02 | 08-03 | Either party views payments | Transparency - both landlord and tenant see payment history |
+| 2026-02-02 | 08-03 | Only landlord records payments | Explicit control over payment recording |
 
 ## Session Continuity
 
 **Last session:** 2026-02-02
-**Stopped at:** Completed 08-02-PLAN.md (Event-Driven Lease Creation)
+**Stopped at:** Completed 08-03-PLAN.md (Lease Services and Payment Endpoints)
 **Resume file:** None
 
 ## Pending User Actions
@@ -198,10 +202,10 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 ## Next Action
 
-Continue Phase 8: Leases & Payments with Plan 03 (Lease Services and Payment Endpoints).
+Start Phase 9: Payment History Scoring.
 
 ```
-/gsd:execute-phase 08-03
+/gsd:plan-phase 09
 ```
 
 ## Session History
@@ -244,6 +248,7 @@ Continue Phase 8: Leases & Payments with Plan 03 (Lease Services and Payment End
 | 2026-02-01 | Executed 07-04-PLAN.md | Digital signatures, PDF generation to Supabase Storage, Phase 7 complete |
 | 2026-02-02 | Executed 08-01-PLAN.md | Lease/Payment models, LeaseStatus/PaymentMethod enums |
 | 2026-02-02 | Executed 08-02-PLAN.md | @nestjs/event-emitter, ContractActivatedEvent, lease creation on activation |
+| 2026-02-02 | Executed 08-03-PLAN.md | LeasesService, PaymentsService, REST endpoints, Phase 8 complete |
 
 ---
 *Last updated: 2026-02-02*
