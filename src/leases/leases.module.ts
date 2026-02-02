@@ -1,17 +1,28 @@
 import { Module } from '@nestjs/common';
+import { LeasesController } from './leases.controller.js';
+import { LeasesService } from './leases.service.js';
+import { PaymentsService } from './payments.service.js';
 import { ContractActivatedListener } from './events/contract-activated.listener.js';
 
 /**
  * LeasesModule
  *
- * Provides lease management functionality.
- * Listener creates leases automatically when contracts are activated.
+ * Provides lease and payment management functionality.
+ * - ContractActivatedListener creates leases when contracts are activated
+ * - LeasesService handles lease retrieval and status
+ * - PaymentsService handles payment recording and history
  *
  * Note: PrismaModule is global, no need to import.
- * Note: Services and controller will be added in 08-03.
+ *
+ * Requirements: LEAS-01 through LEAS-08
  */
 @Module({
-  providers: [ContractActivatedListener],
-  exports: [],
+  controllers: [LeasesController],
+  providers: [
+    LeasesService,
+    PaymentsService,
+    ContractActivatedListener,
+  ],
+  exports: [LeasesService],
 })
 export class LeasesModule {}
