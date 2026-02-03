@@ -159,6 +159,22 @@ enum AccountType {
   CORRIENTE
 }
 
+/// Status of a property visit
+/// PENDING: Tenant requested, awaiting landlord response
+/// ACCEPTED: Landlord accepted the visit
+/// REJECTED: Landlord rejected the visit
+/// CANCELLED: Either party cancelled
+/// COMPLETED: Visit happened
+/// RESCHEDULED: Original visit was rescheduled (superseded by new visit)
+enum VisitStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CANCELLED
+  COMPLETED
+  RESCHEDULED
+}
+
 // ============================================
 // MODELS
 // ============================================
@@ -197,6 +213,9 @@ model User {
   tenantPaymentRequests  TenantPaymentRequest[]  @relation("TenantPaymentRequests")
   paymentValidations     TenantPaymentRequest[]  @relation("PaymentValidations")
   disputeResolutions     PaymentDispute[]        @relation("DisputeResolutions")
+
+  // Property visits relations
+  tenantVisits           PropertyVisit[]         @relation("TenantVisits")
 
   @@map("users")
 }
@@ -239,11 +258,13 @@ model Property {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  landlord     User            @relation(fields: [landlordId], references: [id], onDelete: Cascade)
-  images       PropertyImage[]
-  applications Application[]
-  contracts    Contract[]
-  leases       Lease[]
+  landlord       User            @relation(fields: [landlordId], references: [id], onDelete: Cascade)
+  images         PropertyImage[]
+  applications   Application[]
+  contracts      Contract[]
+  leases         Lease[]
+  availabilities PropertyAvailability[]
+  visits         PropertyVisit[]
 
   @@index([landlordId])
   @@index([city])
@@ -648,4 +669,65 @@ model PaymentDispute {
 
   @@index([status])
   @@map("payment_disputes")
+}
+
+/// Landlord's availability configuration for property visits
+/// Stores recurring weekly schedule (one row per time window per day)
+model PropertyAvailability {
+  id           String   @id @default(uuid()) @db.Uuid
+  propertyId   String   @map("property_id") @db.Uuid
+  dayOfWeek    Int      @map("day_of_week")       // 0=Sunday, 6=Saturday
+  startTime    String   @map("start_time")        // "09:00" (HH:mm 24h)
+  endTime      String   @map("end_time")          // "17:00"
+  slotDuration Int      @map("slot_duration")     // Minutes: 15, 30, 45, 60
+  isActive     Boolean  @default(true) @map("is_active")
+
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  property     Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@unique([propertyId, dayOfWeek, startTime])  // Prevent overlapping windows
+  @@index([propertyId])
+  @@map("property_availabilities")
+}
+
+/// Individual property visit request
+model PropertyVisit {
+  id                String      @id @default(uuid()) @db.Uuid
+  propertyId        String      @map("property_id") @db.Uuid
+  tenantId          String      @map("tenant_id") @db.Uuid
+  status            VisitStatus @default(PENDING)
+
+  // Visit timing
+  visitDate         DateTime    @map("visit_date") @db.Date
+  startTime         String      @map("start_time")      // "10:00"
+  endTime           String      @map("end_time")        // "10:30"
+
+  // Optional notes
+  tenantNotes       String?     @map("tenant_notes") @db.VarChar(500)
+  landlordNotes     String?     @map("landlord_notes") @db.VarChar(500)
+  rejectionReason   String?     @map("rejection_reason") @db.VarChar(500)
+  cancellationReason String?    @map("cancellation_reason") @db.VarChar(500)
+  cancelledBy       String?     @map("cancelled_by") @db.Uuid  // Who cancelled
+
+  // Rescheduling chain
+  rescheduledFromId String?     @unique @map("rescheduled_from_id") @db.Uuid
+  rescheduledToId   String?     @unique @map("rescheduled_to_id") @db.Uuid
+
+  createdAt         DateTime    @default(now()) @map("created_at")
+  updatedAt         DateTime    @updatedAt @map("updated_at")
+
+  // Relations
+  property          Property    @relation(fields: [propertyId], references: [id])
+  tenant            User        @relation("TenantVisits", fields: [tenantId], references: [id])
+  rescheduledFrom   PropertyVisit? @relation("VisitReschedule", fields: [rescheduledFromId], references: [id])
+  rescheduledTo     PropertyVisit? @relation("VisitReschedule")
+
+  @@index([propertyId])
+  @@index([tenantId])
+  @@index([visitDate])
+  @@index([status])
+  @@map("property_visits")
 }
