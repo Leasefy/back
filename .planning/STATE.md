@@ -3,11 +3,11 @@
 ## Current Status
 
 **Phase:** 3.1 of 16 (Property Visits Scheduling)
-**Plan:** 3 of 3
+**Plan:** 4 of 4
 **Status:** Phase complete
-**Last activity:** 2026-02-03 - Completed 03.1-03-PLAN.md (Visit Core Operations)
+**Last activity:** 2026-02-03 - Completed 03.1-04-PLAN.md (Visit Status Management)
 
-**Progress:** [###################] 66% (39/~59 plans estimated)
+**Progress:** [####################] 68% (40/~59 plans estimated)
 
 ## Project Reference
 
@@ -32,7 +32,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 1. Foundation | COMPLETE | All 3 plans executed |
 | 2. Auth & Users | COMPLETE | All 3 plans executed |
 | 3. Properties | COMPLETE | All 4 plans executed |
-| 3.1 Property Visits | COMPLETE | All 3 plans - models, services, core operations |
+| 3.1 Property Visits | COMPLETE | All 4 plans - models, services, operations, endpoints |
 | 4. Applications | COMPLETE | All 5 plans executed |
 | 5. Scoring Engine | COMPLETE | All 3 plans executed - async scoring pipeline |
 | 6. Landlord Features | COMPLETE | All 3 plans - decisions, notes, review |
@@ -209,11 +209,15 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 2026-02-03 | 03.1-03 | Transaction for double-booking prevention | Ensures slot is still available at creation time |
 | 2026-02-03 | 03.1-03 | One active visit per property per tenant | Prevents spam requests |
 | 2026-02-03 | 03.1-03 | Event emission for notifications | visit.requested event for Phase 13 integration |
+| 2026-02-03 | 03.1-04 | Required reason for reject/cancel | Transparency - 10-500 chars required |
+| 2026-02-03 | 03.1-04 | Reschedule creates new visit | Original marked RESCHEDULED, new visit PENDING with rescheduledFromId |
+| 2026-02-03 | 03.1-04 | Either party can reschedule accepted | State machine allows TENANT/LANDLORD to reschedule ACCEPTED visits |
+| 2026-02-03 | 03.1-04 | Status change events | visit.statusChanged emitted for Phase 13 notification integration |
 
 ## Session Continuity
 
 **Last session:** 2026-02-03
-**Stopped at:** Completed 03.1-03-PLAN.md (Visit Core Operations) - Phase 3.1 complete
+**Stopped at:** Completed 03.1-04-PLAN.md (Visit Status Management) - Phase 3.1 complete
 **Resume file:** None
 
 ## Pending User Actions
@@ -306,7 +310,8 @@ Phase 3.1 complete. Continue to Phase 11: AI Document Analysis (PRO+ tier).
 | 2026-02-02 | Executed 10-06-PLAN.md | DisputesService, DisputesController, Phase 10 complete |
 | 2026-02-03 | Executed 03.1-01-PLAN.md | VisitStatus enum, PropertyAvailability, PropertyVisit models |
 | 2026-02-03 | Executed 03.1-02-PLAN.md | VisitStateMachine, AvailabilityService, SlotsService, VisitsModule |
-| 2026-02-03 | Executed 03.1-03-PLAN.md | VisitsService, events, Phase 3.1 complete |
+| 2026-02-03 | Executed 03.1-03-PLAN.md | VisitsService, events |
+| 2026-02-03 | Executed 03.1-04-PLAN.md | VisitsController, status methods, Phase 3.1 complete |
 
 ---
 *Last updated: 2026-02-03*
