@@ -2,12 +2,12 @@
 
 ## Current Status
 
-**Phase:** 10 of 16 (Tenant Payment Simulation)
-**Plan:** 6 of 6
-**Status:** Phase complete
-**Last activity:** 2026-02-02 - Completed 10-06-PLAN.md (Payment Dispute Workflow)
+**Phase:** 3.1 of 16 (Property Visits Scheduling)
+**Plan:** 1 of 3
+**Status:** In progress
+**Last activity:** 2026-02-03 - Completed 03.1-01-PLAN.md (Visit Models)
 
-**Progress:** [##################] 62% (36/~58 plans estimated)
+**Progress:** [##################] 63% (37/~59 plans estimated)
 
 ## Project Reference
 
@@ -15,7 +15,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 **Core value:** Ejecutar el Risk Score con analisis inteligente de documentos para que propietarios tomen decisiones informadas en minutos, con explicabilidad total.
 
-**Current focus:** Phase 10: Tenant Payment Simulation. Simulated payment flow where tenant can pay via Transfer (upload receipt) or PSE (mock). Landlord configures payment methods. Receipt upload notifies landlord for validation.
+**Current focus:** Phase 3.1: Property Visits Scheduling. Tenant can view available slots and request visits, landlord configures availability and manages visit requests.
 
 ## Quick Context
 
@@ -32,6 +32,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 1. Foundation | COMPLETE | All 3 plans executed |
 | 2. Auth & Users | COMPLETE | All 3 plans executed |
 | 3. Properties | COMPLETE | All 4 plans executed |
+| 3.1 Property Visits | IN PROGRESS | Plan 1/3 - visit models created |
 | 4. Applications | COMPLETE | All 5 plans executed |
 | 5. Scoring Engine | COMPLETE | All 3 plans executed - async scoring pipeline |
 | 6. Landlord Features | COMPLETE | All 3 plans - decisions, notes, review |
@@ -196,11 +197,15 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 2026-02-02 | 10-06 | Reuse ReceiptStorageService for evidence | Consistent file handling with dispute- prefix |
 | 2026-02-02 | 10-06 | Dispute updates status to DISPUTED | Clear status tracking for rejection disputes |
 | 2026-02-02 | 10-06 | One dispute per payment request | Unique constraint prevents spam, enables clean resolution |
+| 2026-02-03 | 03.1-01 | VisitStatus with 6 values | Covers full visit lifecycle: request, response, completion, cancellation, rescheduling |
+| 2026-02-03 | 03.1-01 | Weekly recurring availability | More flexible than pre-generated slots; landlord sets pattern, slots generated on-demand |
+| 2026-02-03 | 03.1-01 | Self-referential rescheduling | Tracks chain of rescheduled visits without separate table |
+| 2026-02-03 | 03.1-01 | Unique constraint on availability | Prevents overlapping time windows for same property/day/start time |
 
 ## Session Continuity
 
-**Last session:** 2026-02-02
-**Stopped at:** Completed 10-06-PLAN.md (Payment Dispute Workflow) - Phase 10 complete
+**Last session:** 2026-02-03
+**Stopped at:** Completed 03.1-01-PLAN.md (Visit Models)
 **Resume file:** None
 
 ## Pending User Actions
@@ -236,10 +241,10 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 ## Next Action
 
-Phase 10 complete. Continue to Phase 11: AI Document Analysis.
+Continue Phase 3.1: Property Visits Scheduling - Plan 02.
 
 ```
-/gsd:execute-phase 11
+/gsd:execute-phase 03.1-02
 ```
 
 ## Session History
@@ -291,6 +296,7 @@ Phase 10 complete. Continue to Phase 11: AI Document Analysis.
 | 2026-02-02 | Executed 10-04-PLAN.md | PseMockService, PseMockController, PSE mock flow |
 | 2026-02-02 | Executed 10-05-PLAN.md | PaymentValidationService, PaymentValidationController |
 | 2026-02-02 | Executed 10-06-PLAN.md | DisputesService, DisputesController, Phase 10 complete |
+| 2026-02-03 | Executed 03.1-01-PLAN.md | VisitStatus enum, PropertyAvailability, PropertyVisit models |
 
 ---
-*Last updated: 2026-02-02*
+*Last updated: 2026-02-03*
