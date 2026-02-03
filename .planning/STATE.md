@@ -3,11 +3,11 @@
 ## Current Status
 
 **Phase:** 3.1 of 16 (Property Visits Scheduling)
-**Plan:** 1 of 3
+**Plan:** 2 of 3
 **Status:** In progress
-**Last activity:** 2026-02-03 - Completed 03.1-01-PLAN.md (Visit Models)
+**Last activity:** 2026-02-03 - Completed 03.1-02-PLAN.md (Visit Services)
 
-**Progress:** [##################] 63% (37/~59 plans estimated)
+**Progress:** [##################] 64% (38/~59 plans estimated)
 
 ## Project Reference
 
@@ -32,7 +32,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 1. Foundation | COMPLETE | All 3 plans executed |
 | 2. Auth & Users | COMPLETE | All 3 plans executed |
 | 3. Properties | COMPLETE | All 4 plans executed |
-| 3.1 Property Visits | IN PROGRESS | Plan 1/3 - visit models created |
+| 3.1 Property Visits | IN PROGRESS | Plan 2/3 - services created |
 | 4. Applications | COMPLETE | All 5 plans executed |
 | 5. Scoring Engine | COMPLETE | All 3 plans executed - async scoring pipeline |
 | 6. Landlord Features | COMPLETE | All 3 plans - decisions, notes, review |
@@ -201,11 +201,16 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 2026-02-03 | 03.1-01 | Weekly recurring availability | More flexible than pre-generated slots; landlord sets pattern, slots generated on-demand |
 | 2026-02-03 | 03.1-01 | Self-referential rescheduling | Tracks chain of rescheduled visits without separate table |
 | 2026-02-03 | 03.1-01 | Unique constraint on availability | Prevents overlapping time windows for same property/day/start time |
+| 2026-02-03 | 03.1-02 | Role-based state machine | VisitStateMachine validates transitions with TENANT/LANDLORD permissions |
+| 2026-02-03 | 03.1-02 | 2-hour minimum booking buffer | Prevents booking too close to now, gives landlord time to prepare |
+| 2026-02-03 | 03.1-02 | 30-day maximum advance booking | Limits query scope, prevents abuse |
+| 2026-02-03 | 03.1-02 | On-demand slot generation | Slots generated from availability rules, not pre-stored |
+| 2026-02-03 | 03.1-02 | Slot duration options (15/30/45/60) | Flexibility for different property types |
 
 ## Session Continuity
 
 **Last session:** 2026-02-03
-**Stopped at:** Completed 03.1-01-PLAN.md (Visit Models)
+**Stopped at:** Completed 03.1-02-PLAN.md (Visit Services)
 **Resume file:** None
 
 ## Pending User Actions
@@ -241,10 +246,10 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 ## Next Action
 
-Continue Phase 3.1: Property Visits Scheduling - Plan 02.
+Continue Phase 3.1: Property Visits Scheduling - Plan 03 (Endpoints).
 
 ```
-/gsd:execute-phase 03.1-02
+/gsd:execute-phase 03.1-03
 ```
 
 ## Session History
@@ -297,6 +302,7 @@ Continue Phase 3.1: Property Visits Scheduling - Plan 02.
 | 2026-02-02 | Executed 10-05-PLAN.md | PaymentValidationService, PaymentValidationController |
 | 2026-02-02 | Executed 10-06-PLAN.md | DisputesService, DisputesController, Phase 10 complete |
 | 2026-02-03 | Executed 03.1-01-PLAN.md | VisitStatus enum, PropertyAvailability, PropertyVisit models |
+| 2026-02-03 | Executed 03.1-02-PLAN.md | VisitStateMachine, AvailabilityService, SlotsService, VisitsModule |
 
 ---
 *Last updated: 2026-02-03*
