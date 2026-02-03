@@ -125,24 +125,30 @@ Plans:
   8. Notifications sent on: new request, accepted, rejected, cancelled, rescheduled
   9. Tenant can view their scheduled visits
   10. Landlord can view all visits for their properties
-**Research**: Likely (calendar patterns, time slot management)
-**Plans**: TBD
+**Research**: Complete (03.1-RESEARCH.md)
+**Plans**: 4 plans
+
+Plans:
+- [ ] 03.1-01-PLAN.md - Create database models and enums for property visits
+- [ ] 03.1-02-PLAN.md - Create VisitStateMachine, AvailabilityService, and SlotsService
+- [ ] 03.1-03-PLAN.md - Create VisitsService with core operations and events
+- [ ] 03.1-04-PLAN.md - Create VisitsController with all endpoints and status management
 
 **Visit Status Flow:**
 ```
-PENDING → ACCEPTED → COMPLETED
-       ↘ REJECTED
-       ↘ CANCELLED (by either party)
-ACCEPTED → RESCHEDULED → PENDING (new date)
-         ↘ CANCELLED
+PENDING -> ACCEPTED -> COMPLETED
+       \-> REJECTED
+       \-> CANCELLED (by either party)
+ACCEPTED -> RESCHEDULED -> PENDING (new date)
+         \-> CANCELLED
 ```
 
 **Notifications (integrated with Phase 13):**
-- New visit request → Landlord (push + email)
-- Visit accepted/rejected → Tenant (push + email)
-- Visit cancelled → Other party (push + email)
-- Visit rescheduled → Other party (push + email)
-- Reminder 24h before → Both parties (push + email)
+- New visit request -> Landlord (push + email)
+- Visit accepted/rejected -> Tenant (push + email)
+- Visit cancelled -> Other party (push + email)
+- Visit rescheduled -> Other party (push + email)
+- Reminder 24h before -> Both parties (push + email)
 
 ### Phase 4: Applications & Documents
 **Goal**: Complete application submission flow with document upload
@@ -422,14 +428,14 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10 -> 11 -> 12 -> 13 -> 14 -> 15 -> 16
+Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10 -> 11 -> 12 -> 13 -> 14 -> 15 -> 16
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 3/3 | Complete | 2026-01-25 |
 | 2. Auth & Users | 3/3 | Complete | 2026-01-26 |
 | 3. Properties | 4/4 | Complete | 2026-01-29 |
-| 3.1. Property Visits | 0/0 | Not started | - |
+| 3.1. Property Visits | 0/4 | Planned | - |
 | 4. Applications & Documents | 5/5 | Complete | 2026-01-29 |
 | 5. Scoring Engine | 3/3 | Complete | 2026-01-30 |
 | 6. Landlord Features | 3/3 | Complete | 2026-02-01 |
@@ -526,4 +532,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-02-02 - Added Phase 3.1 (Property Visits Scheduling)*
+*Last updated: 2026-02-02 - Added Phase 3.1 plans (Property Visits Scheduling)*
