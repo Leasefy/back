@@ -3,11 +3,11 @@
 ## Current Status
 
 **Phase:** 3.1 of 16 (Property Visits Scheduling)
-**Plan:** 2 of 3
-**Status:** In progress
-**Last activity:** 2026-02-03 - Completed 03.1-02-PLAN.md (Visit Services)
+**Plan:** 3 of 3
+**Status:** Phase complete
+**Last activity:** 2026-02-03 - Completed 03.1-03-PLAN.md (Visit Core Operations)
 
-**Progress:** [##################] 64% (38/~59 plans estimated)
+**Progress:** [###################] 66% (39/~59 plans estimated)
 
 ## Project Reference
 
@@ -32,7 +32,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 1. Foundation | COMPLETE | All 3 plans executed |
 | 2. Auth & Users | COMPLETE | All 3 plans executed |
 | 3. Properties | COMPLETE | All 4 plans executed |
-| 3.1 Property Visits | IN PROGRESS | Plan 2/3 - services created |
+| 3.1 Property Visits | COMPLETE | All 3 plans - models, services, core operations |
 | 4. Applications | COMPLETE | All 5 plans executed |
 | 5. Scoring Engine | COMPLETE | All 3 plans executed - async scoring pipeline |
 | 6. Landlord Features | COMPLETE | All 3 plans - decisions, notes, review |
@@ -206,11 +206,14 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 2026-02-03 | 03.1-02 | 30-day maximum advance booking | Limits query scope, prevents abuse |
 | 2026-02-03 | 03.1-02 | On-demand slot generation | Slots generated from availability rules, not pre-stored |
 | 2026-02-03 | 03.1-02 | Slot duration options (15/30/45/60) | Flexibility for different property types |
+| 2026-02-03 | 03.1-03 | Transaction for double-booking prevention | Ensures slot is still available at creation time |
+| 2026-02-03 | 03.1-03 | One active visit per property per tenant | Prevents spam requests |
+| 2026-02-03 | 03.1-03 | Event emission for notifications | visit.requested event for Phase 13 integration |
 
 ## Session Continuity
 
 **Last session:** 2026-02-03
-**Stopped at:** Completed 03.1-02-PLAN.md (Visit Services)
+**Stopped at:** Completed 03.1-03-PLAN.md (Visit Core Operations) - Phase 3.1 complete
 **Resume file:** None
 
 ## Pending User Actions
@@ -246,10 +249,10 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 ## Next Action
 
-Continue Phase 3.1: Property Visits Scheduling - Plan 03 (Endpoints).
+Phase 3.1 complete. Continue to Phase 11: AI Document Analysis (PRO+ tier).
 
 ```
-/gsd:execute-phase 03.1-03
+/gsd:plan-phase 11
 ```
 
 ## Session History
@@ -303,6 +306,7 @@ Continue Phase 3.1: Property Visits Scheduling - Plan 03 (Endpoints).
 | 2026-02-02 | Executed 10-06-PLAN.md | DisputesService, DisputesController, Phase 10 complete |
 | 2026-02-03 | Executed 03.1-01-PLAN.md | VisitStatus enum, PropertyAvailability, PropertyVisit models |
 | 2026-02-03 | Executed 03.1-02-PLAN.md | VisitStateMachine, AvailabilityService, SlotsService, VisitsModule |
+| 2026-02-03 | Executed 03.1-03-PLAN.md | VisitsService, events, Phase 3.1 complete |
 
 ---
 *Last updated: 2026-02-03*
