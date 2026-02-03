@@ -4,11 +4,13 @@ import {
   ForbiddenException,
   BadRequestException,
 } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PrismaService } from '../../database/prisma.service.js';
 import { PaymentsService } from '../../leases/payments.service.js';
 import { ReceiptStorageService } from '../receipt-storage/receipt-storage.service.js';
 import { LeasesService } from '../../leases/leases.service.js';
 import { TenantPaymentRequestStatus, PaymentMethod } from '../../common/enums/index.js';
+import { PaymentValidatedEvent } from '../../notifications/events/payment.events.js';
 import type { TenantPaymentRequest, Payment } from '@prisma/client';
 
 /**
@@ -32,6 +34,7 @@ export class PaymentValidationService {
     private readonly paymentsService: PaymentsService,
     private readonly receiptStorage: ReceiptStorageService,
     private readonly leasesService: LeasesService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   /**
@@ -167,6 +170,28 @@ export class PaymentValidationService {
       },
     });
 
+    // Emit notification event
+    const landlord = await this.prisma.user.findUnique({
+      where: { id: landlordId },
+    });
+    const landlordName = landlord
+      ? [landlord.firstName, landlord.lastName].filter(Boolean).join(' ') || landlord.email
+      : 'El propietario';
+
+    this.eventEmitter.emit(
+      'payment.validated',
+      new PaymentValidatedEvent(
+        requestId,
+        request.leaseId,
+        request.tenantId,
+        landlordId,
+        request.lease.propertyAddress,
+        request.amount,
+        true, // approved
+        landlordName,
+      ),
+    );
+
     return payment;
   }
 
@@ -193,7 +218,7 @@ export class PaymentValidationService {
       throw new BadRequestException('Can only reject pending requests');
     }
 
-    return this.prisma.tenantPaymentRequest.update({
+    const updated = await this.prisma.tenantPaymentRequest.update({
       where: { id: requestId },
       data: {
         status: TenantPaymentRequestStatus.REJECTED,
@@ -202,6 +227,30 @@ export class PaymentValidationService {
         rejectionReason: reason,
       },
     });
+
+    // Emit notification event
+    const landlord = await this.prisma.user.findUnique({
+      where: { id: landlordId },
+    });
+    const landlordName = landlord
+      ? [landlord.firstName, landlord.lastName].filter(Boolean).join(' ') || landlord.email
+      : 'El propietario';
+
+    this.eventEmitter.emit(
+      'payment.validated',
+      new PaymentValidatedEvent(
+        requestId,
+        request.leaseId,
+        request.tenantId,
+        landlordId,
+        request.lease.propertyAddress,
+        request.amount,
+        false, // rejected
+        landlordName,
+      ),
+    );
+
+    return updated;
   }
 
   /**

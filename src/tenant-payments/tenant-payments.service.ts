@@ -5,6 +5,7 @@ import {
   BadRequestException,
   ConflictException,
 } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PrismaService } from '../database/prisma.service.js';
 import { LeasesService } from '../leases/leases.service.js';
 import { ReceiptStorageService } from './receipt-storage/receipt-storage.service.js';
@@ -16,6 +17,7 @@ import {
   PaymentMethod,
   ColombianBank,
 } from '../common/enums/index.js';
+import { PaymentReceiptUploadedEvent } from '../notifications/events/payment.events.js';
 import type { TenantPaymentRequest, LandlordPaymentMethod } from '@prisma/client';
 
 /**
@@ -33,6 +35,7 @@ export class TenantPaymentsService {
     private readonly prisma: PrismaService,
     private readonly leasesService: LeasesService,
     private readonly receiptStorage: ReceiptStorageService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   /**
@@ -222,6 +225,28 @@ export class TenantPaymentsService {
           status: TenantPaymentRequestStatus.PENDING_VALIDATION,
         },
       });
+
+      // Emit notification event for landlord
+      const tenant = await this.prisma.user.findUnique({
+        where: { id: tenantId },
+      });
+      const tenantName = tenant
+        ? [tenant.firstName, tenant.lastName].filter(Boolean).join(' ') || tenant.email
+        : 'El inquilino';
+
+      this.eventEmitter.emit(
+        'payment.receiptUploaded',
+        new PaymentReceiptUploadedEvent(
+          paymentRequest.id,
+          leaseId,
+          tenantId,
+          lease.landlordId,
+          lease.propertyAddress,
+          `${lease.propertyAddress}, ${lease.propertyCity}`,
+          amount,
+          tenantName,
+        ),
+      );
 
       return paymentRequest;
     } catch (error) {

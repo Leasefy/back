@@ -14,6 +14,7 @@ import { ApplicationStatus, ContractStatus } from '../common/enums/index.js';
 import { CreateContractDto } from './dto/create-contract.dto.js';
 import { SignContractDto } from './dto/sign-contract.dto.js';
 import { ContractActivatedEvent } from '../leases/events/contract-activated.event.js';
+import { ContractReadyEvent, ContractSignedEvent } from '../notifications/events/contract.events.js';
 import type { Contract, Prisma } from '@prisma/client';
 
 /**
@@ -272,7 +273,7 @@ export class ContractsService {
     );
 
     // Update contract with signature and new status
-    return this.prisma.contract.update({
+    const updatedContract = await this.prisma.contract.update({
       where: { id: contractId },
       data: {
         status: ContractStatus.PENDING_TENANT_SIGNATURE,
@@ -280,6 +281,30 @@ export class ContractsService {
         documentHash: signatureAudit.documentHash,
       },
     });
+
+    // Get property for notification
+    const property = await this.prisma.property.findUnique({
+      where: { id: contract.propertyId },
+    });
+    const propertyTitle = property?.title || 'Propiedad';
+    const landlordName = [landlord.firstName, landlord.lastName].filter(Boolean).join(' ') || landlord.email;
+
+    // Emit notification event - landlord signed, notify tenant
+    this.eventEmitter.emit(
+      'contract.signed',
+      new ContractSignedEvent(
+        contractId,
+        contract.propertyId,
+        contract.tenantId,
+        landlordId,
+        propertyTitle,
+        'LANDLORD',
+        landlordName,
+        false, // not fully completed yet
+      ),
+    );
+
+    return updatedContract;
   }
 
   /**
@@ -351,10 +376,34 @@ export class ContractsService {
     );
 
     // Update with PDF path
-    return this.prisma.contract.update({
+    const finalContract = await this.prisma.contract.update({
       where: { id: contractId },
       data: { signedPdfPath: pdfPath },
     });
+
+    // Get property for notification
+    const property = await this.prisma.property.findUnique({
+      where: { id: contract.propertyId },
+    });
+    const propertyTitle = property?.title || 'Propiedad';
+    const tenantName = [tenant.firstName, tenant.lastName].filter(Boolean).join(' ') || tenant.email;
+
+    // Emit notification event - both signed, contract completed
+    this.eventEmitter.emit(
+      'contract.signed',
+      new ContractSignedEvent(
+        contractId,
+        contract.propertyId,
+        tenantId,
+        contract.landlordId,
+        propertyTitle,
+        'TENANT',
+        tenantName,
+        true, // fully completed
+      ),
+    );
+
+    return finalContract;
   }
 
   /**

@@ -5,9 +5,11 @@ import {
   BadRequestException,
   ConflictException,
 } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import type { Application } from '@prisma/client';
 import { PrismaService } from '../database/prisma.service.js';
 import { ApplicationStatus, ApplicationEventType } from '../common/enums/index.js';
+import { ApplicationSubmittedEvent } from '../notifications/events/application.events.js';
 import { ApplicationStateMachine } from './state-machine/application-state-machine.js';
 import { ApplicationEventService } from './events/application-event.service.js';
 import {
@@ -35,6 +37,7 @@ export class ApplicationsService {
     private readonly stateMachine: ApplicationStateMachine,
     private readonly eventService: ApplicationEventService,
     private readonly scoringService: ScoringService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   /**
@@ -312,6 +315,31 @@ export class ApplicationsService {
     // Scoring runs async via BullMQ
     // Application will transition to UNDER_REVIEW when scoring completes
     await this.scoringService.addScoringJob(applicationId, tenantId);
+
+    // Emit event for notification to landlord
+    const property = await this.prisma.property.findUnique({
+      where: { id: application.propertyId },
+      include: { landlord: true },
+    });
+
+    const tenant = await this.prisma.user.findUnique({
+      where: { id: tenantId },
+    });
+
+    if (property && tenant) {
+      this.eventEmitter.emit(
+        'application.submitted',
+        new ApplicationSubmittedEvent(
+          application.id,
+          application.propertyId,
+          application.tenantId,
+          property.landlordId,
+          property.title,
+          property.address,
+          [tenant.firstName, tenant.lastName].filter(Boolean).join(' ') || tenant.email,
+        ),
+      );
+    }
 
     return updatedApplication;
   }

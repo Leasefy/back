@@ -4,12 +4,14 @@ import {
   BadRequestException,
   ForbiddenException,
 } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PrismaService } from '../../database/prisma.service.js';
 import { ReceiptStorageService } from '../receipt-storage/receipt-storage.service.js';
 import {
   TenantPaymentRequestStatus,
   PaymentDisputeStatus,
 } from '../../common/enums/index.js';
+import { PaymentDisputeOpenedEvent } from '../../notifications/events/payment.events.js';
 import type { PaymentDispute } from '@prisma/client';
 
 /**
@@ -26,6 +28,7 @@ export class DisputesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly receiptStorage: ReceiptStorageService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   /**
@@ -95,6 +98,28 @@ export class DisputesService {
       where: { id: paymentRequestId },
       data: { status: TenantPaymentRequestStatus.DISPUTED },
     });
+
+    // 6. Emit notification event for landlord
+    const tenant = await this.prisma.user.findUnique({
+      where: { id: tenantId },
+    });
+    const tenantName = tenant
+      ? [tenant.firstName, tenant.lastName].filter(Boolean).join(' ') || tenant.email
+      : 'El inquilino';
+
+    this.eventEmitter.emit(
+      'payment.disputeOpened',
+      new PaymentDisputeOpenedEvent(
+        dispute.id,
+        paymentRequestId,
+        request.leaseId,
+        tenantId,
+        request.lease.landlordId,
+        request.lease.propertyAddress,
+        request.amount,
+        tenantName,
+      ),
+    );
 
     return dispute;
   }

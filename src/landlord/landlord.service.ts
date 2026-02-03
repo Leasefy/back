@@ -3,11 +3,13 @@ import {
   NotFoundException,
   ForbiddenException,
 } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PrismaService } from '../database/prisma.service.js';
 import { ApplicationEventService } from '../applications/events/application-event.service.js';
 import { ApplicationStateMachine } from '../applications/state-machine/application-state-machine.js';
 import { DocumentsService } from '../documents/documents.service.js';
 import { ApplicationStatus, RiskLevel, DocumentType, ApplicationEventType } from '../common/enums/index.js';
+import { ApplicationStatusChangedEvent } from '../notifications/events/application.events.js';
 import {
   CandidateCardDto,
   CandidateDetailDto,
@@ -38,6 +40,7 @@ export class LandlordService {
     private readonly stateMachine: ApplicationStateMachine,
     private readonly eventService: ApplicationEventService,
     private readonly documentsService: DocumentsService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   /**
@@ -327,6 +330,27 @@ export class LandlordService {
       dto.message,
     );
 
+    // Emit notification event
+    const landlord = await this.prisma.user.findUnique({
+      where: { id: landlordId },
+    });
+    const landlordName = landlord
+      ? [landlord.firstName, landlord.lastName].filter(Boolean).join(' ') || landlord.email
+      : 'El propietario';
+
+    this.eventEmitter.emit(
+      'application.statusChanged',
+      new ApplicationStatusChangedEvent(
+        applicationId,
+        app.property.id,
+        app.tenantId,
+        landlordId,
+        ApplicationStatus.APPROVED,
+        app.property.title,
+        landlordName,
+      ),
+    );
+
     return updated;
   }
 
@@ -362,6 +386,27 @@ export class LandlordService {
       app.status as ApplicationStatus,
       ApplicationStatus.REJECTED,
       dto.reason,
+    );
+
+    // Emit notification event
+    const landlord = await this.prisma.user.findUnique({
+      where: { id: landlordId },
+    });
+    const landlordName = landlord
+      ? [landlord.firstName, landlord.lastName].filter(Boolean).join(' ') || landlord.email
+      : 'El propietario';
+
+    this.eventEmitter.emit(
+      'application.statusChanged',
+      new ApplicationStatusChangedEvent(
+        applicationId,
+        app.property.id,
+        app.tenantId,
+        landlordId,
+        ApplicationStatus.REJECTED,
+        app.property.title,
+        landlordName,
+      ),
     );
 
     return updated;
@@ -402,6 +447,27 @@ export class LandlordService {
       app.status as ApplicationStatus,
       ApplicationStatus.NEEDS_INFO,
       dto.message,
+    );
+
+    // Emit notification event
+    const landlord = await this.prisma.user.findUnique({
+      where: { id: landlordId },
+    });
+    const landlordName = landlord
+      ? [landlord.firstName, landlord.lastName].filter(Boolean).join(' ') || landlord.email
+      : 'El propietario';
+
+    this.eventEmitter.emit(
+      'application.statusChanged',
+      new ApplicationStatusChangedEvent(
+        applicationId,
+        app.property.id,
+        app.tenantId,
+        landlordId,
+        ApplicationStatus.NEEDS_INFO,
+        app.property.title,
+        landlordName,
+      ),
     );
 
     return updated;
