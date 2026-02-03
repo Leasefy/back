@@ -3,11 +3,11 @@
 ## Current Status
 
 **Phase:** 11 of 16 (Notifications)
-**Plan:** 2 of 4
-**Status:** In progress
-**Last activity:** 2026-02-03 - Completed 11-02-PLAN.md (External Services Setup)
+**Plan:** 4 of 4
+**Status:** Phase complete
+**Last activity:** 2026-02-03 - Completed 11-04-PLAN.md (Template CRUD + Seed Scripts)
 
-**Progress:** [#####################] 71% (42/~59 plans estimated)
+**Progress:** [#######################] 75% (44/~59 plans estimated)
 
 ## Project Reference
 
@@ -40,7 +40,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 8. Leases & Payments | COMPLETE | All 3 plans - models, events, services, endpoints |
 | 9. Payment History Scoring | COMPLETE | All 2 plans - metrics, model, aggregator integration |
 | 10. Tenant Payment Simulation | COMPLETE | All 6 plans - landlord methods, tenant requests, PSE mock, validation, disputes |
-| 11. Notifications | IN PROGRESS | Plan 2/4 complete - data models, external services |
+| 11. Notifications | COMPLETE | All 4 plans - data models, services, sending, templates |
 | 12. AI Document Analysis | Pending | PRO+ tier - Claude integration |
 | 13. Explainability | Pending | PRO+ tier - AI explanations |
 | 14. ML Persistence | Pending | Data for ML training |
@@ -222,11 +222,15 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 2026-02-03 | 11-02 | Resend for email delivery | Simple API, reliable delivery |
 | 2026-02-03 | 11-02 | Firebase FCM for push | Industry standard, Android + iOS |
 | 2026-02-03 | 11-02 | Graceful Firebase init failure | App starts even without credentials |
+| 2026-02-03 | 11-04 | Admin-only template endpoints | @Roles(Role.ADMIN) at class level |
+| 2026-02-03 | 11-04 | Template code regex validation | /^[A-Z][A-Z0-9_]*$/ for uppercase codes |
+| 2026-02-03 | 11-04 | Upsert pattern for seeding | Allows safe re-running without duplicates |
+| 2026-02-03 | 11-04 | 22 default templates | 4 apps + 6 payments + 6 visits + 4 contracts + 2 leases |
 
 ## Session Continuity
 
 **Last session:** 2026-02-03
-**Stopped at:** Completed 11-02-PLAN.md (External Services Setup)
+**Stopped at:** Completed 11-04-PLAN.md (Template CRUD + Seed Scripts)
 **Resume file:** None
 
 ## Pending User Actions
@@ -264,12 +268,16 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 2. If "spawn UNKNOWN" error on Windows/OneDrive, try WSL or shorter path
 3. Verify tables: `npx prisma studio`
 
+**Seed notification templates:**
+1. Run: `npm run seed:templates`
+2. Verify 22 templates seeded in database
+
 ## Next Action
 
-Continue Phase 11: Notifications. Execute plan 11-03.
+Phase 11 complete. Continue to Phase 12: AI Document Analysis (PRO+ tier).
 
 ```
-/gsd:execute-plan 11-03
+/gsd:execute-phase 12
 ```
 
 ## Session History
@@ -327,6 +335,7 @@ Continue Phase 11: Notifications. Execute plan 11-03.
 | 2026-02-03 | Executed 03.1-04-PLAN.md | VisitsController, status methods, Phase 3.1 complete |
 | 2026-02-03 | Executed 11-01-PLAN.md | Notification enums, ADMIN role, NotificationTemplate/Log models |
 | 2026-02-03 | Executed 11-02-PLAN.md | Resend EmailService, Firebase PushService, NotificationsModule |
+| 2026-02-03 | Executed 11-04-PLAN.md | NotificationTemplatesModule, CRUD endpoints, 22 default templates |
 
 ---
 *Last updated: 2026-02-03*
