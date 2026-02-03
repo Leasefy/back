@@ -24,6 +24,7 @@ Backend API en NestJS para el marketplace de arriendos "Arriendo Facil". Provee 
 - [x] **Phase 1: Foundation** - Project scaffold, Prisma, Supabase config
 - [x] **Phase 2: Auth & Users** - Supabase Auth, guards, user management
 - [x] **Phase 3: Properties** - CRUD, filtering, image upload, plans
+- [ ] **Phase 3.1: Property Visits Scheduling** - Visit requests, availability, accept/reject (INSERTED)
 - [x] **Phase 4: Applications & Documents** - Wizard, state machine, document upload
 - [x] **Phase 5: Scoring Engine** - Feature extraction, models, aggregator (FREE - rule-based)
 - [x] **Phase 6: Landlord Features** - Candidates, decisions, approve/reject
@@ -107,6 +108,41 @@ Plans:
 - listingPlan: free | pro | business
 - amenities: string[] with predefined IDs
 - latitude, longitude for map
+
+### Phase 3.1: Property Visits Scheduling (INSERTED)
+**Goal**: Tenants can schedule property visits, landlords manage availability and accept/reject
+**Depends on**: Phase 3 (Properties), Phase 2 (Users/Auth)
+**Requirements**: VISIT-01 through VISIT-12
+**Tier**: FREE
+**Success Criteria** (what must be TRUE):
+  1. Landlord can configure availability (days, hours, slot duration)
+  2. Tenant can view available slots for a property
+  3. Tenant can request a visit (select date/time slot)
+  4. System prevents double-booking (occupied slots not shown)
+  5. Landlord can accept/reject visit requests
+  6. Tenant can reschedule a visit (if not yet accepted or with landlord approval)
+  7. Both parties can cancel a visit
+  8. Notifications sent on: new request, accepted, rejected, cancelled, rescheduled
+  9. Tenant can view their scheduled visits
+  10. Landlord can view all visits for their properties
+**Research**: Likely (calendar patterns, time slot management)
+**Plans**: TBD
+
+**Visit Status Flow:**
+```
+PENDING → ACCEPTED → COMPLETED
+       ↘ REJECTED
+       ↘ CANCELLED (by either party)
+ACCEPTED → RESCHEDULED → PENDING (new date)
+         ↘ CANCELLED
+```
+
+**Notifications (integrated with Phase 13):**
+- New visit request → Landlord (push + email)
+- Visit accepted/rejected → Tenant (push + email)
+- Visit cancelled → Other party (push + email)
+- Visit rescheduled → Other party (push + email)
+- Reminder 24h before → Both parties (push + email)
 
 ### Phase 4: Applications & Documents
 **Goal**: Complete application submission flow with document upload
@@ -393,6 +429,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 1. Foundation | 3/3 | Complete | 2026-01-25 |
 | 2. Auth & Users | 3/3 | Complete | 2026-01-26 |
 | 3. Properties | 4/4 | Complete | 2026-01-29 |
+| 3.1. Property Visits | 0/0 | Not started | - |
 | 4. Applications & Documents | 5/5 | Complete | 2026-01-29 |
 | 5. Scoring Engine | 3/3 | Complete | 2026-01-30 |
 | 6. Landlord Features | 3/3 | Complete | 2026-02-01 |
@@ -489,4 +526,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-02-02 - Completed Phase 10 (Tenant Payment Simulation)*
+*Last updated: 2026-02-02 - Added Phase 3.1 (Property Visits Scheduling)*

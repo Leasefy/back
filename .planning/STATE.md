@@ -54,6 +54,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 2026-01-30 | Added Phase 9: Payment History Scoring | Enable scoring based on real payment data |
 | 2026-01-30 | Moved AI features to phases 10-11 | PRO+ tier only, after core flow complete |
 | 2026-01-30 | Added tier system | FREE (1-9) vs PRO+ (10-11) |
+| 2026-02-02 | Added Phase 3.1: Property Visits Scheduling | Tenant can schedule visits, landlord manages availability |
 
 ## Accumulated Decisions
 

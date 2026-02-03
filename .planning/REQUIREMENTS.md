@@ -51,6 +51,21 @@ Requirements for MVP release. Each maps to roadmap phases.
 - [x] **PROP-15**: Property model includes listingPlan (free/pro/business)
 - [x] **PROP-16**: Full-text search on title, description, address, neighborhood
 
+### Property Visits (VISIT)
+
+- [ ] **VISIT-01**: Landlord can configure availability (weekly schedule with day/hours)
+- [ ] **VISIT-02**: Landlord can set visit slot duration (15, 30, 45, 60 minutes)
+- [ ] **VISIT-03**: Tenant can view available slots for a property
+- [ ] **VISIT-04**: Tenant can request a visit (select date/time slot)
+- [ ] **VISIT-05**: System prevents double-booking (occupied slots not available)
+- [ ] **VISIT-06**: Landlord can accept visit request
+- [ ] **VISIT-07**: Landlord can reject visit request with reason
+- [ ] **VISIT-08**: Tenant can reschedule a pending visit
+- [ ] **VISIT-09**: Either party can cancel a visit with reason
+- [ ] **VISIT-10**: Notifications sent on visit status changes (integrated with Phase 13)
+- [ ] **VISIT-11**: Tenant can view their scheduled visits
+- [ ] **VISIT-12**: Landlord can view all visits for their properties
+
 ### Applications (APPL)
 
 - [x] **APPL-01**: Tenant can start application for a property
@@ -407,12 +422,24 @@ Which phases cover which requirements. Updated by roadmap creation.
 | PROP-14 | Phase 3 | Complete |
 | PROP-15 | Phase 3 | Complete |
 | PROP-16 | Phase 3 | Complete |
+| VISIT-01 | Phase 3.1 | Pending |
+| VISIT-02 | Phase 3.1 | Pending |
+| VISIT-03 | Phase 3.1 | Pending |
+| VISIT-04 | Phase 3.1 | Pending |
+| VISIT-05 | Phase 3.1 | Pending |
+| VISIT-06 | Phase 3.1 | Pending |
+| VISIT-07 | Phase 3.1 | Pending |
+| VISIT-08 | Phase 3.1 | Pending |
+| VISIT-09 | Phase 3.1 | Pending |
+| VISIT-10 | Phase 3.1 | Pending |
+| VISIT-11 | Phase 3.1 | Pending |
+| VISIT-12 | Phase 3.1 | Pending |
 
 **Coverage:**
-- v1 requirements: 134 total (was 112, added 22 new: 6 PHSC + 12 TPAY + 4 NOTF)
-- Mapped to phases: 112
+- v1 requirements: 146 total (was 134, added 12 new: VISIT-01 to VISIT-12)
+- Mapped to phases: 124
 - Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-01-24*
-*Last updated: 2026-01-29 - Added SUBS, CONT, LEAS, INSU requirements based on frontend*
+*Last updated: 2026-02-02 - Added VISIT-01 to VISIT-12 for Phase 3.1 (Property Visits)*
