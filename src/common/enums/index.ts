@@ -18,3 +18,5 @@ export { PaymentDisputeStatus } from './payment-dispute-status.enum.js';
 export { ColombianBank, BANK_DISPLAY_NAMES } from './colombian-banks.enum.js';
 export { AccountType, ACCOUNT_TYPE_DISPLAY } from './account-type.enum.js';
 export { VisitStatus } from './visit-status.enum.js';
+export { NotificationChannel } from './notification-channel.enum.js';
+export { NotificationStatus } from './notification-status.enum.js';
