@@ -53,18 +53,18 @@ Requirements for MVP release. Each maps to roadmap phases.
 
 ### Property Visits (VISIT)
 
-- [ ] **VISIT-01**: Landlord can configure availability (weekly schedule with day/hours)
-- [ ] **VISIT-02**: Landlord can set visit slot duration (15, 30, 45, 60 minutes)
-- [ ] **VISIT-03**: Tenant can view available slots for a property
-- [ ] **VISIT-04**: Tenant can request a visit (select date/time slot)
-- [ ] **VISIT-05**: System prevents double-booking (occupied slots not available)
-- [ ] **VISIT-06**: Landlord can accept visit request
-- [ ] **VISIT-07**: Landlord can reject visit request with reason
-- [ ] **VISIT-08**: Tenant can reschedule a pending visit
-- [ ] **VISIT-09**: Either party can cancel a visit with reason
-- [ ] **VISIT-10**: Notifications sent on visit status changes (integrated with Phase 13)
-- [ ] **VISIT-11**: Tenant can view their scheduled visits
-- [ ] **VISIT-12**: Landlord can view all visits for their properties
+- [x] **VISIT-01**: Landlord can configure availability (weekly schedule with day/hours)
+- [x] **VISIT-02**: Landlord can set visit slot duration (15, 30, 45, 60 minutes)
+- [x] **VISIT-03**: Tenant can view available slots for a property
+- [x] **VISIT-04**: Tenant can request a visit (select date/time slot)
+- [x] **VISIT-05**: System prevents double-booking (occupied slots not available)
+- [x] **VISIT-06**: Landlord can accept visit request
+- [x] **VISIT-07**: Landlord can reject visit request with reason
+- [x] **VISIT-08**: Tenant can reschedule a pending visit
+- [x] **VISIT-09**: Either party can cancel a visit with reason
+- [x] **VISIT-10**: Notifications sent on visit status changes (integrated with Phase 13)
+- [x] **VISIT-11**: Tenant can view their scheduled visits
+- [x] **VISIT-12**: Landlord can view all visits for their properties
 
 ### Applications (APPL)
 
@@ -422,18 +422,18 @@ Which phases cover which requirements. Updated by roadmap creation.
 | PROP-14 | Phase 3 | Complete |
 | PROP-15 | Phase 3 | Complete |
 | PROP-16 | Phase 3 | Complete |
-| VISIT-01 | Phase 3.1 | Pending |
-| VISIT-02 | Phase 3.1 | Pending |
-| VISIT-03 | Phase 3.1 | Pending |
-| VISIT-04 | Phase 3.1 | Pending |
-| VISIT-05 | Phase 3.1 | Pending |
-| VISIT-06 | Phase 3.1 | Pending |
-| VISIT-07 | Phase 3.1 | Pending |
-| VISIT-08 | Phase 3.1 | Pending |
-| VISIT-09 | Phase 3.1 | Pending |
-| VISIT-10 | Phase 3.1 | Pending |
-| VISIT-11 | Phase 3.1 | Pending |
-| VISIT-12 | Phase 3.1 | Pending |
+| VISIT-01 | Phase 3.1 | Complete |
+| VISIT-02 | Phase 3.1 | Complete |
+| VISIT-03 | Phase 3.1 | Complete |
+| VISIT-04 | Phase 3.1 | Complete |
+| VISIT-05 | Phase 3.1 | Complete |
+| VISIT-06 | Phase 3.1 | Complete |
+| VISIT-07 | Phase 3.1 | Complete |
+| VISIT-08 | Phase 3.1 | Complete |
+| VISIT-09 | Phase 3.1 | Complete |
+| VISIT-10 | Phase 3.1 | Complete |
+| VISIT-11 | Phase 3.1 | Complete |
+| VISIT-12 | Phase 3.1 | Complete |
 
 **Coverage:**
 - v1 requirements: 146 total (was 134, added 12 new: VISIT-01 to VISIT-12)
@@ -442,4 +442,4 @@ Which phases cover which requirements. Updated by roadmap creation.
 
 ---
 *Requirements defined: 2026-01-24*
-*Last updated: 2026-02-02 - Added VISIT-01 to VISIT-12 for Phase 3.1 (Property Visits)*
+*Last updated: 2026-02-03 - Completed VISIT-01 to VISIT-12 for Phase 3.1 (Property Visits)*

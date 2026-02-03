@@ -24,7 +24,7 @@ Backend API en NestJS para el marketplace de arriendos "Arriendo Facil". Provee 
 - [x] **Phase 1: Foundation** - Project scaffold, Prisma, Supabase config
 - [x] **Phase 2: Auth & Users** - Supabase Auth, guards, user management
 - [x] **Phase 3: Properties** - CRUD, filtering, image upload, plans
-- [ ] **Phase 3.1: Property Visits Scheduling** - Visit requests, availability, accept/reject (INSERTED)
+- [x] **Phase 3.1: Property Visits Scheduling** - Visit requests, availability, accept/reject (INSERTED)
 - [x] **Phase 4: Applications & Documents** - Wizard, state machine, document upload
 - [x] **Phase 5: Scoring Engine** - Feature extraction, models, aggregator (FREE - rule-based)
 - [x] **Phase 6: Landlord Features** - Candidates, decisions, approve/reject
@@ -129,10 +129,10 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 03.1-01-PLAN.md - Create database models and enums for property visits
-- [ ] 03.1-02-PLAN.md - Create VisitStateMachine, AvailabilityService, and SlotsService
-- [ ] 03.1-03-PLAN.md - Create VisitsService with core operations and events
-- [ ] 03.1-04-PLAN.md - Create VisitsController with all endpoints and status management
+- [x] 03.1-01-PLAN.md - Create database models and enums for property visits
+- [x] 03.1-02-PLAN.md - Create VisitStateMachine, AvailabilityService, and SlotsService
+- [x] 03.1-03-PLAN.md - Create VisitsService with core operations and events
+- [x] 03.1-04-PLAN.md - Create VisitsController with all endpoints and status management
 
 **Visit Status Flow:**
 ```
@@ -435,7 +435,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 4 -> 5 -> 6 -> 7 -> 8 -> 
 | 1. Foundation | 3/3 | Complete | 2026-01-25 |
 | 2. Auth & Users | 3/3 | Complete | 2026-01-26 |
 | 3. Properties | 4/4 | Complete | 2026-01-29 |
-| 3.1. Property Visits | 0/4 | Planned | - |
+| 3.1. Property Visits | 4/4 | Complete | 2026-02-03 |
 | 4. Applications & Documents | 5/5 | Complete | 2026-01-29 |
 | 5. Scoring Engine | 3/3 | Complete | 2026-01-30 |
 | 6. Landlord Features | 3/3 | Complete | 2026-02-01 |
@@ -532,4 +532,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 4 -> 5 -> 6 -> 7 -> 8 -> 
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-02-02 - Added Phase 3.1 plans (Property Visits Scheduling)*
+*Last updated: 2026-02-03 - Completed Phase 3.1 (Property Visits Scheduling)*
