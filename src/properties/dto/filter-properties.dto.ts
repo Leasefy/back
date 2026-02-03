@@ -44,6 +44,50 @@ export class FilterPropertiesDto {
   @Min(0)
   bedrooms?: number;
 
+  @ApiPropertyOptional({ example: 2 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(10)
+  bathrooms?: number;
+
+  @ApiPropertyOptional({ example: 1, description: 'Minimum parking spaces' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  parkingSpaces?: number;
+
+  @ApiPropertyOptional({ example: 4, description: 'Colombian stratum (1-6)' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(6)
+  stratum?: number;
+
+  @ApiPropertyOptional({ example: 50, description: 'Minimum area in m²' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  minArea?: number;
+
+  @ApiPropertyOptional({ example: 150, description: 'Maximum area in m²' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  maxArea?: number;
+
+  @ApiPropertyOptional({ example: 5, description: 'Floor number' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  floor?: number;
+
   @ApiPropertyOptional({ enum: PropertyType })
   @IsOptional()
   @IsEnum(PropertyType)
@@ -66,6 +110,14 @@ export class FilterPropertiesDto {
   @IsOptional()
   @IsString()
   searchQuery?: string;
+
+  @ApiPropertyOptional({
+    example: 'busco casa en bogota con 2 habitaciones y parqueadero',
+    description: 'Natural language search query. Parsed to extract filters automatically.',
+  })
+  @IsOptional()
+  @IsString()
+  naturalQuery?: string;
 
   @ApiPropertyOptional({ default: 1 })
   @IsOptional()

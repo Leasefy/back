@@ -17,26 +17,31 @@ import {
   PaginatedPropertiesResponse,
   PaginationMeta,
 } from './dto/index.js';
+import {
+  NaturalSearchParserService,
+  ParsedSearchFilters,
+} from './services/natural-search-parser.service.js';
 
 /**
  * Valid amenity IDs for property listings.
+ * Must match frontend AMENITIES_OPTIONS in publish.ts
  */
 const VALID_AMENITIES = new Set([
-  'pool',
-  'gym',
-  'security',
-  'parking',
-  'elevator',
-  'terrace',
-  'bbq',
-  'playground',
-  'laundry',
-  'pets',
-  'furnished',
-  'balcony',
-  'storage',
-  'ac',
-  'heating',
+  'pool',       // Piscina
+  'gym',        // Gimnasio
+  'security',   // Vigilancia 24/7
+  'parking',    // Parqueadero
+  'elevator',   // Ascensor
+  'terrace',    // Terraza
+  'bbq',        // Zona BBQ
+  'playground', // Zona infantil
+  'laundry',    // Lavandería
+  'pets',       // Acepta mascotas
+  'furnished',  // Amoblado
+  'balcony',    // Balcón
+  'storage',    // Depósito
+  'ac',         // Aire acondicionado
+  'heating',    // Calefacción
 ]);
 
 /**
@@ -55,6 +60,7 @@ export class PropertiesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly configService: ConfigService,
+    private readonly naturalSearchParser: NaturalSearchParserService,
   ) {
     this.supabase = createClient(
       this.configService.get('SUPABASE_URL')!,
@@ -243,53 +249,114 @@ export class PropertiesService {
 
   /**
    * Build Prisma where clause for public property search.
+   * Supports both explicit filters and natural language parsing.
    */
   private buildPublicWhereClause(
     filters: FilterPropertiesDto,
   ): Prisma.PropertyWhereInput {
+    // Parse natural query if provided
+    let parsedFilters: ParsedSearchFilters = {};
+    if (filters.naturalQuery) {
+      parsedFilters = this.naturalSearchParser.parse(filters.naturalQuery);
+    }
+
     const where: Prisma.PropertyWhereInput = {
       // Exclude drafts from public listing
       status: { not: PropertyStatus.DRAFT },
     };
 
-    if (filters.city) {
-      where.city = { contains: filters.city, mode: 'insensitive' };
+    // City: explicit filter takes precedence over parsed
+    const city = filters.city ?? parsedFilters.city;
+    if (city) {
+      where.city = { contains: city, mode: 'insensitive' };
     }
 
-    if (filters.neighborhood) {
-      where.neighborhood = { contains: filters.neighborhood, mode: 'insensitive' };
+    // Neighborhood: explicit filter takes precedence
+    const neighborhood = filters.neighborhood ?? parsedFilters.neighborhood;
+    if (neighborhood) {
+      where.neighborhood = { contains: neighborhood, mode: 'insensitive' };
     }
 
-    if (filters.minPrice !== undefined || filters.maxPrice !== undefined) {
+    // Price range: merge explicit and parsed
+    const minPrice = filters.minPrice ?? parsedFilters.minPrice;
+    const maxPrice = filters.maxPrice ?? parsedFilters.maxPrice;
+    if (minPrice !== undefined || maxPrice !== undefined) {
       where.monthlyRent = {};
-      if (filters.minPrice !== undefined) {
-        where.monthlyRent.gte = filters.minPrice;
+      if (minPrice !== undefined) {
+        where.monthlyRent.gte = minPrice;
       }
-      if (filters.maxPrice !== undefined) {
-        where.monthlyRent.lte = filters.maxPrice;
+      if (maxPrice !== undefined) {
+        where.monthlyRent.lte = maxPrice;
       }
     }
 
-    if (filters.bedrooms !== undefined) {
-      where.bedrooms = filters.bedrooms;
+    // Bedrooms: explicit takes precedence
+    const bedrooms = filters.bedrooms ?? parsedFilters.bedrooms;
+    if (bedrooms !== undefined) {
+      where.bedrooms = bedrooms;
     }
 
-    if (filters.propertyType) {
-      where.type = filters.propertyType;
+    // Bathrooms: explicit takes precedence
+    const bathrooms = filters.bathrooms ?? parsedFilters.bathrooms;
+    if (bathrooms !== undefined) {
+      where.bathrooms = bathrooms;
     }
 
-    if (filters.amenities && filters.amenities.length > 0) {
-      // Property must have ALL specified amenities
-      where.amenities = { hasEvery: filters.amenities };
+    // Property type: explicit takes precedence
+    const propertyType = filters.propertyType ?? parsedFilters.propertyType;
+    if (propertyType) {
+      where.type = propertyType;
     }
 
-    if (filters.searchQuery) {
-      // Full-text search across multiple fields using OR
+    // Parking spaces: explicit takes precedence (minimum)
+    const parkingSpaces = filters.parkingSpaces ?? parsedFilters.parkingSpaces;
+    if (parkingSpaces !== undefined) {
+      where.parkingSpaces = { gte: parkingSpaces };
+    }
+
+    // Stratum: explicit takes precedence
+    const stratum = filters.stratum ?? parsedFilters.stratum;
+    if (stratum !== undefined) {
+      where.stratum = stratum;
+    }
+
+    // Area range: explicit takes precedence
+    const minArea = filters.minArea ?? parsedFilters.minArea;
+    const maxArea = filters.maxArea ?? parsedFilters.maxArea;
+    if (minArea !== undefined || maxArea !== undefined) {
+      where.area = {};
+      if (minArea !== undefined) {
+        where.area.gte = minArea;
+      }
+      if (maxArea !== undefined) {
+        where.area.lte = maxArea;
+      }
+    }
+
+    // Floor: explicit takes precedence
+    const floor = filters.floor ?? parsedFilters.floor;
+    if (floor !== undefined) {
+      where.floor = floor;
+    }
+
+    // Amenities: merge explicit and parsed (remove duplicates)
+    const amenities = [
+      ...(filters.amenities ?? []),
+      ...(parsedFilters.amenities ?? []),
+    ];
+    const uniqueAmenities = [...new Set(amenities)];
+    if (uniqueAmenities.length > 0) {
+      where.amenities = { hasEvery: uniqueAmenities };
+    }
+
+    // Full-text search: use searchQuery OR remaining text from natural query
+    const searchText = filters.searchQuery ?? parsedFilters.remainingText;
+    if (searchText && searchText.trim().length > 0) {
       where.OR = [
-        { title: { contains: filters.searchQuery, mode: 'insensitive' } },
-        { description: { contains: filters.searchQuery, mode: 'insensitive' } },
-        { address: { contains: filters.searchQuery, mode: 'insensitive' } },
-        { neighborhood: { contains: filters.searchQuery, mode: 'insensitive' } },
+        { title: { contains: searchText, mode: 'insensitive' } },
+        { description: { contains: searchText, mode: 'insensitive' } },
+        { address: { contains: searchText, mode: 'insensitive' } },
+        { neighborhood: { contains: searchText, mode: 'insensitive' } },
       ];
     }
 

@@ -54,11 +54,25 @@ export class PropertiesController {
   /**
    * List all available properties (public, no auth required).
    * Supports filtering by city, price range, bedrooms, type, amenities.
-   * Supports full-text search.
+   * Supports full-text search and natural language queries.
    */
   @Get()
   @Public()
-  @ApiOperation({ summary: 'List available properties (public)' })
+  @ApiOperation({
+    summary: 'List available properties (public)',
+    description: `
+Search properties with filters or natural language.
+
+**Natural Language Examples (naturalQuery parameter):**
+- "busco casa en bogota con 2 habitaciones"
+- "apartamento en chapinero con parqueadero"
+- "estudio amoblado economico en medellin"
+- "casa grande con piscina y gimnasio"
+
+The parser extracts: property type, city, neighborhood, bedrooms, bathrooms, parking, amenities, and price hints.
+Explicit filter parameters override parsed values.
+    `,
+  })
   @ApiOkResponse({ description: 'Paginated list of properties' })
   async findAll(
     @Query() filters: FilterPropertiesDto,
