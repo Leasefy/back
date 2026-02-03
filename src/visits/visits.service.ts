@@ -8,8 +8,9 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import type { PropertyVisit } from '@prisma/client';
 import { PrismaService } from '../database/prisma.service.js';
 import { SlotsService } from './availability/slots.service.js';
+import { VisitStateMachine } from './state-machine/visit-state-machine.js';
 import { VisitStatus } from '../common/enums/index.js';
-import { CreateVisitDto } from './dto/index.js';
+import { CreateVisitDto, RescheduleVisitDto } from './dto/index.js';
 import { VisitRequestedEvent, VisitStatusChangedEvent } from './events/index.js';
 
 /**
@@ -44,6 +45,7 @@ export class VisitsService {
     private readonly prisma: PrismaService,
     private readonly slotsService: SlotsService,
     private readonly eventEmitter: EventEmitter2,
+    private readonly stateMachine: VisitStateMachine,
   ) {}
 
   /**
@@ -243,37 +245,14 @@ export class VisitsService {
    * Validates the requesting user is the tenant or landlord.
    */
   async findById(visitId: string, userId: string): Promise<VisitWithDetails> {
-    const visit = await this.prisma.propertyVisit.findUnique({
-      where: { id: visitId },
-      include: {
-        property: {
-          select: {
-            id: true,
-            title: true,
-            address: true,
-            city: true,
-            landlordId: true,
-            landlord: {
-              select: { id: true, firstName: true, lastName: true, email: true },
-            },
-          },
-        },
-        tenant: {
-          select: { id: true, firstName: true, lastName: true, email: true, phone: true },
-        },
-      },
-    });
-
-    if (!visit) {
-      throw new NotFoundException('Visit not found');
-    }
+    const visit = await this.findByIdWithValidation(visitId);
 
     // Only tenant or landlord can view
     if (visit.tenantId !== userId && visit.property.landlordId !== userId) {
       throw new ForbiddenException('You do not have access to this visit');
     }
 
-    return visit as VisitWithDetails;
+    return visit;
   }
 
   /**
@@ -318,6 +297,351 @@ export class VisitsService {
     });
 
     return visits as VisitWithDetails[];
+  }
+
+  /**
+   * Accept a visit request.
+   * VISIT-06: Landlord can accept visit request
+   */
+  async accept(landlordId: string, visitId: string): Promise<VisitWithDetails> {
+    const visit = await this.findByIdWithValidation(visitId);
+
+    // Verify landlord owns the property
+    if (visit.property.landlordId !== landlordId) {
+      throw new ForbiddenException('You do not own this property');
+    }
+
+    // Validate transition
+    this.stateMachine.validateTransition(
+      visit.status as VisitStatus,
+      VisitStatus.ACCEPTED,
+      'LANDLORD',
+    );
+
+    const updatedVisit = await this.prisma.propertyVisit.update({
+      where: { id: visitId },
+      data: { status: VisitStatus.ACCEPTED },
+      include: this.getVisitIncludes(),
+    });
+
+    // Emit status change event
+    this.emitStatusChangedEvent(
+      updatedVisit as VisitWithDetails,
+      visit.status as VisitStatus,
+      VisitStatus.ACCEPTED,
+      'LANDLORD',
+      landlordId,
+    );
+
+    return updatedVisit as VisitWithDetails;
+  }
+
+  /**
+   * Reject a visit request.
+   * VISIT-07: Landlord can reject visit request with reason
+   */
+  async reject(
+    landlordId: string,
+    visitId: string,
+    reason: string,
+  ): Promise<VisitWithDetails> {
+    const visit = await this.findByIdWithValidation(visitId);
+
+    // Verify landlord owns the property
+    if (visit.property.landlordId !== landlordId) {
+      throw new ForbiddenException('You do not own this property');
+    }
+
+    // Validate transition
+    this.stateMachine.validateTransition(
+      visit.status as VisitStatus,
+      VisitStatus.REJECTED,
+      'LANDLORD',
+    );
+
+    const updatedVisit = await this.prisma.propertyVisit.update({
+      where: { id: visitId },
+      data: {
+        status: VisitStatus.REJECTED,
+        rejectionReason: reason,
+      },
+      include: this.getVisitIncludes(),
+    });
+
+    // Emit status change event
+    this.emitStatusChangedEvent(
+      updatedVisit as VisitWithDetails,
+      visit.status as VisitStatus,
+      VisitStatus.REJECTED,
+      'LANDLORD',
+      landlordId,
+      reason,
+    );
+
+    return updatedVisit as VisitWithDetails;
+  }
+
+  /**
+   * Cancel a visit.
+   * VISIT-09: Either party can cancel a visit with reason
+   */
+  async cancel(
+    userId: string,
+    visitId: string,
+    reason: string,
+  ): Promise<VisitWithDetails> {
+    const visit = await this.findByIdWithValidation(visitId);
+
+    // Determine role
+    let role: 'TENANT' | 'LANDLORD';
+    if (visit.tenantId === userId) {
+      role = 'TENANT';
+    } else if (visit.property.landlordId === userId) {
+      role = 'LANDLORD';
+    } else {
+      throw new ForbiddenException('You do not have access to this visit');
+    }
+
+    // Validate transition
+    this.stateMachine.validateTransition(
+      visit.status as VisitStatus,
+      VisitStatus.CANCELLED,
+      role,
+    );
+
+    const updatedVisit = await this.prisma.propertyVisit.update({
+      where: { id: visitId },
+      data: {
+        status: VisitStatus.CANCELLED,
+        cancellationReason: reason,
+        cancelledBy: userId,
+      },
+      include: this.getVisitIncludes(),
+    });
+
+    // Emit status change event
+    this.emitStatusChangedEvent(
+      updatedVisit as VisitWithDetails,
+      visit.status as VisitStatus,
+      VisitStatus.CANCELLED,
+      role,
+      userId,
+      reason,
+    );
+
+    return updatedVisit as VisitWithDetails;
+  }
+
+  /**
+   * Reschedule a visit to a new date/time.
+   * VISIT-08: Tenant can reschedule a pending visit
+   * Creates a new PENDING visit and marks original as RESCHEDULED.
+   */
+  async reschedule(
+    userId: string,
+    visitId: string,
+    dto: RescheduleVisitDto,
+  ): Promise<VisitWithDetails> {
+    const originalVisit = await this.findByIdWithValidation(visitId);
+
+    // Determine role
+    let role: 'TENANT' | 'LANDLORD';
+    if (originalVisit.tenantId === userId) {
+      role = 'TENANT';
+    } else if (originalVisit.property.landlordId === userId) {
+      role = 'LANDLORD';
+    } else {
+      throw new ForbiddenException('You do not have access to this visit');
+    }
+
+    // Validate transition
+    this.stateMachine.validateTransition(
+      originalVisit.status as VisitStatus,
+      VisitStatus.RESCHEDULED,
+      role,
+    );
+
+    // Verify new slot is available
+    const { slotDuration } = await this.slotsService.verifySlotAvailable(
+      originalVisit.propertyId,
+      dto.newDate,
+      dto.newStartTime,
+    );
+
+    const newEndTime = this.addMinutesToTime(dto.newStartTime, slotDuration);
+
+    // Use transaction to update original and create new visit
+    const newVisit = await this.prisma.$transaction(async (tx) => {
+      // Mark original as rescheduled
+      await tx.propertyVisit.update({
+        where: { id: visitId },
+        data: { status: VisitStatus.RESCHEDULED },
+      });
+
+      // Create new visit
+      const created = await tx.propertyVisit.create({
+        data: {
+          propertyId: originalVisit.propertyId,
+          tenantId: originalVisit.tenantId,
+          visitDate: new Date(dto.newDate),
+          startTime: dto.newStartTime,
+          endTime: newEndTime,
+          tenantNotes: originalVisit.tenantNotes,
+          status: VisitStatus.PENDING,
+          rescheduledFromId: visitId,
+        },
+        include: this.getVisitIncludes(),
+      });
+
+      // Link original to new
+      await tx.propertyVisit.update({
+        where: { id: visitId },
+        data: { rescheduledToId: created.id },
+      });
+
+      return created;
+    });
+
+    // Emit status change event for original visit
+    this.emitStatusChangedEvent(
+      originalVisit as VisitWithDetails,
+      originalVisit.status as VisitStatus,
+      VisitStatus.RESCHEDULED,
+      role,
+      userId,
+      dto.reason,
+    );
+
+    // Emit new visit requested event
+    const tenantName =
+      [originalVisit.tenant.firstName, originalVisit.tenant.lastName]
+        .filter(Boolean)
+        .join(' ') || originalVisit.tenant.email;
+
+    this.eventEmitter.emit(
+      'visit.requested',
+      new VisitRequestedEvent(
+        newVisit.id,
+        newVisit.propertyId,
+        newVisit.tenantId,
+        originalVisit.property.landlordId,
+        newVisit.visitDate,
+        newVisit.startTime,
+        newVisit.endTime,
+        tenantName,
+        originalVisit.property.title,
+        `${originalVisit.property.address}, ${originalVisit.property.city}`,
+        `Reprogramada desde visita anterior (${originalVisit.visitDate.toISOString().split('T')[0]} ${originalVisit.startTime})`,
+      ),
+    );
+
+    return newVisit as VisitWithDetails;
+  }
+
+  /**
+   * Mark a visit as completed.
+   * Only landlord can mark completion after the visit date.
+   */
+  async complete(landlordId: string, visitId: string): Promise<VisitWithDetails> {
+    const visit = await this.findByIdWithValidation(visitId);
+
+    // Verify landlord owns the property
+    if (visit.property.landlordId !== landlordId) {
+      throw new ForbiddenException('You do not own this property');
+    }
+
+    // Validate transition
+    this.stateMachine.validateTransition(
+      visit.status as VisitStatus,
+      VisitStatus.COMPLETED,
+      'LANDLORD',
+    );
+
+    const updatedVisit = await this.prisma.propertyVisit.update({
+      where: { id: visitId },
+      data: { status: VisitStatus.COMPLETED },
+      include: this.getVisitIncludes(),
+    });
+
+    // Emit status change event
+    this.emitStatusChangedEvent(
+      updatedVisit as VisitWithDetails,
+      visit.status as VisitStatus,
+      VisitStatus.COMPLETED,
+      'LANDLORD',
+      landlordId,
+    );
+
+    return updatedVisit as VisitWithDetails;
+  }
+
+  /**
+   * Get visit by ID with validation.
+   */
+  private async findByIdWithValidation(visitId: string): Promise<VisitWithDetails> {
+    const visit = await this.prisma.propertyVisit.findUnique({
+      where: { id: visitId },
+      include: this.getVisitIncludes(),
+    });
+
+    if (!visit) {
+      throw new NotFoundException('Visit not found');
+    }
+
+    return visit as VisitWithDetails;
+  }
+
+  /**
+   * Standard includes for visit queries.
+   */
+  private getVisitIncludes() {
+    return {
+      property: {
+        select: {
+          id: true,
+          title: true,
+          address: true,
+          city: true,
+          landlordId: true,
+          landlord: {
+            select: { id: true, firstName: true, lastName: true, email: true },
+          },
+        },
+      },
+      tenant: {
+        select: { id: true, firstName: true, lastName: true, email: true, phone: true },
+      },
+    };
+  }
+
+  /**
+   * Emit visit status changed event.
+   */
+  private emitStatusChangedEvent(
+    visit: VisitWithDetails,
+    oldStatus: VisitStatus,
+    newStatus: VisitStatus,
+    changedBy: 'TENANT' | 'LANDLORD',
+    changedByUserId: string,
+    reason?: string,
+  ): void {
+    this.eventEmitter.emit(
+      'visit.statusChanged',
+      new VisitStatusChangedEvent(
+        visit.id,
+        visit.propertyId,
+        visit.tenantId,
+        visit.property.landlordId,
+        oldStatus,
+        newStatus,
+        changedBy,
+        changedByUserId,
+        visit.visitDate,
+        visit.startTime,
+        visit.property.title,
+        reason,
+      ),
+    );
   }
 
   /**
