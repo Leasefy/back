@@ -17,10 +17,12 @@ datasource db {
 /// TENANT: Can apply for properties
 /// LANDLORD: Can list properties, view applications
 /// BOTH: Can do both (switches context via activeRole)
+/// ADMIN: System administrator, manages notification templates
 enum Role {
   TENANT
   LANDLORD
   BOTH
+  ADMIN
 }
 
 /// Property type
@@ -175,6 +177,19 @@ enum VisitStatus {
   RESCHEDULED
 }
 
+/// Channel for notification delivery
+enum NotificationChannel {
+  EMAIL
+  PUSH
+}
+
+/// Status of notification delivery
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
 // ============================================
 // MODELS
 // ============================================
@@ -193,6 +208,11 @@ model User {
   // Subscription
   subscriptionPlan   SubscriptionPlan @default(FREE) @map("subscription_plan")
   subscriptionEndsAt DateTime?        @map("subscription_ends_at") // null = no expiration (free) or lifetime
+
+  // Notification preferences
+  emailNotificationsEnabled Boolean @default(true) @map("email_notifications_enabled")
+  pushNotificationsEnabled  Boolean @default(true) @map("push_notifications_enabled")
+  fcmToken                  String? @map("fcm_token")  // Firebase Cloud Messaging device token
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -216,6 +236,9 @@ model User {
 
   // Property visits relations
   tenantVisits           PropertyVisit[]         @relation("TenantVisits")
+
+  // Notification relations
+  notificationLogs       NotificationLog[]
 
   @@map("users")
 }
@@ -730,4 +753,54 @@ model PropertyVisit {
   @@index([visitDate])
   @@index([status])
   @@map("property_visits")
+}
+
+/// Template for notifications (admin-managed)
+/// Each template has both email and push variants
+model NotificationTemplate {
+  id          String   @id @default(uuid()) @db.Uuid
+  code        String   @unique @db.VarChar(50)  // e.g., "APPLICATION_RECEIVED"
+  name        String   @db.VarChar(100)          // Human-readable name
+  description String?  @db.Text                  // Admin notes
+
+  // Email template (Markdown converted to HTML at send time)
+  emailSubject  String  @map("email_subject") @db.VarChar(200)
+  emailBody     String  @map("email_body") @db.Text  // Markdown content
+
+  // Push notification template
+  pushTitle     String  @map("push_title") @db.VarChar(100)
+  pushBody      String  @map("push_body") @db.VarChar(500)
+
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("notification_templates")
+}
+
+/// Log of sent notifications for auditing and debugging
+model NotificationLog {
+  id           String              @id @default(uuid()) @db.Uuid
+  userId       String              @map("user_id") @db.Uuid
+  templateCode String              @map("template_code") @db.VarChar(50)
+  channel      NotificationChannel
+  status       NotificationStatus  @default(PENDING)
+
+  // Delivery details
+  recipient    String              @db.VarChar(255)  // Email address or FCM token
+  subject      String?             @db.VarChar(200)  // For email
+  errorMessage String?             @map("error_message") @db.Text
+
+  // Timing
+  sentAt       DateTime?           @map("sent_at")
+  createdAt    DateTime            @default(now()) @map("created_at")
+
+  // Relations
+  user         User                @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([templateCode])
+  @@index([status])
+  @@index([createdAt])
+  @@map("notification_logs")
 }
