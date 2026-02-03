@@ -18,13 +18,14 @@ Backend API en NestJS para el marketplace de arriendos "Arriendo Facil". Provee 
 - Phases 1-8: Core functionality (FREE tier)
 - Phase 9: Payment History Scoring (enhances FREE scoring with real data)
 - Phase 10: Tenant Payment Simulation (simulated payment flow)
-- Phases 11-12: AI-powered features (PRO/BUSINESS subscription only)
-- Phases 13-16: Supporting features
+- Phases 11-13: Supporting features (no IA)
+- Phases 14-16: AI-powered features (PRO/BUSINESS subscription only) - AL FINAL
 
 - [x] **Phase 1: Foundation** - Project scaffold, Prisma, Supabase config
 - [x] **Phase 2: Auth & Users** - Supabase Auth, guards, user management
 - [x] **Phase 3: Properties** - CRUD, filtering, image upload, plans
 - [x] **Phase 3.1: Property Visits Scheduling** - Visit requests, availability, accept/reject (INSERTED)
+- [x] **Phase 3.2: Natural Language Search** - Smart property search with keyword parsing (INSERTED)
 - [x] **Phase 4: Applications & Documents** - Wizard, state machine, document upload
 - [x] **Phase 5: Scoring Engine** - Feature extraction, models, aggregator (FREE - rule-based)
 - [x] **Phase 6: Landlord Features** - Candidates, decisions, approve/reject
@@ -32,12 +33,12 @@ Backend API en NestJS para el marketplace de arriendos "Arriendo Facil". Provee 
 - [x] **Phase 8: Leases & Payments** - Active leases, payment tracking
 - [x] **Phase 9: Payment History Scoring** - Score bonus from payment history (NEW)
 - [x] **Phase 10: Tenant Payment Simulation** - Payment form, receipt upload, landlord validation (NEW)
-- [ ] **Phase 11: AI Document Analysis** - Claude integration, document analyzers (PRO+)
-- [ ] **Phase 12: Explainability** - Drivers, flags, AI explanation (PRO+)
-- [ ] **Phase 13: Notifications** - Email service, templates, queue
-- [ ] **Phase 14: ML Persistence** - Feature logging, outcome tracking
-- [ ] **Phase 15: Subscriptions & Plans** - Pricing plans, coupons, billing
-- [ ] **Phase 16: Insurance** - Optional insurance tiers
+- [ ] **Phase 11: Notifications** - Email service, templates, queue (REORDERED)
+- [ ] **Phase 12: Subscriptions & Plans** - Pricing plans, coupons, billing (REORDERED)
+- [ ] **Phase 13: Insurance** - Optional insurance tiers (REORDERED)
+- [ ] **Phase 14: AI Document Analysis** - Claude integration, document analyzers (PRO+) (REORDERED)
+- [ ] **Phase 15: Explainability** - Drivers, flags, AI explanation (PRO+) (REORDERED)
+- [ ] **Phase 16: ML Persistence** - Feature logging, outcome tracking (REORDERED)
 
 ## Phase Details
 
@@ -143,7 +144,7 @@ ACCEPTED -> RESCHEDULED -> PENDING (new date)
          \-> CANCELLED
 ```
 
-**Notifications (integrated with Phase 13):**
+**Notifications (integrated with Phase 11):**
 - New visit request -> Landlord (push + email)
 - Visit accepted/rejected -> Tenant (push + email)
 - Visit cancelled -> Other party (push + email)
@@ -311,7 +312,7 @@ Plans:
 - [x] 10-05-PLAN.md - Create landlord payment validation with approval flow
 - [x] 10-06-PLAN.md - Create disputes workflow for rejected payments
 
-**Note**: Notifications (push + email) for payment events handled in Phase 13.
+**Note**: Notifications (push + email) for payment events handled in Phase 11.
 
 **Payment Methods (Landlord configures):**
 - Bancolombia (Cuenta Ahorros/Corriente)
@@ -333,69 +334,49 @@ Plans:
 - Nequi
 - Daviplata
 
-### Phase 11: AI Document Analysis
-**Goal**: Claude API analyzes documents and extracts structured data
-**Depends on**: Phase 5 (scoring infrastructure), Phase 10 (complete payment flow)
-**Requirements**: AIDOC-01 through AIDOC-08
-**Tier**: PRO/BUSINESS subscription only (~$0.05-0.10 per application)
-**Success Criteria** (what must be TRUE):
-  1. Claude API client configured and working
-  2. ID document (cedula) analyzed: name, number, dates extracted
-  3. Employment letter analyzed: company, salary, tenure extracted
-  4. Pay stubs analyzed: income details extracted
-  5. Bank statements analyzed: income patterns detected
-  6. Analysis includes confidence score
-  7. Cross-validation between documents implemented
-  8. Results stored and feed into scoring
-**Research**: Completed (see AI_DOCUMENT_ANALYSIS.md)
-**Plans**: TBD
-
-### Phase 12: Explainability
-**Goal**: Full scoring explanation with drivers, flags, and suggestions
-**Depends on**: Phase 11
-**Requirements**: EXPL-01 through EXPL-05
-**Tier**: PRO/BUSINESS subscription only
-**Success Criteria** (what must be TRUE):
-  1. 3-6 driver explanations generated per candidate
-  2. Risk flags generated (HIGH_RENT_TO_INCOME, LOW_TENURE, etc.)
-  3. Suggested conditions generated based on risk
-  4. AI-generated conversational explanation
-  5. Subscores visible in response
-**Research**: Likely (explanation generation patterns)
-**Research topics**: LLM prompts for explanations
-**Plans**: TBD
-
-### Phase 13: Notifications
-**Goal**: Email and push notifications for key events
+### Phase 11: Notifications
+**Goal**: Email and push notifications for key events with admin-managed templates
 **Depends on**: Phase 6 (needs approval/rejection events), Phase 10 (payment events)
-**Requirements**: NOTF-01 through NOTF-10
+**Requirements**: NOTF-01 through NOTF-11
 **Success Criteria** (what must be TRUE):
   1. Resend email service configured
-  2. Email templates with Arriendo Facil branding
-  3. Email sent when application received (to landlord)
-  4. Email sent when approved/rejected (to tenant)
-  5. Email sent when info requested (to tenant)
-  6. Emails sent async via BullMQ queue
-  7. Email sent when payment receipt uploaded (to landlord)
-  8. Email sent when payment approved/rejected (to tenant)
-  9. Email sent when dispute opened (to support + landlord)
-  10. Push notification infrastructure (Firebase or similar)
-**Research**: Likely (push notifications, Firebase)
-**Plans**: TBD
+  2. Firebase FCM push notification service configured
+  3. Email templates with Arriendo Facil branding
+  4. 19 notification templates for all key events
+  5. Email sent when application received (to landlord)
+  6. Email sent when approved/rejected (to tenant)
+  7. Email sent when info requested (to tenant)
+  8. Emails sent async via BullMQ queue
+  9. Email sent when payment receipt uploaded (to landlord)
+  10. Email sent when payment approved/rejected (to tenant)
+  11. Email sent when dispute opened (to support + landlord)
+  12. Push notification infrastructure working
+  13. Admin CRUD for notification templates
+  14. User notification preferences respected
+  15. Scheduled reminders (visit 24h, payment due)
+**Context**: Complete (11-CONTEXT.md)
+**Plans**: 5 plans
 
-### Phase 14: ML Persistence
-**Goal**: Data infrastructure for future ML model training
-**Depends on**: Phase 9 (needs payment history for outcomes), Phase 10 (complete payment flow)
-**Requirements**: MLPR-01 through MLPR-04
-**Success Criteria** (what must be TRUE):
-  1. All extracted features persisted with application
-  2. Application outcomes trackable (approved -> paid/defaulted)
-  3. Score predictions vs actuals logged
-  4. Data exportable for ML training
-**Research**: Unlikely (data modeling)
-**Plans**: TBD
+Plans:
+- [ ] 11-01-PLAN.md - Add database models (ADMIN role, NotificationTemplate, NotificationLog, user preferences)
+- [ ] 11-02-PLAN.md - Configure external services (Resend email, Firebase FCM, env validation)
+- [ ] 11-03-PLAN.md - Create core notification system (TemplateService, NotificationsService, BullMQ processor)
+- [ ] 11-04-PLAN.md - Create admin template management (CRUD endpoints, seed 19 templates)
+- [ ] 11-05-PLAN.md - Integrate with events and add scheduled notifications
 
-### Phase 15: Subscriptions & Plans
+**Wave Structure:**
+- Wave 1 (parallel): 11-01 (database models), 11-02 (external services)
+- Wave 2 (parallel): 11-03 (core system, depends on 01+02), 11-04 (admin CRUD, depends on 01)
+- Wave 3: 11-05 (event integration, depends on 03+04)
+
+**Notification Events (19 total):**
+- Applications (4): received, approved, rejected, info_requested
+- Payments (6): receipt_uploaded, approved, rejected, dispute_opened, reminder, overdue
+- Visits (6): requested, accepted, rejected, cancelled, rescheduled, reminder_24h
+- Contracts (4): ready_to_sign, landlord_signed, tenant_signed, completed
+- Leases (2): expiring_soon, expired
+
+### Phase 12: Subscriptions & Plans (REORDERED - era Phase 15)
 **Goal**: Pricing plans for landlords with coupon support
 **Depends on**: Phase 3 (landlords need properties first)
 **Requirements**: SUBS-01 through SUBS-08
@@ -413,7 +394,7 @@ Plans:
 - Pro: 10 properties, unlimited contracts, AI scoring ($149,900/month)
 - Business: Unlimited, API access ($499,900/month)
 
-### Phase 16: Insurance
+### Phase 13: Insurance (REORDERED - era Phase 16)
 **Goal**: Optional insurance tiers for contracts
 **Depends on**: Phase 7 (insurance attached to contracts)
 **Requirements**: INSU-01 through INSU-04
@@ -425,10 +406,58 @@ Plans:
 **Research**: Unlikely (straightforward feature)
 **Plans**: TBD
 
+---
+## FASES DE IA (AL FINAL)
+---
+
+### Phase 14: AI Document Analysis (REORDERED - era Phase 11)
+**Goal**: Claude API analyzes documents and extracts structured data
+**Depends on**: Phase 5 (scoring infrastructure), Phase 10 (complete payment flow)
+**Requirements**: AIDOC-01 through AIDOC-08
+**Tier**: PRO/BUSINESS subscription only (~$0.05-0.10 per application)
+**Success Criteria** (what must be TRUE):
+  1. Claude API client configured and working
+  2. ID document (cedula) analyzed: name, number, dates extracted
+  3. Employment letter analyzed: company, salary, tenure extracted
+  4. Pay stubs analyzed: income details extracted
+  5. Bank statements analyzed: income patterns detected
+  6. Analysis includes confidence score
+  7. Cross-validation between documents implemented
+  8. Results stored and feed into scoring
+**Research**: Completed (see AI_DOCUMENT_ANALYSIS.md)
+**Plans**: TBD
+
+### Phase 15: Explainability (REORDERED - era Phase 12)
+**Goal**: Full scoring explanation with drivers, flags, and suggestions
+**Depends on**: Phase 14 (AI Document Analysis)
+**Requirements**: EXPL-01 through EXPL-05
+**Tier**: PRO/BUSINESS subscription only
+**Success Criteria** (what must be TRUE):
+  1. 3-6 driver explanations generated per candidate
+  2. Risk flags generated (HIGH_RENT_TO_INCOME, LOW_TENURE, etc.)
+  3. Suggested conditions generated based on risk
+  4. AI-generated conversational explanation
+  5. Subscores visible in response
+**Research**: Likely (explanation generation patterns)
+**Research topics**: LLM prompts for explanations
+**Plans**: TBD
+
+### Phase 16: ML Persistence (REORDERED - era Phase 14)
+**Goal**: Data infrastructure for future ML model training
+**Depends on**: Phase 9 (needs payment history for outcomes), Phase 10 (complete payment flow)
+**Requirements**: MLPR-01 through MLPR-04
+**Success Criteria** (what must be TRUE):
+  1. All extracted features persisted with application
+  2. Application outcomes trackable (approved -> paid/defaulted)
+  3. Score predictions vs actuals logged
+  4. Data exportable for ML training
+**Research**: Unlikely (data modeling)
+**Plans**: TBD
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10 -> 11 -> 12 -> 13 -> 14 -> 15 -> 16
+Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 3.2 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10 -> 11 -> 12 -> 13 -> **14 -> 15 -> 16 (IA al final)**
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -436,6 +465,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 4 -> 5 -> 6 -> 7 -> 8 -> 
 | 2. Auth & Users | 3/3 | Complete | 2026-01-26 |
 | 3. Properties | 4/4 | Complete | 2026-01-29 |
 | 3.1. Property Visits | 4/4 | Complete | 2026-02-03 |
+| 3.2. Natural Search | 1/1 | Complete | 2026-02-03 |
 | 4. Applications & Documents | 5/5 | Complete | 2026-01-29 |
 | 5. Scoring Engine | 3/3 | Complete | 2026-01-30 |
 | 6. Landlord Features | 3/3 | Complete | 2026-02-01 |
@@ -443,12 +473,12 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 4 -> 5 -> 6 -> 7 -> 8 -> 
 | 8. Leases & Payments | 3/3 | Complete | 2026-02-01 |
 | 9. Payment History Scoring | 2/2 | Complete | 2026-02-02 |
 | 10. Tenant Payment Simulation | 6/6 | Complete | 2026-02-02 |
-| 11. AI Document Analysis | 0/0 | Not started | - |
-| 12. Explainability | 0/0 | Not started | - |
-| 13. Notifications | 0/0 | Not started | - |
-| 14. ML Persistence | 0/0 | Not started | - |
-| 15. Subscriptions & Plans | 0/0 | Not started | - |
-| 16. Insurance | 0/0 | Not started | - |
+| **11. Notifications** | 0/5 | Planned | - |
+| **12. Subscriptions & Plans** | 0/0 | Not started | - |
+| **13. Insurance** | 0/0 | Not started | - |
+| 14. AI Document Analysis (IA) | 0/0 | Not started | - |
+| 15. Explainability (IA) | 0/0 | Not started | - |
+| 16. ML Persistence (IA) | 0/0 | Not started | - |
 
 ## Notes
 
@@ -460,7 +490,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 4 -> 5 -> 6 -> 7 -> 8 -> 
 - Simulated payment flow with receipt upload
 - No external API costs
 
-**PRO/BUSINESS Tier (Phases 11-12):**
+**PRO/BUSINESS Tier (Phases 14-15):**
 - AI document analysis via Claude (~$0.05-0.10/app)
 - AI-generated explanations
 - Cross-document validation
@@ -529,7 +559,8 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 4 -> 5 -> 6 -> 7 -> 8 -> 
 | Redis | BullMQ queues | REDIS_URL | All |
 | Claude API | Document analysis | ANTHROPIC_API_KEY | PRO+ |
 | Resend | Email | RESEND_API_KEY | All |
+| Firebase | Push notifications | FIREBASE_PROJECT_ID, FIREBASE_PRIVATE_KEY, FIREBASE_CLIENT_EMAIL | All |
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-02-03 - Completed Phase 3.1 (Property Visits Scheduling)*
+*Last updated: 2026-02-03 - Added Phase 11 plans (5 plans in 3 waves)*
