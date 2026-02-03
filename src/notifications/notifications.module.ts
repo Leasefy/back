@@ -1,27 +1,72 @@
 import { Module } from '@nestjs/common';
+import { BullModule } from '@nestjs/bullmq';
 import { EmailService } from './services/email.service.js';
 import { PushService } from './services/push.service.js';
+import { TemplateService } from './services/template.service.js';
+import { NotificationsService } from './services/notifications.service.js';
+import { NotificationsProcessor } from './processors/notifications.processor.js';
 
 /**
  * NotificationsModule
  *
- * Provides notification delivery services:
+ * Provides the complete notification infrastructure:
  * - EmailService: Resend API for email delivery
  * - PushService: Firebase FCM for push notifications
+ * - TemplateService: Markdown template rendering
+ * - NotificationsService: Main interface for queuing notifications
+ * - NotificationsProcessor: BullMQ worker for async delivery
  *
- * This module handles the delivery layer only.
- * Template rendering and orchestration are added in Plan 03.
+ * Queue: 'notifications'
+ * - Jobs processed asynchronously
+ * - 2 retry attempts with exponential backoff
+ * - Results logged to NotificationLog table
  *
  * Usage:
- * 1. Import NotificationsModule in your module
- * 2. Inject EmailService/PushService
- * 3. Call send() with payload
- *
- * Both services handle errors gracefully and return
- * success/failure status for logging to NotificationLog.
+ * ```typescript
+ * // In event listener or service
+ * await this.notificationsService.send({
+ *   userId: landlordId,
+ *   templateCode: 'APPLICATION_RECEIVED',
+ *   variables: { propertyTitle, otherPartyName },
+ * });
+ * ```
  */
 @Module({
-  providers: [EmailService, PushService],
-  exports: [EmailService, PushService],
+  imports: [
+    // Register the 'notifications' queue
+    // Note: BullMQ root config is already in ScoringModule,
+    // we just register an additional queue here
+    BullModule.registerQueue({
+      name: 'notifications',
+      defaultJobOptions: {
+        attempts: 2,
+        backoff: {
+          type: 'exponential',
+          delay: 10000,
+        },
+        removeOnComplete: 100,
+        removeOnFail: 500,
+      },
+    }),
+  ],
+  providers: [
+    // Delivery services
+    EmailService,
+    PushService,
+    // Template rendering
+    TemplateService,
+    // Orchestration
+    NotificationsService,
+    // Queue processor
+    NotificationsProcessor,
+  ],
+  exports: [
+    // Export NotificationsService as main interface
+    NotificationsService,
+    // Also export individual services for direct use if needed
+    EmailService,
+    PushService,
+    TemplateService,
+  ],
 })
 export class NotificationsModule {}
