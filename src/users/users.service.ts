@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import type { User } from '@prisma/client';
+import { Role as PrismaRole } from '@prisma/client';
 import { PrismaService } from '../database/prisma.service.js';
 import { Role } from '../common/enums/role.enum.js';
 import type { UpdateProfileDto } from './dto/update-profile.dto.js';
@@ -121,8 +122,8 @@ export class UsersService {
         firstName: dto.firstName,
         lastName: dto.lastName,
         phone: dto.phone,
-        role: role,
-        activeRole: activeRole,
+        role: role as unknown as PrismaRole,
+        activeRole: activeRole as unknown as PrismaRole | null,
       },
     });
   }

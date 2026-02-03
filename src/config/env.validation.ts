@@ -4,6 +4,8 @@ import {
   IsNumber,
   IsOptional,
   IsUrl,
+  IsEmail,
+  IsNotEmpty,
   validateSync,
   Min,
   Max,
@@ -47,6 +49,37 @@ export class EnvironmentVariables {
   /** Redis connection URL for BullMQ (e.g., Upstash: rediss://...) */
   @IsString()
   REDIS_URL!: string;
+
+  // ============================================
+  // Notifications (Phase 11)
+  // ============================================
+
+  /** Resend API key for email delivery */
+  @IsString()
+  @IsNotEmpty()
+  RESEND_API_KEY!: string;
+
+  /** Email from address (defaults to 'notificaciones@arriendofacil.co') */
+  @IsString()
+  @IsOptional()
+  @IsEmail()
+  EMAIL_FROM_ADDRESS?: string;
+
+  /** Firebase project ID */
+  @IsString()
+  @IsNotEmpty()
+  FIREBASE_PROJECT_ID!: string;
+
+  /** Firebase service account private key (contains \n escape sequences) */
+  @IsString()
+  @IsNotEmpty()
+  FIREBASE_PRIVATE_KEY!: string;
+
+  /** Firebase service account client email */
+  @IsString()
+  @IsNotEmpty()
+  @IsEmail()
+  FIREBASE_CLIENT_EMAIL!: string;
 
   // ============================================
   // Application
