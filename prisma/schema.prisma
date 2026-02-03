@@ -538,10 +538,11 @@ model LandlordPaymentMethod {
   landlordId String @map("landlord_id") @db.Uuid
 
   // Bank account details
-  bankName      String      @map("bank_name") @db.VarChar(100)
-  accountType   AccountType @map("account_type")
-  accountNumber String      @map("account_number") @db.VarChar(50)
-  holderName    String      @map("holder_name") @db.VarChar(200)
+  bankName             String      @map("bank_name") @db.VarChar(100)
+  accountType          AccountType @map("account_type")
+  accountNumber        String      @map("account_number") @db.VarChar(50)
+  holderName           String      @map("holder_name") @db.VarChar(200)
+  holderDocumentNumber String?     @map("holder_document_number") @db.VarChar(20)
 
   // For Nequi/Daviplata
   phoneNumber String? @map("phone_number") @db.VarChar(20)

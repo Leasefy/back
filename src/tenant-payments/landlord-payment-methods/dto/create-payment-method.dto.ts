@@ -50,6 +50,18 @@ export class CreateLandlordPaymentMethodDto {
   @MaxLength(200)
   holderName!: string;
 
+  @ApiProperty({
+    description: 'Account holder document number (cedula)',
+    example: '1234567890',
+    maxLength: 20,
+  })
+  @IsString()
+  @MaxLength(20)
+  @Matches(/^\d{6,12}$/, {
+    message: 'Document number must be 6-12 digits',
+  })
+  holderDocumentNumber!: string;
+
   @ApiPropertyOptional({
     description: 'Phone number for Nequi/Daviplata (Colombian mobile format: 3XXXXXXXXX)',
     example: '3001234567',
