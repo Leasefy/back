@@ -3,11 +3,11 @@
 ## Current Status
 
 **Phase:** 11 of 16 (Notifications)
-**Plan:** 1 of 4
+**Plan:** 2 of 4
 **Status:** In progress
-**Last activity:** 2026-02-03 - Completed 11-01-PLAN.md (Notification Data Models)
+**Last activity:** 2026-02-03 - Completed 11-02-PLAN.md (External Services Setup)
 
-**Progress:** [#####################] 70% (41/~59 plans estimated)
+**Progress:** [#####################] 71% (42/~59 plans estimated)
 
 ## Project Reference
 
@@ -40,7 +40,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 8. Leases & Payments | COMPLETE | All 3 plans - models, events, services, endpoints |
 | 9. Payment History Scoring | COMPLETE | All 2 plans - metrics, model, aggregator integration |
 | 10. Tenant Payment Simulation | COMPLETE | All 6 plans - landlord methods, tenant requests, PSE mock, validation, disputes |
-| 11. Notifications | IN PROGRESS | Plan 1/4 complete - data models |
+| 11. Notifications | IN PROGRESS | Plan 2/4 complete - data models, external services |
 | 12. AI Document Analysis | Pending | PRO+ tier - Claude integration |
 | 13. Explainability | Pending | PRO+ tier - AI explanations |
 | 14. ML Persistence | Pending | Data for ML training |
@@ -219,11 +219,14 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 2026-02-03 | 11-01 | User notification preferences | Global toggles for email/push, FCM token storage |
 | 2026-02-03 | 11-01 | NotificationTemplate model | Admin-managed templates with Markdown email body |
 | 2026-02-03 | 11-01 | NotificationLog model | Audit trail for sent notifications |
+| 2026-02-03 | 11-02 | Resend for email delivery | Simple API, reliable delivery |
+| 2026-02-03 | 11-02 | Firebase FCM for push | Industry standard, Android + iOS |
+| 2026-02-03 | 11-02 | Graceful Firebase init failure | App starts even without credentials |
 
 ## Session Continuity
 
 **Last session:** 2026-02-03
-**Stopped at:** Completed 11-01-PLAN.md (Notification Data Models)
+**Stopped at:** Completed 11-02-PLAN.md (External Services Setup)
 **Resume file:** None
 
 ## Pending User Actions
@@ -251,6 +254,10 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 **Environment variables:**
 1. Add `SUPABASE_SERVICE_KEY` to `.env` (from: Supabase Dashboard > Settings > API > service_role key)
 2. Add `REDIS_URL` to `.env` (Upstash: rediss://...)
+3. Add `RESEND_API_KEY` to `.env` (from: Resend Dashboard > API Keys)
+4. Add `FIREBASE_PROJECT_ID` to `.env` (from: Firebase Console > Project Settings)
+5. Add `FIREBASE_PRIVATE_KEY` to `.env` (from: Firebase Console > Service Accounts > Generate private key)
+6. Add `FIREBASE_CLIENT_EMAIL` to `.env` (from: Firebase service account JSON)
 
 **Database sync for Application tables:**
 1. Run: `npx prisma db push`
@@ -259,10 +266,10 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 ## Next Action
 
-Continue Phase 11: Notifications. Execute plan 11-02.
+Continue Phase 11: Notifications. Execute plan 11-03.
 
 ```
-/gsd:execute-phase 11
+/gsd:execute-plan 11-03
 ```
 
 ## Session History
@@ -319,6 +326,7 @@ Continue Phase 11: Notifications. Execute plan 11-02.
 | 2026-02-03 | Executed 03.1-03-PLAN.md | VisitsService, events |
 | 2026-02-03 | Executed 03.1-04-PLAN.md | VisitsController, status methods, Phase 3.1 complete |
 | 2026-02-03 | Executed 11-01-PLAN.md | Notification enums, ADMIN role, NotificationTemplate/Log models |
+| 2026-02-03 | Executed 11-02-PLAN.md | Resend EmailService, Firebase PushService, NotificationsModule |
 
 ---
 *Last updated: 2026-02-03*
