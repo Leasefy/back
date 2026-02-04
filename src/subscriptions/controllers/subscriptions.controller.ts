@@ -18,6 +18,7 @@ import { PlanEnforcementService } from '../services/plan-enforcement.service.js'
 import {
   CreateSubscriptionDto,
   ChangePlanDto,
+  MicropaymentDto,
 } from '../dto/index.js';
 
 @ApiTags('Suscripciones')
@@ -103,5 +104,26 @@ export class SubscriptionsController {
     @Body() dto: ChangePlanDto,
   ) {
     return this.subscriptionsService.changePlan(req.user.id, dto);
+  }
+
+  @Post('micropayment/scoring-view')
+  @ApiOperation({ summary: 'Comprar vista adicional de scoring (micropago)' })
+  @ApiResponse({ status: 201, description: 'Vista de scoring comprada' })
+  @ApiResponse({ status: 400, description: 'Pago rechazado o plan ya incluye vistas ilimitadas' })
+  @ApiResponse({ status: 401, description: 'No autorizado' })
+  async purchaseScoringView(
+    @Req() req: Request & { user: User },
+    @Body() dto: MicropaymentDto,
+  ) {
+    const result = await this.subscriptionsService.purchaseScoringView(
+      req.user.id,
+      dto,
+    );
+
+    if (result.success) {
+      await this.planEnforcementService.recordPaidScoringView(req.user.id);
+    }
+
+    return result;
   }
 }

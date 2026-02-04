@@ -485,6 +485,76 @@ export class SubscriptionsService {
     return processedCount;
   }
 
+  /**
+   * Handle a single subscription/trial expiry.
+   * Marks as EXPIRED, downgrades user to FREE, hides excess landlord properties.
+   */
+  async handleSingleExpiry(subscriptionId: string): Promise<void> {
+    const sub = await this.prisma.subscription.findUnique({
+      where: { id: subscriptionId },
+      include: { plan: true },
+    });
+
+    if (!sub) return;
+
+    await this.prisma.subscription.update({
+      where: { id: subscriptionId },
+      data: { status: SubscriptionStatus.EXPIRED },
+    });
+
+    await this.prisma.user.update({
+      where: { id: sub.userId },
+      data: {
+        subscriptionPlan: SubscriptionPlan.FREE,
+        subscriptionEndsAt: null,
+      },
+    });
+
+    if (sub.plan.planType === PlanType.LANDLORD) {
+      await this.hideExcessProperties(sub.userId);
+    }
+  }
+
+  /**
+   * Purchase a single extra scoring view via micropayment.
+   * Processes PSE payment for the scoring view price.
+   */
+  async purchaseScoringView(
+    userId: string,
+    pseData: PseSubscriptionPaymentDto,
+  ): Promise<{ success: boolean; amountPaid: number; paymentResult: { transactionId: string; status: string; message: string } }> {
+    const planConfig = await this.getUserPlanConfig(userId);
+    const price = planConfig.scoringViewPrice;
+
+    if (price <= 0) {
+      throw new BadRequestException(
+        'Tu plan ya incluye vistas de scoring ilimitadas',
+      );
+    }
+
+    const paymentResult = this.processPsePayment(pseData);
+
+    if (paymentResult.status === 'FAILURE') {
+      throw new BadRequestException(
+        `Pago rechazado: ${paymentResult.message}`,
+      );
+    }
+
+    this.logger.log(
+      `Micropayment processed for user ${userId}: $${price} COP, status: ${paymentResult.status}`,
+    );
+
+    return {
+      success: true,
+      amountPaid: price,
+      paymentResult: {
+        transactionId: paymentResult.transactionId,
+        status: paymentResult.status,
+        message: paymentResult.message,
+      },
+    };
+  }
+
   // ─── Private helpers ──────────────────────────────────────────
 
   /**

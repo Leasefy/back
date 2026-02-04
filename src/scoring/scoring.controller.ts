@@ -16,6 +16,8 @@ import { PrismaService } from '../database/prisma.service.js';
 import { PaymentHistoryService } from './services/payment-history.service.js';
 import { PaymentHistoryModel } from './models/payment-history-model.js';
 import { PaymentReputationDto, ReputationTier } from './dto/payment-reputation.dto.js';
+import { PlanEnforcementService } from '../subscriptions/services/plan-enforcement.service.js';
+import { SubscriptionsService } from '../subscriptions/services/subscriptions.service.js';
 
 /**
  * ScoringController
@@ -32,6 +34,8 @@ export class ScoringController {
     private readonly prisma: PrismaService,
     private readonly paymentHistoryService: PaymentHistoryService,
     private readonly paymentHistoryModel: PaymentHistoryModel,
+    private readonly planEnforcement: PlanEnforcementService,
+    private readonly subscriptionsService: SubscriptionsService,
   ) {}
 
   /**
@@ -128,6 +132,17 @@ export class ScoringController {
       );
     }
 
+    // Check scoring view limits
+    const viewCheck = await this.planEnforcement.canViewScoring(user.id);
+    if (!viewCheck.allowed) {
+      throw new ForbiddenException({
+        message: 'Has alcanzado el limite de vistas de scoring este mes.',
+        canMicropay: viewCheck.canMicropay,
+        remainingViews: viewCheck.remainingViews,
+        micropayPrice: viewCheck.micropayPrice,
+      });
+    }
+
     // Get the score result
     const result = await this.scoringService.getScoreResult(applicationId);
 
@@ -135,6 +150,31 @@ export class ScoringController {
       throw new NotFoundException(
         'Score not found. Scoring may still be in progress or application was never submitted.',
       );
+    }
+
+    // Record the scoring view
+    await this.planEnforcement.recordScoringView(user.id);
+
+    // Get user's plan config to determine premium access
+    const planConfig = await this.subscriptionsService.getUserPlanConfig(user.id);
+
+    // Basic scoring: only totalScore and level
+    // Premium scoring: full details including drivers, flags, conditions
+    if (!planConfig.hasPremiumScoring) {
+      return {
+        applicationId: result.applicationId,
+        totalScore: result.totalScore,
+        level: result.level,
+        categories: {
+          financial: result.financialScore,
+          stability: result.stabilityScore,
+          history: result.historyScore,
+          integrity: result.integrityScore,
+        },
+        algorithmVersion: result.algorithmVersion,
+        createdAt: result.createdAt,
+        isPremium: false,
+      };
     }
 
     return {
@@ -152,6 +192,7 @@ export class ScoringController {
       conditions: result.conditions,
       algorithmVersion: result.algorithmVersion,
       createdAt: result.createdAt,
+      isPremium: true,
     };
   }
 }

@@ -6,6 +6,7 @@ import { SubscriptionsController } from './controllers/subscriptions.controller.
 import { SubscriptionPlansService } from './services/subscription-plans.service.js';
 import { SubscriptionsService } from './services/subscriptions.service.js';
 import { PlanEnforcementService } from './services/plan-enforcement.service.js';
+import { SubscriptionScheduler } from './scheduled/subscription-scheduler.js';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { PlanEnforcementService } from './services/plan-enforcement.service.js';
     SubscriptionPlansService,
     SubscriptionsService,
     PlanEnforcementService,
+    SubscriptionScheduler,
   ],
   exports: [
     SubscriptionPlansService,

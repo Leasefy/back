@@ -10,6 +10,7 @@ import { Prisma } from '@prisma/client';
 import type { Property, PropertyImage } from '@prisma/client';
 import { PrismaService } from '../database/prisma.service.js';
 import { PropertyStatus } from '../common/enums/index.js';
+import { PlanEnforcementService } from '../subscriptions/services/plan-enforcement.service.js';
 import {
   CreatePropertyDto,
   UpdatePropertyDto,
@@ -61,6 +62,7 @@ export class PropertiesService {
     private readonly prisma: PrismaService,
     private readonly configService: ConfigService,
     private readonly naturalSearchParser: NaturalSearchParserService,
+    private readonly planEnforcement: PlanEnforcementService,
   ) {
     this.supabase = createClient(
       this.configService.get('SUPABASE_URL')!,
@@ -74,6 +76,17 @@ export class PropertiesService {
   async create(landlordId: string, dto: CreatePropertyDto): Promise<Property> {
     if (dto.amenities) {
       this.validateAmenities(dto.amenities);
+    }
+
+    // Check plan limits before publishing
+    if (dto.status === PropertyStatus.AVAILABLE || dto.status === PropertyStatus.PENDING) {
+      const check = await this.planEnforcement.canPublishProperty(landlordId);
+      if (!check.allowed) {
+        throw new ForbiddenException(
+          `Has alcanzado el limite de ${check.maxAllowed} propiedad(es) publicadas en tu plan actual. ` +
+          `Tienes ${check.currentCount} publicadas. Actualiza tu plan para publicar mas propiedades.`,
+        );
+      }
     }
 
     return this.prisma.property.create({
@@ -102,6 +115,21 @@ export class PropertiesService {
 
     if (dto.amenities) {
       this.validateAmenities(dto.amenities);
+    }
+
+    // Check plan limits when changing status to published (from DRAFT)
+    const isPublishing =
+      (dto.status === PropertyStatus.AVAILABLE || dto.status === PropertyStatus.PENDING) &&
+      property.status === PropertyStatus.DRAFT;
+
+    if (isPublishing) {
+      const check = await this.planEnforcement.canPublishProperty(landlordId);
+      if (!check.allowed) {
+        throw new ForbiddenException(
+          `Has alcanzado el limite de ${check.maxAllowed} propiedad(es) publicadas en tu plan actual. ` +
+          `Tienes ${check.currentCount} publicadas. Actualiza tu plan para publicar mas propiedades.`,
+        );
+      }
     }
 
     return this.prisma.property.update({

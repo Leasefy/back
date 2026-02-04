@@ -23,6 +23,9 @@ import { ScoringProcessor } from './processors/scoring.processor.js';
 import { ScoringService } from './scoring.service.js';
 import { ScoringController } from './scoring.controller.js';
 
+// Subscriptions for plan enforcement
+import { SubscriptionsModule } from '../subscriptions/subscriptions.module.js';
+
 /**
  * ScoringModule
  *
@@ -56,6 +59,7 @@ import { ScoringController } from './scoring.controller.js';
 @Module({
   controllers: [ScoringController],
   imports: [
+    SubscriptionsModule,
     // Configure BullMQ with Redis connection from environment
     BullModule.forRootAsync({
       imports: [ConfigModule],

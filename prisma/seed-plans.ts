@@ -88,6 +88,48 @@ const plans = [
   },
 ];
 
+/**
+ * Notification templates for subscription events.
+ */
+const subscriptionTemplates = [
+  {
+    code: 'TRIAL_EXPIRING',
+    name: 'Trial expirando',
+    emailSubject: 'Tu periodo de prueba termina manana',
+    emailBody:
+      'Hola {{userName}},\n\nTu periodo de prueba del plan **{{planName}}** termina el **{{date}}**.\n\nPara seguir disfrutando de todos los beneficios, suscribete antes de que termine.\n\nSi no te suscribes, tu cuenta sera cambiada al plan gratuito automaticamente.',
+    pushTitle: 'Trial expira manana',
+    pushBody: 'Tu periodo de prueba del plan {{planName}} termina manana. Suscribete para no perder tus beneficios.',
+  },
+  {
+    code: 'TRIAL_EXPIRED',
+    name: 'Trial expirado',
+    emailSubject: 'Tu periodo de prueba ha terminado',
+    emailBody:
+      'Hola {{userName}},\n\nTu periodo de prueba ha terminado y tu cuenta ha sido cambiada al plan gratuito.\n\nPuedes suscribirte en cualquier momento para recuperar los beneficios premium.',
+    pushTitle: 'Trial terminado',
+    pushBody: 'Tu periodo de prueba ha terminado. Tu cuenta ahora tiene el plan gratuito.',
+  },
+  {
+    code: 'SUBSCRIPTION_EXPIRED',
+    name: 'Suscripcion expirada',
+    emailSubject: 'Tu suscripcion ha vencido',
+    emailBody:
+      'Hola {{userName}},\n\nTu suscripcion al plan **{{planName}}** ha vencido.\n\nTu cuenta ha sido cambiada al plan gratuito. Puedes renovar tu suscripcion en cualquier momento.',
+    pushTitle: 'Suscripcion vencida',
+    pushBody: 'Tu suscripcion al plan {{planName}} ha vencido. Renueva para mantener tus beneficios.',
+  },
+  {
+    code: 'SUBSCRIPTION_DOWNGRADED',
+    name: 'Plan degradado a gratuito',
+    emailSubject: 'Tu plan ha sido cambiado a gratuito',
+    emailBody:
+      'Hola {{userName}},\n\nTu plan ha sido cambiado a gratuito. Si tenias propiedades adicionales publicadas, solo la mas antigua permanece visible.\n\nPuedes suscribirte nuevamente para publicar mas propiedades.',
+    pushTitle: 'Plan cambiado a gratuito',
+    pushBody: 'Tu plan ha sido cambiado a gratuito. Suscribete para recuperar tus beneficios.',
+  },
+];
+
 async function main() {
   console.log('Seeding subscription plan configs...');
 
@@ -129,6 +171,37 @@ async function main() {
   }
 
   console.log(`\nSeeded ${plans.length} subscription plan configs.`);
+
+  // Seed subscription notification templates
+  console.log('\nSeeding subscription notification templates...');
+
+  for (const template of subscriptionTemplates) {
+    await prisma.notificationTemplate.upsert({
+      where: { code: template.code },
+      update: {
+        name: template.name,
+        emailSubject: template.emailSubject,
+        emailBody: template.emailBody,
+        pushTitle: template.pushTitle,
+        pushBody: template.pushBody,
+      },
+      create: {
+        code: template.code,
+        name: template.name,
+        emailSubject: template.emailSubject,
+        emailBody: template.emailBody,
+        pushTitle: template.pushTitle,
+        pushBody: template.pushBody,
+        isActive: true,
+      },
+    });
+
+    console.log(`  Upserted template: ${template.code}`);
+  }
+
+  console.log(
+    `Seeded ${subscriptionTemplates.length} subscription notification templates.`,
+  );
 }
 
 main()
