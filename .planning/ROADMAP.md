@@ -34,7 +34,7 @@ Backend API en NestJS para el marketplace de arriendos "Arriendo Facil". Provee 
 - [x] **Phase 9: Payment History Scoring** - Score bonus from payment history (NEW)
 - [x] **Phase 10: Tenant Payment Simulation** - Payment form, receipt upload, landlord validation (NEW)
 - [x] **Phase 11: Notifications** - Email service, templates, queue (REORDERED)
-- [ ] **Phase 12: Subscriptions & Plans** - Pricing plans, billing, plan enforcement (REORDERED)
+- [x] **Phase 12: Subscriptions & Plans** - Pricing plans, billing, plan enforcement (REORDERED)
 - [ ] **Phase 13: Insurance** - Optional insurance tiers (REORDERED)
 - [ ] **Phase 14: AI Document Analysis** - Claude integration, document analyzers (PRO+) (REORDERED)
 - [ ] **Phase 15: Explainability** - Drivers, flags, AI explanation (PRO+) (REORDERED)

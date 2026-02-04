@@ -3,11 +3,11 @@
 ## Current Status
 
 **Phase:** 12 of 16 (Subscriptions & Plans)
-**Plan:** 2 of 4
-**Status:** In progress
-**Last activity:** 2026-02-04 - Completed 12-02-PLAN.md (Core Subscription Services)
+**Plan:** 4 of 4
+**Status:** COMPLETE
+**Last activity:** 2026-02-04 - Completed Phase 12 (all 4 plans)
 
-**Progress:** [###########################] 80% (47/~59 plans estimated)
+**Progress:** [##############################] 85% (51/~59 plans estimated)
 
 ## Project Reference
 
@@ -15,7 +15,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 **Core value:** Ejecutar el Risk Score con analisis inteligente de documentos para que propietarios tomen decisiones informadas en minutos, con explicabilidad total.
 
-**Current focus:** Phase 12: Subscriptions & Plans. Billing, plan enforcement, admin pricing.
+**Current focus:** Phase 12 COMPLETE. Next: Phase 13 (Insurance - optional) or Phase 14 (AI Document Analysis).
 
 ## Quick Context
 
@@ -41,7 +41,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 9. Payment History Scoring | COMPLETE | All 2 plans - metrics, model, aggregator integration |
 | 10. Tenant Payment Simulation | COMPLETE | All 6 plans - landlord methods, tenant requests, PSE mock, validation, disputes |
 | 11. Notifications | COMPLETE | All 5 plans - data models, services, sending, templates, event integration |
-| 12. Subscriptions & Plans | IN PROGRESS | 2/4 plans - data models, seed script, services, enforcement |
+| 12. Subscriptions & Plans | COMPLETE | All 4 plans - models, services, controllers, enforcement, cron |
 | 13. Insurance | Pending | Optional insurance |
 | 14. AI Document Analysis (IA) | Pending | PRO+ tier - Claude integration |
 | 15. Explainability (IA) | Pending | PRO+ tier - AI explanations |
@@ -236,11 +236,15 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 2026-02-04 | 12-02 | Optimistic ACTIVE status for PENDING PSE | Better UX - subscription starts immediately |
 | 2026-02-04 | 12-02 | Keep oldest property on downgrade | Deterministic - first by createdAt stays published |
 | 2026-02-04 | 12-02 | PseSubscriptionPaymentDto as reusable nested DTO | Used in both CreateSubscriptionDto and ChangePlanDto |
+| 2026-02-04 | 12-03 | Two separate controllers for plans and subscriptions | Clear separation: public/admin vs authenticated user endpoints |
+| 2026-02-04 | 12-04 | SubscriptionScheduler in subscriptions module | Avoids circular dependency with NotificationsModule |
+| 2026-02-04 | 12-04 | Premium scoring gate at ScoringController | Gate at VIEW point, not computation - engine always computes |
+| 2026-02-04 | 12-04 | MicropaymentDto extends PseSubscriptionPaymentDto | Same PSE fields, different usage context |
 
 ## Session Continuity
 
 **Last session:** 2026-02-04
-**Stopped at:** Completed 12-02-PLAN.md (Core Subscription Services)
+**Stopped at:** Phase 12 COMPLETE - all 4 plans executed
 **Resume file:** None
 
 ## Pending User Actions
@@ -292,10 +296,12 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 ## Next Action
 
-Continue Phase 12: Subscriptions & Plans (plan 3 of 4).
+Phase 12 complete. Next steps:
+- Phase 13: Insurance (optional)
+- Phase 14: AI Document Analysis (PRO+ tier)
 
 ```
-/gsd:execute-phase 12 (continue with 12-03)
+/gsd:discuss-phase 13  # or skip to 14
 ```
 
 ## Session History
@@ -356,6 +362,8 @@ Continue Phase 12: Subscriptions & Plans (plan 3 of 4).
 | 2026-02-03 | Executed 11-04-PLAN.md | NotificationTemplatesModule, CRUD endpoints, 22 default templates |
 | 2026-02-04 | Executed 12-01-PLAN.md | Subscription models, enums, seed script for 5 default plans |
 | 2026-02-04 | Executed 12-02-PLAN.md | 3 subscription services, DTOs, module, plan enforcement |
+| 2026-02-04 | Executed 12-03-PLAN.md | 2 controllers (plans + subscriptions), 9 endpoints total |
+| 2026-02-04 | Executed 12-04-PLAN.md | Enforcement wired, micropayment, cron, notifications, Phase 12 complete |
 
 ---
 *Last updated: 2026-02-04*
