@@ -2,12 +2,12 @@
 
 ## Current Status
 
-**Phase:** 11 of 16 (Notifications)
-**Plan:** 5 of 5
-**Status:** Phase complete
-**Last activity:** 2026-02-03 - Completed 11-05-PLAN.md (Event Integration & Scheduled Notifications)
+**Phase:** 12 of 16 (Subscriptions & Plans)
+**Plan:** 1 of 4
+**Status:** In progress
+**Last activity:** 2026-02-04 - Completed 12-01-PLAN.md (Subscription Data Models & Seed)
 
-**Progress:** [#########################] 76% (45/~59 plans estimated)
+**Progress:** [##########################] 78% (46/~59 plans estimated)
 
 ## Project Reference
 
@@ -15,7 +15,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 **Core value:** Ejecutar el Risk Score con analisis inteligente de documentos para que propietarios tomen decisiones informadas en minutos, con explicabilidad total.
 
-**Current focus:** Phase 11: Notifications. Email + push notification system with admin-managed templates.
+**Current focus:** Phase 12: Subscriptions & Plans. Billing, plan enforcement, admin pricing.
 
 ## Quick Context
 
@@ -41,7 +41,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 9. Payment History Scoring | COMPLETE | All 2 plans - metrics, model, aggregator integration |
 | 10. Tenant Payment Simulation | COMPLETE | All 6 plans - landlord methods, tenant requests, PSE mock, validation, disputes |
 | 11. Notifications | COMPLETE | All 5 plans - data models, services, sending, templates, event integration |
-| 12. Subscriptions & Plans | Pending | Billing |
+| 12. Subscriptions & Plans | IN PROGRESS | 1/4 plans - data models, seed script |
 | 13. Insurance | Pending | Optional insurance |
 | 14. AI Document Analysis (IA) | Pending | PRO+ tier - Claude integration |
 | 15. Explainability (IA) | Pending | PRO+ tier - AI explanations |
@@ -226,11 +226,16 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 2026-02-03 | 11-04 | Template code regex validation | /^[A-Z][A-Z0-9_]*$/ for uppercase codes |
 | 2026-02-03 | 11-04 | Upsert pattern for seeding | Allows safe re-running without duplicates |
 | 2026-02-03 | 11-04 | 22 default templates | 4 apps + 6 payments + 6 visits + 4 contracts + 2 leases |
+| 2026-02-04 | 12-01 | Database-driven plan limits | Admin can modify prices without code deployment, replaces hardcoded PLAN_LIMITS |
+| 2026-02-04 | 12-01 | PlanType enum (TENANT/LANDLORD) | Different plans for different roles with unique compound key |
+| 2026-02-04 | 12-01 | ScoringUsage with micropayment tracking | Monthly limits for free tier tenants, extra views via micropayment |
+| 2026-02-04 | 12-01 | Annual pricing ~80% of monthly*12 | Standard SaaS incentive - approximately 2 months free |
+| 2026-02-04 | 12-01 | Keep SubscriptionPlan enum on User | Backward compatibility, new models hold detailed config |
 
 ## Session Continuity
 
-**Last session:** 2026-02-03
-**Stopped at:** Completed 11-04-PLAN.md (Template CRUD + Seed Scripts)
+**Last session:** 2026-02-04
+**Stopped at:** Completed 12-01-PLAN.md (Subscription Data Models & Seed)
 **Resume file:** None
 
 ## Pending User Actions
@@ -272,12 +277,20 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 1. Run: `npm run seed:templates`
 2. Verify 22 templates seeded in database
 
+**Sync subscription models to database:**
+1. Run: `npx prisma db push`
+2. Verify new tables created: subscription_plan_configs, subscriptions, subscription_payments, scoring_usage
+
+**Seed subscription plans:**
+1. Run: `npm run seed:plans`
+2. Verify 5 plan configs seeded in database
+
 ## Next Action
 
-Phase 11 complete. Continue to Phase 12: AI Document Analysis (PRO+ tier).
+Continue Phase 12: Subscriptions & Plans (plan 2 of 4).
 
 ```
-/gsd:execute-phase 12
+/gsd:execute-phase 12 (continue with 12-02)
 ```
 
 ## Session History
@@ -336,6 +349,7 @@ Phase 11 complete. Continue to Phase 12: AI Document Analysis (PRO+ tier).
 | 2026-02-03 | Executed 11-01-PLAN.md | Notification enums, ADMIN role, NotificationTemplate/Log models |
 | 2026-02-03 | Executed 11-02-PLAN.md | Resend EmailService, Firebase PushService, NotificationsModule |
 | 2026-02-03 | Executed 11-04-PLAN.md | NotificationTemplatesModule, CRUD endpoints, 22 default templates |
+| 2026-02-04 | Executed 12-01-PLAN.md | Subscription models, enums, seed script for 5 default plans |
 
 ---
-*Last updated: 2026-02-03*
+*Last updated: 2026-02-04*
