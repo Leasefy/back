@@ -41,14 +41,33 @@ enum PropertyStatus {
   PENDING
 }
 
-/// Subscription plan for users
-/// FREE: 1 property, 1 contract, no AI scoring
-/// PRO: 10 properties, unlimited contracts, AI scoring ($149,900/month)
-/// BUSINESS: Unlimited properties, API access ($499,900/month)
+/// Subscription tier level
+/// Used on User model to track current plan and on SubscriptionPlanConfig for plan definitions
 enum SubscriptionPlan {
   FREE
   PRO
   BUSINESS
+}
+
+/// Type of user plan applies to
+enum PlanType {
+  TENANT
+  LANDLORD
+}
+
+/// Billing cycle for subscriptions
+enum BillingCycle {
+  MONTHLY
+  ANNUAL
+}
+
+/// Status of a subscription
+enum SubscriptionStatus {
+  TRIAL        // 7-day free trial
+  ACTIVE       // Paid and active
+  PAST_DUE     // Payment failed/expired, grace period
+  CANCELLED    // User cancelled, remains active until period end
+  EXPIRED      // Subscription period ended without renewal
 }
 
 /// Application status in the rental process
@@ -803,4 +822,117 @@ model NotificationLog {
   @@index([status])
   @@index([createdAt])
   @@map("notification_logs")
+}
+
+/// Configurable subscription plan definition
+/// Admin can modify prices. Different plans for TENANT vs LANDLORD.
+model SubscriptionPlanConfig {
+  id          String        @id @default(uuid()) @db.Uuid
+  planType    PlanType      @map("plan_type")        // TENANT or LANDLORD
+  tier        SubscriptionPlan                        // FREE, PRO, BUSINESS
+  name        String        @db.VarChar(100)          // Display name: "Tenant Pro", "Landlord Business"
+  description String?       @db.Text
+
+  // Pricing (COP - 0 for free plan)
+  monthlyPrice Int          @default(0) @map("monthly_price")
+  annualPrice  Int          @default(0) @map("annual_price")   // Full year price (discounted)
+
+  // Limits
+  maxProperties     Int     @default(1) @map("max_properties")      // -1 = unlimited
+  maxScoringViews   Int     @default(1) @map("max_scoring_views")   // Per month, -1 = unlimited
+  hasPremiumScoring Boolean @default(false) @map("has_premium_scoring")
+  hasApiAccess      Boolean @default(false) @map("has_api_access")
+
+  // Micropayment price (for tenant free extra scoring views)
+  scoringViewPrice  Int     @default(0) @map("scoring_view_price")  // COP per extra view
+
+  isActive    Boolean       @default(true) @map("is_active")
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  // Relations
+  subscriptions Subscription[]
+
+  @@unique([planType, tier])  // One config per role+tier combo
+  @@index([planType])
+  @@index([isActive])
+  @@map("subscription_plan_configs")
+}
+
+/// User's active subscription
+model Subscription {
+  id        String             @id @default(uuid()) @db.Uuid
+  userId    String             @map("user_id") @db.Uuid
+  planId    String             @map("plan_id") @db.Uuid
+  status    SubscriptionStatus @default(TRIAL)
+  cycle     BillingCycle       @default(MONTHLY)
+
+  // Period
+  startDate   DateTime         @map("start_date")
+  endDate     DateTime         @map("end_date")
+  trialEndsAt DateTime?        @map("trial_ends_at")  // Set only during trial
+
+  // Cancellation
+  cancelledAt   DateTime?      @map("cancelled_at")
+  cancelReason  String?        @map("cancel_reason") @db.VarChar(500)
+
+  // Auto-renew
+  autoRenew   Boolean          @default(true) @map("auto_renew")
+
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @updatedAt @map("updated_at")
+
+  // Relations
+  plan     SubscriptionPlanConfig @relation(fields: [planId], references: [id])
+  payments SubscriptionPayment[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([endDate])
+  @@map("subscriptions")
+}
+
+/// Payment record for a subscription (via PSE mock)
+model SubscriptionPayment {
+  id              String   @id @default(uuid()) @db.Uuid
+  subscriptionId  String   @map("subscription_id") @db.Uuid
+  amount          Int      // COP
+  cycle           BillingCycle
+
+  // PSE mock reference
+  pseTransactionId String? @map("pse_transaction_id") @db.VarChar(100)
+  status           String  @default("PENDING") @db.VarChar(20)  // PENDING, SUCCESS, FAILED
+
+  // Period covered
+  periodStart DateTime    @map("period_start")
+  periodEnd   DateTime    @map("period_end")
+
+  createdAt   DateTime    @default(now()) @map("created_at")
+
+  // Relations
+  subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@index([subscriptionId])
+  @@index([status])
+  @@map("subscription_payments")
+}
+
+/// Track tenant scoring view usage per month
+/// Enforces monthly limits for free tier tenants
+model ScoringUsage {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  month     Int      // 1-12
+  year      Int      // e.g., 2026
+  viewCount Int      @default(0) @map("view_count")  // Number of scoring views used
+
+  // Micropayment tracking
+  paidViewCount Int  @default(0) @map("paid_view_count")  // Extra views purchased via micropayment
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([userId, month, year])
+  @@index([userId])
+  @@map("scoring_usage")
 }
