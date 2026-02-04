@@ -34,7 +34,7 @@ Backend API en NestJS para el marketplace de arriendos "Arriendo Facil". Provee 
 - [x] **Phase 9: Payment History Scoring** - Score bonus from payment history (NEW)
 - [x] **Phase 10: Tenant Payment Simulation** - Payment form, receipt upload, landlord validation (NEW)
 - [x] **Phase 11: Notifications** - Email service, templates, queue (REORDERED)
-- [ ] **Phase 12: Subscriptions & Plans** - Pricing plans, coupons, billing (REORDERED)
+- [ ] **Phase 12: Subscriptions & Plans** - Pricing plans, billing, plan enforcement (REORDERED)
 - [ ] **Phase 13: Insurance** - Optional insurance tiers (REORDERED)
 - [ ] **Phase 14: AI Document Analysis** - Claude integration, document analyzers (PRO+) (REORDERED)
 - [ ] **Phase 15: Explainability** - Drivers, flags, AI explanation (PRO+) (REORDERED)
@@ -377,22 +377,44 @@ Plans:
 - Leases (2): expiring_soon, expired
 
 ### Phase 12: Subscriptions & Plans (REORDERED - era Phase 15)
-**Goal**: Pricing plans for landlords with coupon support
-**Depends on**: Phase 3 (landlords need properties first)
-**Requirements**: SUBS-01 through SUBS-08
+**Goal**: Pricing plans for landlords and tenants with mock payment processing, plan enforcement, and admin-managed pricing
+**Depends on**: Phase 10 (PSE mock), Phase 11 (Notifications, ADMIN role)
+**Requirements**: SUBS-01 through SUBS-05, SUBS-08 (SUBS-06, SUBS-07 cupones DEFERRED)
+**Context**: Complete (12-CONTEXT.md)
 **Success Criteria** (what must be TRUE):
-  1. Three plans available: free, pro, business
-  2. Plan limits enforced (properties, AI scoring access)
-  3. Coupons can be validated and applied
-  4. Subscription status tracked per user
-  5. Plan selection during property publish
-**Research**: Likely (billing patterns, coupon systems)
-**Plans**: TBD
+  1. Five plan configs defined: Tenant Free/Pro, Landlord Free/Pro/Business
+  2. Plan limits enforced (landlord property count, tenant scoring views)
+  3. Subscription status tracked per user (trial, active, cancelled, expired)
+  4. User can subscribe via PSE mock payment
+  5. User can cancel subscription
+  6. User can change plan mid-cycle
+  7. 7-day trial with notification before expiry
+  8. Auto-downgrade to free on expiry (hides excess properties)
+  9. Admin can modify plan pricing
+  10. Micropayment for extra scoring views (tenant free)
+  11. Public endpoint lists plans by role
+**Plans**: 4 plans
 
-**Plans (from frontend):**
-- Free: 1 property, 1 contract, basic scoring only
-- Pro: 10 properties, unlimited contracts, AI scoring ($149,900/month)
-- Business: Unlimited, API access ($499,900/month)
+Plans:
+- [ ] 12-01-PLAN.md -- Database models, enums, and seed data for subscription system
+- [ ] 12-02-PLAN.md -- Core subscription services (plans, subscriptions, enforcement)
+- [ ] 12-03-PLAN.md -- REST endpoints (admin pricing, public listing, user operations)
+- [ ] 12-04-PLAN.md -- Plan enforcement integration, micropayments, trial/expiry automation
+
+**Wave Structure:**
+- Wave 1: 12-01 (database models + enums + seed)
+- Wave 2: 12-02 (core services, depends on 01)
+- Wave 3: 12-03 (controllers, depends on 02)
+- Wave 4: 12-04 (enforcement + cron + micropayments, depends on 02+03)
+
+**Plans by Role:**
+- Tenant Free: 1 scoring view/month, no premium scoring, micropayment for extras
+- Tenant Pro: Unlimited scoring, premium scoring ($49,900/month)
+- Landlord Free: 1 property, basic scoring
+- Landlord Pro: 10 properties, premium scoring ($149,900/month)
+- Landlord Business: Unlimited, API access, premium scoring ($499,900/month)
+
+**Deferred:** Coupon system (SUBS-06, SUBS-07) for future phase.
 
 ### Phase 13: Insurance (REORDERED - era Phase 16)
 **Goal**: Optional insurance tiers for contracts
@@ -473,8 +495,8 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 3.2 -> 4 -> 5 -> 6 -> 7 -
 | 8. Leases & Payments | 3/3 | Complete | 2026-02-01 |
 | 9. Payment History Scoring | 2/2 | Complete | 2026-02-02 |
 | 10. Tenant Payment Simulation | 6/6 | Complete | 2026-02-02 |
-| **11. Notifications** | 5/5 | Complete | 2026-02-03 |
-| **12. Subscriptions & Plans** | 0/0 | Not started | - |
+| 11. Notifications | 5/5 | Complete | 2026-02-03 |
+| **12. Subscriptions & Plans** | 0/4 | Planned | - |
 | **13. Insurance** | 0/0 | Not started | - |
 | 14. AI Document Analysis (IA) | 0/0 | Not started | - |
 | 15. Explainability (IA) | 0/0 | Not started | - |
@@ -563,4 +585,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 3.2 -> 4 -> 5 -> 6 -> 7 -
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-02-03 - Phase 11 Notifications complete (5/5 plans, verified)*
+*Last updated: 2026-02-04 - Phase 12 Subscriptions & Plans planned (4 plans, 4 waves)*
