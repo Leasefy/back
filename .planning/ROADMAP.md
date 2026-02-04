@@ -33,7 +33,7 @@ Backend API en NestJS para el marketplace de arriendos "Arriendo Facil". Provee 
 - [x] **Phase 8: Leases & Payments** - Active leases, payment tracking
 - [x] **Phase 9: Payment History Scoring** - Score bonus from payment history (NEW)
 - [x] **Phase 10: Tenant Payment Simulation** - Payment form, receipt upload, landlord validation (NEW)
-- [ ] **Phase 11: Notifications** - Email service, templates, queue (REORDERED)
+- [x] **Phase 11: Notifications** - Email service, templates, queue (REORDERED)
 - [ ] **Phase 12: Subscriptions & Plans** - Pricing plans, coupons, billing (REORDERED)
 - [ ] **Phase 13: Insurance** - Optional insurance tiers (REORDERED)
 - [ ] **Phase 14: AI Document Analysis** - Claude integration, document analyzers (PRO+) (REORDERED)
@@ -358,11 +358,11 @@ Plans:
 **Plans**: 5 plans
 
 Plans:
-- [ ] 11-01-PLAN.md - Add database models (ADMIN role, NotificationTemplate, NotificationLog, user preferences)
-- [ ] 11-02-PLAN.md - Configure external services (Resend email, Firebase FCM, env validation)
-- [ ] 11-03-PLAN.md - Create core notification system (TemplateService, NotificationsService, BullMQ processor)
-- [ ] 11-04-PLAN.md - Create admin template management (CRUD endpoints, seed 19 templates)
-- [ ] 11-05-PLAN.md - Integrate with events and add scheduled notifications
+- [x] 11-01-PLAN.md - Add database models (ADMIN role, NotificationTemplate, NotificationLog, user preferences)
+- [x] 11-02-PLAN.md - Configure external services (Resend email, Firebase FCM, env validation)
+- [x] 11-03-PLAN.md - Create core notification system (TemplateService, NotificationsService, BullMQ processor)
+- [x] 11-04-PLAN.md - Create admin template management (CRUD endpoints, seed 19 templates)
+- [x] 11-05-PLAN.md - Integrate with events and add scheduled notifications
 
 **Wave Structure:**
 - Wave 1 (parallel): 11-01 (database models), 11-02 (external services)
@@ -473,7 +473,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 3.2 -> 4 -> 5 -> 6 -> 7 -
 | 8. Leases & Payments | 3/3 | Complete | 2026-02-01 |
 | 9. Payment History Scoring | 2/2 | Complete | 2026-02-02 |
 | 10. Tenant Payment Simulation | 6/6 | Complete | 2026-02-02 |
-| **11. Notifications** | 0/5 | Planned | - |
+| **11. Notifications** | 5/5 | Complete | 2026-02-03 |
 | **12. Subscriptions & Plans** | 0/0 | Not started | - |
 | **13. Insurance** | 0/0 | Not started | - |
 | 14. AI Document Analysis (IA) | 0/0 | Not started | - |
@@ -563,4 +563,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 3.2 -> 4 -> 5 -> 6 -> 7 -
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-02-03 - Added Phase 11 plans (5 plans in 3 waves)*
+*Last updated: 2026-02-03 - Phase 11 Notifications complete (5/5 plans, verified)*

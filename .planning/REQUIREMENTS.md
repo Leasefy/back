@@ -139,17 +139,17 @@ Requirements for MVP release. Each maps to roadmap phases.
 
 ### Notifications (NOTF)
 
-- [ ] **NOTF-01**: Email service configured (Resend)
-- [ ] **NOTF-02**: Email sent when application received (to landlord)
-- [ ] **NOTF-03**: Email sent when application approved (to tenant)
-- [ ] **NOTF-04**: Email sent when application rejected (to tenant)
-- [ ] **NOTF-05**: Email sent when info requested (to tenant)
-- [ ] **NOTF-06**: Emails sent async via BullMQ queue
-- [ ] **NOTF-07**: Email templates with branding
-- [ ] **NOTF-08**: Email sent when payment receipt uploaded (to landlord)
-- [ ] **NOTF-09**: Email sent when payment approved/rejected (to tenant)
-- [ ] **NOTF-10**: Email sent when dispute opened (to support + landlord)
-- [ ] **NOTF-11**: Push notification infrastructure configured (Firebase or similar)
+- [x] **NOTF-01**: Email service configured (Resend)
+- [x] **NOTF-02**: Email sent when application received (to landlord)
+- [x] **NOTF-03**: Email sent when application approved (to tenant)
+- [x] **NOTF-04**: Email sent when application rejected (to tenant)
+- [x] **NOTF-05**: Email sent when info requested (to tenant)
+- [x] **NOTF-06**: Emails sent async via BullMQ queue
+- [x] **NOTF-07**: Email templates with branding
+- [x] **NOTF-08**: Email sent when payment receipt uploaded (to landlord)
+- [x] **NOTF-09**: Email sent when payment approved/rejected (to tenant)
+- [x] **NOTF-10**: Email sent when dispute opened (to support + landlord)
+- [x] **NOTF-11**: Push notification infrastructure configured (Firebase or similar)
 
 ### Persistence for ML (MLPR)
 
@@ -355,17 +355,17 @@ Which phases cover which requirements. Updated by roadmap creation.
 | LAND-08 | Phase 8 | Pending |
 | LAND-09 | Phase 8 | Pending |
 | LAND-10 | Phase 8 | Pending |
-| NOTF-01 | Phase 13 | Pending |
-| NOTF-02 | Phase 13 | Pending |
-| NOTF-03 | Phase 13 | Pending |
-| NOTF-04 | Phase 13 | Pending |
-| NOTF-05 | Phase 13 | Pending |
-| NOTF-06 | Phase 13 | Pending |
-| NOTF-07 | Phase 13 | Pending |
-| NOTF-08 | Phase 13 | Pending |
-| NOTF-09 | Phase 13 | Pending |
-| NOTF-10 | Phase 13 | Pending |
-| NOTF-11 | Phase 13 | Pending |
+| NOTF-01 | Phase 11 | Complete |
+| NOTF-02 | Phase 11 | Complete |
+| NOTF-03 | Phase 11 | Complete |
+| NOTF-04 | Phase 11 | Complete |
+| NOTF-05 | Phase 11 | Complete |
+| NOTF-06 | Phase 11 | Complete |
+| NOTF-07 | Phase 11 | Complete |
+| NOTF-08 | Phase 11 | Complete |
+| NOTF-09 | Phase 11 | Complete |
+| NOTF-10 | Phase 11 | Complete |
+| NOTF-11 | Phase 11 | Complete |
 | MLPR-01 | Phase 14 | Pending |
 | MLPR-02 | Phase 14 | Pending |
 | MLPR-03 | Phase 14 | Pending |
