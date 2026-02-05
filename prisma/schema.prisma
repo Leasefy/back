@@ -16,12 +16,12 @@ datasource db {
 /// User role in the system
 /// TENANT: Can apply for properties
 /// LANDLORD: Can list properties, view applications
-/// BOTH: Can do both (switches context via activeRole)
+/// AGENT: Can manage assigned properties on behalf of landlords
 /// ADMIN: System administrator, manages notification templates
 enum Role {
   TENANT
   LANDLORD
-  BOTH
+  AGENT
   ADMIN
 }
 
@@ -229,7 +229,6 @@ model User {
   id         String  @id @db.Uuid // Same UUID as auth.users.id
   email      String  @unique
   role       Role    @default(TENANT)
-  activeRole Role?   @map("active_role") // For BOTH users to track current context
   firstName  String? @map("first_name")
   lastName   String? @map("last_name")
   phone      String?
@@ -268,6 +267,13 @@ model User {
 
   // Notification relations
   notificationLogs       NotificationLog[]
+
+  // Agent property access relations
+  agentAccess            PropertyAccess[] @relation("AgentAccess")
+  grantedAccess          PropertyAccess[] @relation("GrantedAccess")
+
+  // Chat relations
+  chatMessages           ChatMessage[] @relation("ChatMessages")
 
   @@map("users")
 }
@@ -317,6 +323,7 @@ model Property {
   leases         Lease[]
   availabilities PropertyAvailability[]
   visits         PropertyVisit[]
+  propertyAccess PropertyAccess[]
 
   @@index([landlordId])
   @@index([city])
@@ -343,6 +350,27 @@ model PropertyImage {
   @@map("property_images")
 }
 
+/// Property access granted to agents by landlords
+/// Allows agents to manage properties on behalf of landlords
+model PropertyAccess {
+  id          String   @id @default(uuid()) @db.Uuid
+  propertyId  String   @map("property_id") @db.Uuid
+  agentId     String   @map("agent_id") @db.Uuid
+  grantedById String   @map("granted_by_id") @db.Uuid
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  agent      User     @relation("AgentAccess", fields: [agentId], references: [id])
+  grantedBy  User     @relation("GrantedAccess", fields: [grantedById], references: [id])
+
+  @@unique([propertyId, agentId])
+  @@index([agentId])
+  @@index([propertyId])
+  @@map("property_access")
+}
+
 /// Rental application from tenant to property
 model Application {
   id          String            @id @default(uuid()) @db.Uuid
@@ -364,13 +392,14 @@ model Application {
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
   // Relations
-  property  Property              @relation(fields: [propertyId], references: [id])
-  tenant    User                  @relation("TenantApplications", fields: [tenantId], references: [id])
-  documents ApplicationDocument[]
-  events    ApplicationEvent[]
-  riskScore RiskScoreResult?
-  notes     LandlordNote[]
-  contract  Contract?
+  property     Property              @relation(fields: [propertyId], references: [id])
+  tenant       User                  @relation("TenantApplications", fields: [tenantId], references: [id])
+  documents    ApplicationDocument[]
+  events       ApplicationEvent[]
+  riskScore    RiskScoreResult?
+  notes        LandlordNote[]
+  contract     Contract?
+  conversation ApplicationConversation?
 
   @@index([propertyId])
   @@index([tenantId])
@@ -414,6 +443,38 @@ model ApplicationEvent {
   @@index([actorId])
   @@index([createdAt])
   @@map("application_events")
+}
+
+/// Chat conversation for a rental application
+/// Auto-created when application is submitted, deleted on reject/withdraw
+model ApplicationConversation {
+  id            String   @id @default(uuid()) @db.Uuid
+  applicationId String   @unique @map("application_id") @db.Uuid
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  application   Application   @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  messages      ChatMessage[]
+
+  @@map("application_conversations")
+}
+
+/// Individual chat message in an application conversation
+model ChatMessage {
+  id             String   @id @default(uuid()) @db.Uuid
+  conversationId String   @map("conversation_id") @db.Uuid
+  senderId       String   @map("sender_id") @db.Uuid
+  content        String   @db.Text
+  readAt         DateTime? @map("read_at")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  conversation   ApplicationConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender         User @relation("ChatMessages", fields: [senderId], references: [id])
+
+  @@index([conversationId])
+  @@index([senderId])
+  @@index([createdAt])
+  @@map("chat_messages")
 }
 
 /// Risk score result for an application
