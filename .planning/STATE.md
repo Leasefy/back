@@ -3,11 +3,11 @@
 ## Current Status
 
 **Phase:** 2.1 (User Roles & Property Agents)
-**Plan:** 2 of 4
+**Plan:** 3 of 4
 **Status:** In progress
-**Last activity:** 2026-02-05 - Completed 2.1-02-PLAN.md
+**Last activity:** 2026-02-05 - Completed 2.1-03-PLAN.md
 
-**Progress:** [################################] 90% (55/~61 plans estimated)
+**Progress:** [################################] 92% (56/~61 plans estimated)
 
 ## Project Reference
 
@@ -15,7 +15,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 **Core value:** Ejecutar el Risk Score con analisis inteligente de documentos para que propietarios tomen decisiones informadas en minutos, con explicabilidad total.
 
-**Current focus:** Phase 2.1 in progress. Role cleanup complete, AGENT onboarding enabled. Next: 2.1-03 (PropertyAccess service).
+**Current focus:** Phase 2.1 in progress. PropertyAccess service complete, agents can manage assigned properties. Next: 2.1-04 (Chat functionality).
 
 ## Quick Context
 
@@ -43,7 +43,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 11. Notifications | COMPLETE | All 5 plans - data models, services, sending, templates, event integration |
 | 12. Subscriptions & Plans | COMPLETE | All 4 plans - models, services, controllers, enforcement, cron |
 | 13. Insurance | COMPLETE | All 2 plans - enum, service, controller, contract integration |
-| 2.1 User Roles & Agents | IN PROGRESS | 2/4 plans - schema + role cleanup complete |
+| 2.1 User Roles & Agents | IN PROGRESS | 3/4 plans - PropertyAccess service complete |
 | 14. AI Document Analysis (IA) | Pending | PRO+ tier - Claude integration |
 | 15. Explainability (IA) | Pending | PRO+ tier - AI explanations |
 | 16. ML Persistence (IA) | Pending | Data for ML training |
@@ -258,11 +258,14 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 2026-02-05 | 2.1-01 | ApplicationConversation 1:1 with Application | Auto-created on submit, cascade delete on reject/withdraw |
 | 2026-02-05 | 2.1-02 | Remove switch-role endpoint entirely | 2.1-01 deprecated it, clean removal for cleaner codebase |
 | 2026-02-05 | 2.1-02 | AGENT access via RolesGuard | Simpler than adding Role.AGENT to every @Roles decorator |
+| 2026-02-05 | 2.1-03 | PropertyAccessService.ensurePropertyAccess replaces direct landlordId checks | Single point of authorization check for landlord/agent access |
+| 2026-02-05 | 2.1-03 | Agents act with LANDLORD role for state machines | State machines expect TENANT or LANDLORD, agent acts on behalf |
+| 2026-02-05 | 2.1-03 | Contracts store actual property landlordId | Legal records must reflect actual owner, not the agent |
 
 ## Session Continuity
 
 **Last session:** 2026-02-05
-**Stopped at:** Completed 2.1-02-PLAN.md
+**Stopped at:** Completed 2.1-03-PLAN.md
 **Resume file:** None
 
 ## Pending User Actions
@@ -325,11 +328,10 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 ## Next Action
 
 Phase 2.1 in progress. Next:
-- Execute 2.1-03-PLAN.md (PropertyAccess service)
-- Run SQL migration for Role enum changes (if not done)
+- Execute 2.1-04-PLAN.md (Chat functionality)
 
 ```
-/gsd:execute-plan 2.1-03
+/gsd:execute-plan 2.1-04
 ```
 
 ## Session History
@@ -396,6 +398,7 @@ Phase 2.1 in progress. Next:
 | 2026-02-04 | Executed 13-02-PLAN.md | InsuranceController, contract integration, template updates, Phase 13 complete |
 | 2026-02-05 | Executed 2.1-01-PLAN.md | AGENT role, PropertyAccess/Chat models, Role.BOTH removed from codebase |
 | 2026-02-05 | Executed 2.1-02-PLAN.md | Removed switch-role endpoint, added AGENT to onboarding DTO |
+| 2026-02-05 | Executed 2.1-03-PLAN.md | PropertyAccessService, controllers, 6 services updated for agent authorization |
 
 ---
 *Last updated: 2026-02-05*
