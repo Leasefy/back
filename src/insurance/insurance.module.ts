@@ -1,15 +1,16 @@
 import { Module } from '@nestjs/common';
 import { InsuranceService } from './insurance.service.js';
+import { InsuranceController } from './insurance.controller.js';
 
 /**
  * InsuranceModule
  *
  * Provides insurance tier management.
  * Exports InsuranceService for use by ContractsModule.
- *
- * Note: No controller here - the InsuranceController is added in Plan 02.
+ * InsuranceController provides public endpoints for tier listing.
  */
 @Module({
+  controllers: [InsuranceController],
   providers: [InsuranceService],
   exports: [InsuranceService],
 })

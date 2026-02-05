@@ -18,6 +18,7 @@ import { VisitsModule } from './visits/visits.module.js';
 import { NotificationTemplatesModule } from './notification-templates/notification-templates.module.js';
 import { NotificationsModule } from './notifications/notifications.module.js';
 import { SubscriptionsModule } from './subscriptions/subscriptions.module.js';
+import { InsuranceModule } from './insurance/insurance.module.js';
 import { SupabaseAuthGuard } from './auth/guards/supabase-auth.guard.js';
 import { RolesGuard } from './auth/guards/roles.guard.js';
 import { AppController } from './app.controller.js';
@@ -42,6 +43,7 @@ import { AppService } from './app.service.js';
     ScoringModule,
     LandlordModule,
     ContractsModule,
+    InsuranceModule,
     LeasesModule,
     TenantPaymentsModule,
     VisitsModule,
