@@ -35,7 +35,7 @@ Backend API en NestJS para el marketplace de arriendos "Arriendo Facil". Provee 
 - [x] **Phase 10: Tenant Payment Simulation** - Payment form, receipt upload, landlord validation (NEW)
 - [x] **Phase 11: Notifications** - Email service, templates, queue (REORDERED)
 - [x] **Phase 12: Subscriptions & Plans** - Pricing plans, billing, plan enforcement (REORDERED)
-- [ ] **Phase 13: Insurance** - Optional insurance tiers (REORDERED)
+- [x] **Phase 13: Insurance** - Optional insurance tiers (REORDERED)
 - [ ] **Phase 14: AI Document Analysis** - Claude integration, document analyzers (PRO+) (REORDERED)
 - [ ] **Phase 15: Explainability** - Drivers, flags, AI explanation (PRO+) (REORDERED)
 - [ ] **Phase 16: ML Persistence** - Feature logging, outcome tracking (REORDERED)
@@ -428,8 +428,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 13-01-PLAN.md -- InsuranceTier enum, update Contract model, InsuranceService with tier definitions
-- [ ] 13-02-PLAN.md -- Update contract DTO/service/template integration, InsuranceController endpoints
+- [x] 13-01-PLAN.md -- InsuranceTier enum, update Contract model, InsuranceService with tier definitions
+- [x] 13-02-PLAN.md -- Update contract DTO/service/template integration, InsuranceController endpoints
 
 **Wave Structure:**
 - Wave 1: 13-01 (enum, schema, service foundation)
@@ -509,7 +509,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 3.2 -> 4 -> 5 -> 6 -> 7 -
 | 10. Tenant Payment Simulation | 6/6 | Complete | 2026-02-02 |
 | 11. Notifications | 5/5 | Complete | 2026-02-03 |
 | 12. Subscriptions & Plans | 4/4 | Complete | 2026-02-04 |
-| **13. Insurance** | 0/2 | Planned | - |
+| **13. Insurance** | 2/2 | Complete | 2026-02-04 |
 | 14. AI Document Analysis (IA) | 0/0 | Not started | - |
 | 15. Explainability (IA) | 0/0 | Not started | - |
 | 16. ML Persistence (IA) | 0/0 | Not started | - |
@@ -597,4 +597,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 3.2 -> 4 -> 5 -> 6 -> 7 -
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-02-04 - Phase 13 Insurance planned (2 plans, 2 waves)*
+*Last updated: 2026-02-04 - Phase 13 Insurance complete (2 plans, 2 waves)*

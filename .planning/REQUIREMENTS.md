@@ -219,10 +219,10 @@ Requirements for MVP release. Each maps to roadmap phases.
 
 ### Insurance (INSU)
 
-- [ ] **INSU-01**: Three insurance tiers: none, basic, premium
-- [ ] **INSU-02**: Insurance can be selected during contract creation
-- [ ] **INSU-03**: Insurance premium calculated and added to contract
-- [ ] **INSU-04**: Insurance coverage details visible
+- [x] **INSU-01**: Three insurance tiers: none, basic, premium
+- [x] **INSU-02**: Insurance can be selected during contract creation
+- [x] **INSU-03**: Insurance premium calculated and added to contract
+- [x] **INSU-04**: Insurance coverage details visible
 
 ## v2 Requirements
 
@@ -414,10 +414,10 @@ Which phases cover which requirements. Updated by roadmap creation.
 | TPAY-10 | Phase 10 | Complete |
 | TPAY-11 | Phase 10 | Complete |
 | TPAY-12 | Phase 10 | Complete |
-| INSU-01 | Phase 16 | Pending |
-| INSU-02 | Phase 16 | Pending |
-| INSU-03 | Phase 16 | Pending |
-| INSU-04 | Phase 16 | Pending |
+| INSU-01 | Phase 13 | Complete |
+| INSU-02 | Phase 13 | Complete |
+| INSU-03 | Phase 13 | Complete |
+| INSU-04 | Phase 13 | Complete |
 | PROP-13 | Phase 3 | Complete |
 | PROP-14 | Phase 3 | Complete |
 | PROP-15 | Phase 3 | Complete |
