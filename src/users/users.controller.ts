@@ -7,10 +7,7 @@ import {
 } from '@nestjs/swagger';
 import type { User } from '@prisma/client';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
-import { Roles } from '../auth/decorators/roles.decorator.js';
-import { Role } from '../common/enums/role.enum.js';
 import { UpdateProfileDto } from './dto/update-profile.dto.js';
-import { SwitchRoleDto } from './dto/switch-role.dto.js';
 import { CompleteOnboardingDto } from './dto/complete-onboarding.dto.js';
 import { UsersService } from './users.service.js';
 
@@ -45,24 +42,6 @@ export class UsersController {
     @Body() dto: UpdateProfileDto,
   ): Promise<User> {
     return this.usersService.updateProfile(userId, dto);
-  }
-
-  /**
-   * @deprecated Role switching is no longer supported.
-   * This endpoint is kept for backward compatibility but returns an error.
-   */
-  @Patch('me/role')
-  @ApiOperation({
-    summary: 'Switch active role (deprecated)',
-    deprecated: true,
-    description: 'Role switching is no longer supported. Users have a single role.',
-  })
-  @ApiOkResponse({ description: 'This endpoint is deprecated and will return an error' })
-  async switchRole(
-    @CurrentUser('id') userId: string,
-    @Body() dto: SwitchRoleDto,
-  ): Promise<User> {
-    return this.usersService.setActiveRole(userId, dto.activeRole);
   }
 
   /**

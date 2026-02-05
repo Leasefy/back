@@ -1,8 +1,4 @@
-import {
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import type { User } from '@prisma/client';
 import { Role as PrismaRole } from '@prisma/client';
 import { PrismaService } from '../database/prisma.service.js';
@@ -12,7 +8,7 @@ import type { CompleteOnboardingDto } from './dto/complete-onboarding.dto.js';
 
 /**
  * Service for user profile operations.
- * Handles profile retrieval, updates, and role switching.
+ * Handles profile retrieval, updates, and onboarding.
  */
 @Injectable()
 export class UsersService {
@@ -54,19 +50,6 @@ export class UsersService {
         phone: dto.phone,
       },
     });
-  }
-
-  /**
-   * @deprecated BOTH role removed. This method is kept for backward compatibility but throws an error.
-   * Role switching is no longer supported - users have a single role.
-   */
-  async setActiveRole(
-    _userId: string,
-    _activeRole: Role.TENANT | Role.LANDLORD,
-  ): Promise<User> {
-    throw new ForbiddenException(
-      'Role switching is no longer supported. Users have a single role.',
-    );
   }
 
   /**
