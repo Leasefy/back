@@ -7,6 +7,8 @@ import { HealthModule } from './health/health.module.js';
 import { AuthModule } from './auth/auth.module.js';
 import { UsersModule } from './users/users.module.js';
 import { PropertiesModule } from './properties/properties.module.js';
+import { PropertyAccessModule } from './property-access/property-access.module.js';
+import { AgentsModule } from './agents/agents.module.js';
 import { ApplicationsModule } from './applications/applications.module.js';
 import { DocumentsModule } from './documents/documents.module.js';
 import { ScoringModule } from './scoring/scoring.module.js';
@@ -38,6 +40,8 @@ import { AppService } from './app.service.js';
     AuthModule,
     UsersModule,
     PropertiesModule,
+    PropertyAccessModule,
+    AgentsModule,
     ApplicationsModule,
     DocumentsModule,
     ScoringModule,
