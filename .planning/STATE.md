@@ -322,11 +322,10 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 1. Run: `npx prisma db push`
 2. Verify InsuranceTier enum and updated Contract fields in database
 
-**Phase 2.1 Role/Agent schema migration:**
-1. Go to Supabase Dashboard > SQL Editor
-2. Paste contents of `supabase/migrations/00003_role_agent_chat.sql`
-3. Execute in order (script handles dependencies)
-4. This drops active_role column, adds AGENT to Role enum, creates PropertyAccess and chat tables
+**Phase 2.1 Role/Agent schema migration:** ✓ COMPLETED
+- Executed via `node scripts/run-migration-2.1.mjs` on 2026-02-05
+- Dropped active_role column, added AGENT to Role enum
+- Created property_access, application_conversations, chat_messages tables
 
 ## Next Action
 
