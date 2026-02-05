@@ -26,6 +26,7 @@ import {
 } from './dto/index.js';
 import type { Application, LandlordNote } from '@prisma/client';
 import { PropertyAccessService } from '../property-access/property-access.service.js';
+import { ChatService } from '../chat/chat.service.js';
 
 /**
  * LandlordService
@@ -48,6 +49,7 @@ export class LandlordService {
     private readonly documentsService: DocumentsService,
     private readonly eventEmitter: EventEmitter2,
     private readonly propertyAccessService: PropertyAccessService,
+    private readonly chatService: ChatService,
   ) {}
 
   /**
@@ -439,6 +441,9 @@ export class LandlordService {
         actorName,
       ),
     );
+
+    // Delete chat conversation on rejection
+    await this.chatService.deleteConversation(applicationId);
 
     return updated;
   }

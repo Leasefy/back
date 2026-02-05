@@ -8,7 +8,10 @@ import {
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import type { Application } from '@prisma/client';
 import { PrismaService } from '../database/prisma.service.js';
-import { ApplicationStatus, ApplicationEventType } from '../common/enums/index.js';
+import {
+  ApplicationStatus,
+  ApplicationEventType,
+} from '../common/enums/index.js';
 import { ApplicationSubmittedEvent } from '../notifications/events/application.events.js';
 import { ApplicationStateMachine } from './state-machine/application-state-machine.js';
 import { ApplicationEventService } from './events/application-event.service.js';
@@ -23,8 +26,13 @@ import {
   RespondInfoRequestDto,
 } from './dto/index.js';
 import { ScoringService } from '../scoring/scoring.service.js';
+import { ChatService } from '../chat/chat.service.js';
 
-type StepDto = PersonalInfoDto | EmploymentInfoDto | IncomeInfoDto | ReferencesDto;
+type StepDto =
+  | PersonalInfoDto
+  | EmploymentInfoDto
+  | IncomeInfoDto
+  | ReferencesDto;
 
 /**
  * Service for application operations.
@@ -38,23 +46,31 @@ export class ApplicationsService {
     private readonly eventService: ApplicationEventService,
     private readonly scoringService: ScoringService,
     private readonly eventEmitter: EventEmitter2,
+    private readonly chatService: ChatService,
   ) {}
 
   /**
    * Create a new application for a property.
    */
-  async create(tenantId: string, dto: CreateApplicationDto): Promise<Application> {
+  async create(
+    tenantId: string,
+    dto: CreateApplicationDto,
+  ): Promise<Application> {
     // Verify property exists and is available
     const property = await this.prisma.property.findUnique({
       where: { id: dto.propertyId },
     });
 
     if (!property) {
-      throw new NotFoundException(`Property with ID ${dto.propertyId} not found`);
+      throw new NotFoundException(
+        `Property with ID ${dto.propertyId} not found`,
+      );
     }
 
     if (property.status !== 'AVAILABLE') {
-      throw new BadRequestException('Property is not available for applications');
+      throw new BadRequestException(
+        'Property is not available for applications',
+      );
     }
 
     // Check if tenant already has an active application for this property
@@ -69,7 +85,9 @@ export class ApplicationsService {
     });
 
     if (existingApplication) {
-      throw new ConflictException('You already have an active application for this property');
+      throw new ConflictException(
+        'You already have an active application for this property',
+      );
     }
 
     // Create application
@@ -168,7 +186,9 @@ export class ApplicationsService {
   async findByIdOrThrow(applicationId: string): Promise<Application> {
     const application = await this.findById(applicationId);
     if (!application) {
-      throw new NotFoundException(`Application with ID ${applicationId} not found`);
+      throw new NotFoundException(
+        `Application with ID ${applicationId} not found`,
+      );
     }
     return application;
   }
@@ -176,7 +196,10 @@ export class ApplicationsService {
   /**
    * Get application with full details including events.
    */
-  async findByIdWithDetails(applicationId: string, userId: string): Promise<Application> {
+  async findByIdWithDetails(
+    applicationId: string,
+    userId: string,
+  ): Promise<Application> {
     const application = await this.prisma.application.findUnique({
       where: { id: applicationId },
       include: {
@@ -212,7 +235,9 @@ export class ApplicationsService {
     });
 
     if (!application) {
-      throw new NotFoundException(`Application with ID ${applicationId} not found`);
+      throw new NotFoundException(
+        `Application with ID ${applicationId} not found`,
+      );
     }
 
     // Only tenant or property landlord can view full details
@@ -220,7 +245,9 @@ export class ApplicationsService {
     const isLandlord = application.property.landlordId === userId;
 
     if (!isOwner && !isLandlord) {
-      throw new ForbiddenException('You do not have access to this application');
+      throw new ForbiddenException(
+        'You do not have access to this application',
+      );
     }
 
     return application;
@@ -238,7 +265,10 @@ export class ApplicationsService {
   /**
    * Validate application is in expected status.
    */
-  private ensureStatus(application: Application, expectedStatus: ApplicationStatus): void {
+  private ensureStatus(
+    application: Application,
+    expectedStatus: ApplicationStatus,
+  ): void {
     if (application.status !== expectedStatus) {
       throw new BadRequestException(
         `Application must be in ${expectedStatus} status. Current: ${application.status}`,
@@ -336,10 +366,14 @@ export class ApplicationsService {
           property.landlordId,
           property.title,
           property.address,
-          [tenant.firstName, tenant.lastName].filter(Boolean).join(' ') || tenant.email,
+          [tenant.firstName, tenant.lastName].filter(Boolean).join(' ') ||
+            tenant.email,
         ),
       );
     }
+
+    // Create chat conversation for communication between tenant and landlord/agent
+    await this.chatService.getOrCreateConversation(application.id);
 
     return updatedApplication;
   }
@@ -358,7 +392,10 @@ export class ApplicationsService {
 
     // Validate transition
     const currentStatus = application.status as ApplicationStatus;
-    this.stateMachine.validateTransition(currentStatus, ApplicationStatus.WITHDRAWN);
+    this.stateMachine.validateTransition(
+      currentStatus,
+      ApplicationStatus.WITHDRAWN,
+    );
 
     // Update status
     const updatedApplication = await this.prisma.application.update({
@@ -381,6 +418,9 @@ export class ApplicationsService {
       ApplicationStatus.WITHDRAWN,
       dto.reason,
     );
+
+    // Delete chat conversation
+    await this.chatService.deleteConversation(applicationId);
 
     return updatedApplication;
   }
@@ -428,7 +468,9 @@ export class ApplicationsService {
     });
 
     if (!application) {
-      throw new NotFoundException(`Application with ID ${applicationId} not found`);
+      throw new NotFoundException(
+        `Application with ID ${applicationId} not found`,
+      );
     }
 
     // Only tenant or landlord can view timeline
@@ -436,7 +478,9 @@ export class ApplicationsService {
     const isLandlord = application.property.landlordId === userId;
 
     if (!isOwner && !isLandlord) {
-      throw new ForbiddenException('You do not have access to this application timeline');
+      throw new ForbiddenException(
+        'You do not have access to this application timeline',
+      );
     }
 
     return this.eventService.getTimeline(applicationId);
@@ -473,7 +517,8 @@ export class ApplicationsService {
       id: event.id,
       message: (event.metadata as { message?: string })?.message || '',
       requestedBy: event.actor
-        ? `${event.actor.firstName || ''} ${event.actor.lastName || ''}`.trim() || 'Propietario'
+        ? `${event.actor.firstName || ''} ${event.actor.lastName || ''}`.trim() ||
+          'Propietario'
         : 'Propietario',
       requestedAt: event.createdAt,
     }));
@@ -484,7 +529,10 @@ export class ApplicationsService {
    * Returns the application to DRAFT status so tenant can edit and re-submit.
    * Preserves all existing data, documents, and events.
    */
-  async reactivate(applicationId: string, tenantId: string): Promise<Application> {
+  async reactivate(
+    applicationId: string,
+    tenantId: string,
+  ): Promise<Application> {
     const application = await this.findByIdOrThrow(applicationId);
     this.ensureOwnership(application, tenantId);
 
@@ -504,7 +552,9 @@ export class ApplicationsService {
     }
 
     if (property.status !== 'AVAILABLE') {
-      throw new BadRequestException('Property is no longer available for applications');
+      throw new BadRequestException(
+        'Property is no longer available for applications',
+      );
     }
 
     // Check if tenant has another active application for this property
@@ -572,7 +622,11 @@ export class ApplicationsService {
     }
 
     // Log info provided
-    await this.eventService.logInfoProvided(applicationId, tenantId, dto.message);
+    await this.eventService.logInfoProvided(
+      applicationId,
+      tenantId,
+      dto.message,
+    );
 
     // If ready for review, transition back to UNDER_REVIEW
     if (dto.readyForReview !== false) {
