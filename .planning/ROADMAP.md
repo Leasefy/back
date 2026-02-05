@@ -396,10 +396,10 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 12-01-PLAN.md -- Database models, enums, and seed data for subscription system
-- [ ] 12-02-PLAN.md -- Core subscription services (plans, subscriptions, enforcement)
-- [ ] 12-03-PLAN.md -- REST endpoints (admin pricing, public listing, user operations)
-- [ ] 12-04-PLAN.md -- Plan enforcement integration, micropayments, trial/expiry automation
+- [x] 12-01-PLAN.md -- Database models, enums, and seed data for subscription system
+- [x] 12-02-PLAN.md -- Core subscription services (plans, subscriptions, enforcement)
+- [x] 12-03-PLAN.md -- REST endpoints (admin pricing, public listing, user operations)
+- [x] 12-04-PLAN.md -- Plan enforcement integration, micropayments, trial/expiry automation
 
 **Wave Structure:**
 - Wave 1: 12-01 (database models + enums + seed)
@@ -417,7 +417,7 @@ Plans:
 **Deferred:** Coupon system (SUBS-06, SUBS-07) for future phase.
 
 ### Phase 13: Insurance (REORDERED - era Phase 16)
-**Goal**: Optional insurance tiers for contracts
+**Goal**: Optional insurance tiers for contracts with structured pricing and coverage
 **Depends on**: Phase 7 (insurance attached to contracts)
 **Requirements**: INSU-01 through INSU-04
 **Success Criteria** (what must be TRUE):
@@ -425,8 +425,20 @@ Plans:
   2. Insurance can be selected during contract creation
   3. Insurance premium added to contract terms
   4. Coverage details visible in contract
-**Research**: Unlikely (straightforward feature)
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 13-01-PLAN.md -- InsuranceTier enum, update Contract model, InsuranceService with tier definitions
+- [ ] 13-02-PLAN.md -- Update contract DTO/service/template integration, InsuranceController endpoints
+
+**Wave Structure:**
+- Wave 1: 13-01 (enum, schema, service foundation)
+- Wave 2: 13-02 (contract integration + REST endpoints, depends on 01)
+
+**Insurance Tiers:**
+- NONE: No insurance, $0 COP
+- BASIC: Accidental damage coverage up to $5,000,000 COP, $25,000 COP/month
+- PREMIUM: Accidental + natural disaster + theft up to $20,000,000 COP, $75,000 COP/month
 
 ---
 ## FASES DE IA (AL FINAL)
@@ -496,8 +508,8 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 3.2 -> 4 -> 5 -> 6 -> 7 -
 | 9. Payment History Scoring | 2/2 | Complete | 2026-02-02 |
 | 10. Tenant Payment Simulation | 6/6 | Complete | 2026-02-02 |
 | 11. Notifications | 5/5 | Complete | 2026-02-03 |
-| **12. Subscriptions & Plans** | 0/4 | Planned | - |
-| **13. Insurance** | 0/0 | Not started | - |
+| 12. Subscriptions & Plans | 4/4 | Complete | 2026-02-04 |
+| **13. Insurance** | 0/2 | Planned | - |
 | 14. AI Document Analysis (IA) | 0/0 | Not started | - |
 | 15. Explainability (IA) | 0/0 | Not started | - |
 | 16. ML Persistence (IA) | 0/0 | Not started | - |
@@ -585,4 +597,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 3.2 -> 4 -> 5 -> 6 -> 7 -
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-02-04 - Phase 12 Subscriptions & Plans planned (4 plans, 4 waves)*
+*Last updated: 2026-02-04 - Phase 13 Insurance planned (2 plans, 2 waves)*
