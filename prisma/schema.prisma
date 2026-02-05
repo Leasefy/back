@@ -116,6 +116,16 @@ enum RiskLevel {
   D
 }
 
+/// Insurance tier for rental contracts
+/// NONE: No insurance selected
+/// BASIC: Covers accidental damage up to 5M COP
+/// PREMIUM: Covers accidental + natural disaster + theft up to 20M COP
+enum InsuranceTier {
+  NONE
+  BASIC
+  PREMIUM
+}
+
 /// Status of a rental contract
 /// DRAFT: Contract created, not yet sent for signatures
 /// PENDING_LANDLORD_SIGNATURE: Waiting for landlord to sign
@@ -480,9 +490,10 @@ model Contract {
   deposit     Int
   paymentDay  Int      @map("payment_day") // 1-28
 
-  // Optional insurance
-  includesInsurance Boolean @default(false) @map("includes_insurance")
-  insuranceDetails  String? @map("insurance_details") @db.Text
+  // Insurance
+  insuranceTier    InsuranceTier @default(NONE) @map("insurance_tier")
+  insurancePremium Int           @default(0) @map("insurance_premium")  // Monthly premium in COP
+  insuranceDetails String?       @map("insurance_details") @db.Text     // Coverage description text
 
   // Custom clauses as JSON array: [{ title: string, content: string }]
   customClauses Json @default("[]") @map("custom_clauses")

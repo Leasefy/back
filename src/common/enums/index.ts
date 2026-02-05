@@ -23,3 +23,4 @@ export { AccountType, ACCOUNT_TYPE_DISPLAY } from './account-type.enum.js';
 export { VisitStatus } from './visit-status.enum.js';
 export { NotificationChannel } from './notification-channel.enum.js';
 export { NotificationStatus } from './notification-status.enum.js';
+export { InsuranceTier } from './insurance-tier.enum.js';
