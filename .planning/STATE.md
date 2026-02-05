@@ -2,12 +2,12 @@
 
 ## Current Status
 
-**Phase:** 12 of 16 (Subscriptions & Plans)
-**Plan:** 4 of 4
-**Status:** COMPLETE
-**Last activity:** 2026-02-04 - Completed Phase 12 (all 4 plans)
+**Phase:** 13 of 16 (Insurance)
+**Plan:** 1 of 2
+**Status:** In progress
+**Last activity:** 2026-02-04 - Completed 13-01-PLAN.md
 
-**Progress:** [##############################] 85% (51/~59 plans estimated)
+**Progress:** [##############################-] 87% (52/~60 plans estimated)
 
 ## Project Reference
 
@@ -15,7 +15,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 **Core value:** Ejecutar el Risk Score con analisis inteligente de documentos para que propietarios tomen decisiones informadas en minutos, con explicabilidad total.
 
-**Current focus:** Phase 12 COMPLETE. Next: Phase 13 (Insurance - optional) or Phase 14 (AI Document Analysis).
+**Current focus:** Phase 13 in progress. Plan 01 complete (enum, service, module). Next: Plan 02 (controller, contract integration).
 
 ## Quick Context
 
@@ -42,7 +42,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 10. Tenant Payment Simulation | COMPLETE | All 6 plans - landlord methods, tenant requests, PSE mock, validation, disputes |
 | 11. Notifications | COMPLETE | All 5 plans - data models, services, sending, templates, event integration |
 | 12. Subscriptions & Plans | COMPLETE | All 4 plans - models, services, controllers, enforcement, cron |
-| 13. Insurance | Pending | Optional insurance |
+| 13. Insurance | IN PROGRESS | Plan 01 complete - enum, service, module; Plan 02 pending |
 | 14. AI Document Analysis (IA) | Pending | PRO+ tier - Claude integration |
 | 15. Explainability (IA) | Pending | PRO+ tier - AI explanations |
 | 16. ML Persistence (IA) | Pending | Data for ML training |
@@ -240,11 +240,15 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 2026-02-04 | 12-04 | SubscriptionScheduler in subscriptions module | Avoids circular dependency with NotificationsModule |
 | 2026-02-04 | 12-04 | Premium scoring gate at ScoringController | Gate at VIEW point, not computation - engine always computes |
 | 2026-02-04 | 12-04 | MicropaymentDto extends PseSubscriptionPaymentDto | Same PSE fields, different usage context |
+| 2026-02-04 | 13-01 | Constants-based tier definitions | Fixed business rules, no database config needed |
+| 2026-02-04 | 13-01 | InsuranceTier with NONE/BASIC/PREMIUM | Three tiers cover business need: none, accidental, comprehensive |
+| 2026-02-04 | 13-01 | Replace includesInsurance boolean with enum | Structured tier replaces simple boolean+text |
+| 2026-02-04 | 13-01 | insurancePremium as Int COP on Contract | Stores calculated premium for audit and display |
 
 ## Session Continuity
 
 **Last session:** 2026-02-04
-**Stopped at:** Phase 12 COMPLETE - all 4 plans executed
+**Stopped at:** Completed 13-01-PLAN.md
 **Resume file:** None
 
 ## Pending User Actions
@@ -294,14 +298,17 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 1. Run: `npm run seed:plans`
 2. Verify 5 plan configs seeded in database
 
+**Sync insurance schema changes to database:**
+1. Run: `npx prisma db push`
+2. Verify InsuranceTier enum and updated Contract fields in database
+
 ## Next Action
 
-Phase 12 complete. Next steps:
-- Phase 13: Insurance (optional)
-- Phase 14: AI Document Analysis (PRO+ tier)
+Phase 13 Plan 01 complete. Next:
+- Execute 13-02-PLAN.md (controller, contract integration, template updates)
 
 ```
-/gsd:discuss-phase 13  # or skip to 14
+/gsd:execute-phase 13 plan 02
 ```
 
 ## Session History
@@ -364,6 +371,7 @@ Phase 12 complete. Next steps:
 | 2026-02-04 | Executed 12-02-PLAN.md | 3 subscription services, DTOs, module, plan enforcement |
 | 2026-02-04 | Executed 12-03-PLAN.md | 2 controllers (plans + subscriptions), 9 endpoints total |
 | 2026-02-04 | Executed 12-04-PLAN.md | Enforcement wired, micropayment, cron, notifications, Phase 12 complete |
+| 2026-02-04 | Executed 13-01-PLAN.md | InsuranceTier enum, Contract model update, InsuranceService, InsuranceModule |
 
 ---
 *Last updated: 2026-02-04*
