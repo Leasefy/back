@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { InsuranceModule } from '../insurance/insurance.module.js';
+import { PropertyAccessModule } from '../property-access/property-access.module.js';
 import { ContractsController } from './contracts.controller.js';
 import { ContractsService } from './contracts.service.js';
 import { ContractStateMachine } from './state-machine/contract-state-machine.js';
@@ -21,7 +22,7 @@ import { PdfGeneratorService } from './pdf/pdf-generator.service.js';
  * Note: PrismaModule is global, no need to import
  */
 @Module({
-  imports: [ConfigModule, InsuranceModule],
+  imports: [ConfigModule, InsuranceModule, PropertyAccessModule],
   controllers: [ContractsController],
   providers: [
     ContractsService,

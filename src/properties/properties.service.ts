@@ -22,27 +22,28 @@ import {
   NaturalSearchParserService,
   ParsedSearchFilters,
 } from './services/natural-search-parser.service.js';
+import { PropertyAccessService } from '../property-access/property-access.service.js';
 
 /**
  * Valid amenity IDs for property listings.
  * Must match frontend AMENITIES_OPTIONS in publish.ts
  */
 const VALID_AMENITIES = new Set([
-  'pool',       // Piscina
-  'gym',        // Gimnasio
-  'security',   // Vigilancia 24/7
-  'parking',    // Parqueadero
-  'elevator',   // Ascensor
-  'terrace',    // Terraza
-  'bbq',        // Zona BBQ
+  'pool', // Piscina
+  'gym', // Gimnasio
+  'security', // Vigilancia 24/7
+  'parking', // Parqueadero
+  'elevator', // Ascensor
+  'terrace', // Terraza
+  'bbq', // Zona BBQ
   'playground', // Zona infantil
-  'laundry',    // Lavandería
-  'pets',       // Acepta mascotas
-  'furnished',  // Amoblado
-  'balcony',    // Balcón
-  'storage',    // Depósito
-  'ac',         // Aire acondicionado
-  'heating',    // Calefacción
+  'laundry', // Lavandería
+  'pets', // Acepta mascotas
+  'furnished', // Amoblado
+  'balcony', // Balcón
+  'storage', // Depósito
+  'ac', // Aire acondicionado
+  'heating', // Calefacción
 ]);
 
 /**
@@ -55,7 +56,11 @@ export class PropertiesService {
 
   private readonly BUCKET_NAME = 'property-images';
   private readonly MAX_IMAGES = 10;
-  private readonly ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+  private readonly ALLOWED_MIME_TYPES = [
+    'image/jpeg',
+    'image/png',
+    'image/webp',
+  ];
   private readonly MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
   constructor(
@@ -63,6 +68,7 @@ export class PropertiesService {
     private readonly configService: ConfigService,
     private readonly naturalSearchParser: NaturalSearchParserService,
     private readonly planEnforcement: PlanEnforcementService,
+    private readonly propertyAccessService: PropertyAccessService,
   ) {
     this.supabase = createClient(
       this.configService.get('SUPABASE_URL')!,
@@ -79,12 +85,15 @@ export class PropertiesService {
     }
 
     // Check plan limits before publishing
-    if (dto.status === PropertyStatus.AVAILABLE || dto.status === PropertyStatus.PENDING) {
+    if (
+      dto.status === PropertyStatus.AVAILABLE ||
+      dto.status === PropertyStatus.PENDING
+    ) {
       const check = await this.planEnforcement.canPublishProperty(landlordId);
       if (!check.allowed) {
         throw new ForbiddenException(
           `Has alcanzado el limite de ${check.maxAllowed} propiedad(es) publicadas en tu plan actual. ` +
-          `Tienes ${check.currentCount} publicadas. Actualiza tu plan para publicar mas propiedades.`,
+            `Tienes ${check.currentCount} publicadas. Actualiza tu plan para publicar mas propiedades.`,
         );
       }
     }
@@ -103,15 +112,15 @@ export class PropertiesService {
   }
 
   /**
-   * Update a property (only by owner).
+   * Update a property (owner or assigned agent).
    */
   async update(
     propertyId: string,
-    landlordId: string,
+    userId: string,
     dto: UpdatePropertyDto,
   ): Promise<Property> {
     const property = await this.findByIdOrThrow(propertyId);
-    this.ensureOwnership(property, landlordId);
+    await this.propertyAccessService.ensurePropertyAccess(userId, propertyId);
 
     if (dto.amenities) {
       this.validateAmenities(dto.amenities);
@@ -119,15 +128,17 @@ export class PropertiesService {
 
     // Check plan limits when changing status to published (from DRAFT)
     const isPublishing =
-      (dto.status === PropertyStatus.AVAILABLE || dto.status === PropertyStatus.PENDING) &&
+      (dto.status === PropertyStatus.AVAILABLE ||
+        dto.status === PropertyStatus.PENDING) &&
       property.status === PropertyStatus.DRAFT;
 
     if (isPublishing) {
-      const check = await this.planEnforcement.canPublishProperty(landlordId);
+      // For plan enforcement, use the landlord's ID (not agent)
+      const check = await this.planEnforcement.canPublishProperty(property.landlordId);
       if (!check.allowed) {
         throw new ForbiddenException(
           `Has alcanzado el limite de ${check.maxAllowed} propiedad(es) publicadas en tu plan actual. ` +
-          `Tienes ${check.currentCount} publicadas. Actualiza tu plan para publicar mas propiedades.`,
+            `Tienes ${check.currentCount} publicadas. Actualiza tu plan para publicar mas propiedades.`,
         );
       }
     }
@@ -144,11 +155,11 @@ export class PropertiesService {
   }
 
   /**
-   * Delete a property (only by owner).
+   * Delete a property (owner or assigned agent).
    */
-  async delete(propertyId: string, landlordId: string): Promise<void> {
-    const property = await this.findByIdOrThrow(propertyId);
-    this.ensureOwnership(property, landlordId);
+  async delete(propertyId: string, userId: string): Promise<void> {
+    await this.findByIdOrThrow(propertyId);
+    await this.propertyAccessService.ensurePropertyAccess(userId, propertyId);
 
     await this.prisma.property.delete({
       where: { id: propertyId },
@@ -268,7 +279,10 @@ export class PropertiesService {
     }
 
     // Draft properties only visible to owner
-    if (property.status === PropertyStatus.DRAFT && property.landlordId !== userId) {
+    if (
+      property.status === PropertyStatus.DRAFT &&
+      property.landlordId !== userId
+    ) {
       throw new NotFoundException(`Property with ID ${propertyId} not found`);
     }
 
@@ -392,15 +406,6 @@ export class PropertiesService {
   }
 
   /**
-   * Validate that user owns the property.
-   */
-  private ensureOwnership(property: Property, landlordId: string): void {
-    if (property.landlordId !== landlordId) {
-      throw new ForbiddenException('You do not own this property');
-    }
-  }
-
-  /**
    * Validate amenity IDs against allowed list.
    */
   private validateAmenities(amenities: string[]): void {
@@ -421,11 +426,11 @@ export class PropertiesService {
    */
   async uploadImage(
     propertyId: string,
-    landlordId: string,
+    userId: string,
     file: Express.Multer.File,
   ): Promise<PropertyImage> {
-    const property = await this.findByIdOrThrow(propertyId);
-    this.ensureOwnership(property, landlordId);
+    await this.findByIdOrThrow(propertyId);
+    await this.propertyAccessService.ensurePropertyAccess(userId, propertyId);
 
     // Check current image count
     const imageCount = await this.prisma.propertyImage.count({
@@ -440,7 +445,9 @@ export class PropertiesService {
 
     // Validate file type
     if (!this.ALLOWED_MIME_TYPES.includes(file.mimetype)) {
-      throw new BadRequestException('Only JPG, PNG, and WebP images are allowed');
+      throw new BadRequestException(
+        'Only JPG, PNG, and WebP images are allowed',
+      );
     }
 
     // Validate file size
@@ -461,7 +468,9 @@ export class PropertiesService {
       });
 
     if (uploadError) {
-      throw new BadRequestException(`Failed to upload image: ${uploadError.message}`);
+      throw new BadRequestException(
+        `Failed to upload image: ${uploadError.message}`,
+      );
     }
 
     // Get public URL
@@ -488,10 +497,10 @@ export class PropertiesService {
   async deleteImage(
     propertyId: string,
     imageId: string,
-    landlordId: string,
+    userId: string,
   ): Promise<void> {
-    const property = await this.findByIdOrThrow(propertyId);
-    this.ensureOwnership(property, landlordId);
+    await this.findByIdOrThrow(propertyId);
+    await this.propertyAccessService.ensurePropertyAccess(userId, propertyId);
 
     const image = await this.prisma.propertyImage.findUnique({
       where: { id: imageId },
@@ -543,11 +552,11 @@ export class PropertiesService {
    */
   async reorderImages(
     propertyId: string,
-    landlordId: string,
+    userId: string,
     imageIds: string[],
   ): Promise<PropertyImage[]> {
-    const property = await this.findByIdOrThrow(propertyId);
-    this.ensureOwnership(property, landlordId);
+    await this.findByIdOrThrow(propertyId);
+    await this.propertyAccessService.ensurePropertyAccess(userId, propertyId);
 
     // Verify all images belong to this property
     const existingImages = await this.prisma.propertyImage.findMany({

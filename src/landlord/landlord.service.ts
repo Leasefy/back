@@ -8,7 +8,12 @@ import { PrismaService } from '../database/prisma.service.js';
 import { ApplicationEventService } from '../applications/events/application-event.service.js';
 import { ApplicationStateMachine } from '../applications/state-machine/application-state-machine.js';
 import { DocumentsService } from '../documents/documents.service.js';
-import { ApplicationStatus, RiskLevel, DocumentType, ApplicationEventType } from '../common/enums/index.js';
+import {
+  ApplicationStatus,
+  RiskLevel,
+  DocumentType,
+  ApplicationEventType,
+} from '../common/enums/index.js';
 import { ApplicationStatusChangedEvent } from '../notifications/events/application.events.js';
 import {
   CandidateCardDto,
@@ -20,6 +25,7 @@ import {
   CreateNoteDto,
 } from './dto/index.js';
 import type { Application, LandlordNote } from '@prisma/client';
+import { PropertyAccessService } from '../property-access/property-access.service.js';
 
 /**
  * LandlordService
@@ -28,7 +34,7 @@ import type { Application, LandlordNote } from '@prisma/client';
  * Orchestrates existing services - does not duplicate logic.
  *
  * Key patterns:
- * - verifyLandlordOwnership() before every operation
+ * - verifyPropertyAccess() before every operation (supports agents)
  * - Use existing ApplicationEventService for event logging
  * - Use existing DocumentsService for document access
  * - Sort candidates by score (highest first)
@@ -41,15 +47,16 @@ export class LandlordService {
     private readonly eventService: ApplicationEventService,
     private readonly documentsService: DocumentsService,
     private readonly eventEmitter: EventEmitter2,
+    private readonly propertyAccessService: PropertyAccessService,
   ) {}
 
   /**
-   * Verify landlord owns the property.
-   * Returns property if owned, throws ForbiddenException if not.
+   * Verify user can access the property (owner or assigned agent).
+   * Returns property if access granted, throws ForbiddenException if not.
    */
-  private async verifyPropertyOwnership(
+  private async verifyPropertyAccess(
     propertyId: string,
-    landlordId: string,
+    userId: string,
   ): Promise<{ id: string; title: string; monthlyRent: number }> {
     const property = await this.prisma.property.findUnique({
       where: { id: propertyId },
@@ -60,47 +67,60 @@ export class LandlordService {
       throw new NotFoundException(`Property with ID ${propertyId} not found`);
     }
 
-    if (property.landlordId !== landlordId) {
-      throw new ForbiddenException('You do not own this property');
-    }
+    await this.propertyAccessService.ensurePropertyAccess(userId, propertyId);
 
-    return { id: property.id, title: property.title, monthlyRent: property.monthlyRent };
+    return {
+      id: property.id,
+      title: property.title,
+      monthlyRent: property.monthlyRent,
+    };
   }
 
   /**
-   * Verify landlord owns the property that the application belongs to.
-   * Returns application with property info if owned.
+   * Verify user can access the property that the application belongs to.
+   * Returns application with property info if access granted.
    */
-  private async verifyApplicationOwnership(
-    applicationId: string,
-    landlordId: string,
-  ) {
+  private async verifyApplicationAccess(applicationId: string, userId: string) {
     const application = await this.prisma.application.findUnique({
       where: { id: applicationId },
       include: {
         property: {
-          select: { id: true, title: true, monthlyRent: true, landlordId: true },
+          select: {
+            id: true,
+            title: true,
+            monthlyRent: true,
+            landlordId: true,
+          },
         },
         tenant: {
-          select: { id: true, firstName: true, lastName: true, email: true, phone: true },
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            phone: true,
+          },
         },
         riskScore: true,
         documents: {
           orderBy: { createdAt: 'asc' },
         },
         notes: {
-          where: { landlordId },
+          where: { landlordId: userId },
         },
       },
     });
 
     if (!application) {
-      throw new NotFoundException(`Application with ID ${applicationId} not found`);
+      throw new NotFoundException(
+        `Application with ID ${applicationId} not found`,
+      );
     }
 
-    if (application.property.landlordId !== landlordId) {
-      throw new ForbiddenException('You do not have access to this application');
-    }
+    await this.propertyAccessService.ensurePropertyAccess(
+      userId,
+      application.property.id,
+    );
 
     return application;
   }
@@ -114,11 +134,11 @@ export class LandlordService {
    */
   async getCandidates(
     propertyId: string,
-    landlordId: string,
+    userId: string,
   ): Promise<CandidateCardDto[]> {
-    await this.verifyPropertyOwnership(propertyId, landlordId);
+    await this.verifyPropertyAccess(propertyId, userId);
 
-    // Reviewable states: applications landlord can take action on
+    // Reviewable states: applications landlord/agent can take action on
     const reviewableStatuses = [
       ApplicationStatus.SUBMITTED,
       ApplicationStatus.UNDER_REVIEW,
@@ -139,7 +159,7 @@ export class LandlordService {
           select: { totalScore: true, level: true },
         },
         notes: {
-          where: { landlordId },
+          where: { landlordId: userId },
           select: { id: true, content: true, updatedAt: true },
         },
       },
@@ -153,7 +173,9 @@ export class LandlordService {
 
     return applications.map((app) => ({
       id: app.id,
-      tenantName: [app.tenant.firstName, app.tenant.lastName].filter(Boolean).join(' ') || 'Unknown',
+      tenantName:
+        [app.tenant.firstName, app.tenant.lastName].filter(Boolean).join(' ') ||
+        'Unknown',
       tenantEmail: app.tenant.email,
       status: app.status as ApplicationStatus,
       submittedAt: app.submittedAt!,
@@ -181,9 +203,9 @@ export class LandlordService {
    */
   async getCandidateDetail(
     applicationId: string,
-    landlordId: string,
+    userId: string,
   ): Promise<CandidateDetailDto> {
-    const app = await this.verifyApplicationOwnership(applicationId, landlordId);
+    const app = await this.verifyApplicationAccess(applicationId, userId);
 
     // Get timeline separately using existing service
     const timeline = await this.eventService.getTimeline(applicationId);
@@ -212,9 +234,20 @@ export class LandlordService {
             stabilityScore: app.riskScore.stabilityScore,
             historyScore: app.riskScore.historyScore,
             integrityScore: app.riskScore.integrityScore,
-            drivers: app.riskScore.drivers as Array<{ text: string; positive: boolean }>,
-            flags: app.riskScore.flags as Array<{ code: string; severity: string; message: string }>,
-            conditions: app.riskScore.conditions as Array<{ type: string; message: string; required: boolean }>,
+            drivers: app.riskScore.drivers as Array<{
+              text: string;
+              positive: boolean;
+            }>,
+            flags: app.riskScore.flags as Array<{
+              code: string;
+              severity: string;
+              message: string;
+            }>,
+            conditions: app.riskScore.conditions as Array<{
+              type: string;
+              message: string;
+              required: boolean;
+            }>,
           }
         : undefined,
       documents: app.documents.map((doc) => ({
@@ -253,10 +286,10 @@ export class LandlordService {
   async getDocumentUrl(
     applicationId: string,
     documentId: string,
-    landlordId: string,
+    userId: string,
   ): Promise<{ url: string; expiresAt: Date }> {
-    // DocumentsService.getSignedUrl already verifies landlord access
-    return this.documentsService.getSignedUrl(applicationId, documentId, landlordId);
+    // DocumentsService.getSignedUrl already verifies access
+    return this.documentsService.getSignedUrl(applicationId, documentId, userId);
   }
 
   /**
@@ -267,10 +300,10 @@ export class LandlordService {
    */
   async preapprove(
     applicationId: string,
-    landlordId: string,
+    userId: string,
     dto: PreapproveCandidateDto,
   ): Promise<Application> {
-    const app = await this.verifyApplicationOwnership(applicationId, landlordId);
+    const app = await this.verifyApplicationAccess(applicationId, userId);
 
     // Validate transition using existing state machine
     this.stateMachine.validateTransition(
@@ -287,7 +320,7 @@ export class LandlordService {
     // Log event using existing event service
     await this.eventService.logStatusChanged(
       applicationId,
-      landlordId,
+      userId,
       app.status as ApplicationStatus,
       ApplicationStatus.PREAPPROVED,
       dto.message,
@@ -304,10 +337,10 @@ export class LandlordService {
    */
   async approve(
     applicationId: string,
-    landlordId: string,
+    userId: string,
     dto: ApproveCandidateDto,
   ): Promise<Application> {
-    const app = await this.verifyApplicationOwnership(applicationId, landlordId);
+    const app = await this.verifyApplicationAccess(applicationId, userId);
 
     // Validate transition
     this.stateMachine.validateTransition(
@@ -324,18 +357,17 @@ export class LandlordService {
     // Log event
     await this.eventService.logStatusChanged(
       applicationId,
-      landlordId,
+      userId,
       app.status as ApplicationStatus,
       ApplicationStatus.APPROVED,
       dto.message,
     );
 
-    // Emit notification event
-    const landlord = await this.prisma.user.findUnique({
-      where: { id: landlordId },
-    });
-    const landlordName = landlord
-      ? [landlord.firstName, landlord.lastName].filter(Boolean).join(' ') || landlord.email
+    // Emit notification event - use property landlord for notification target
+    const actor = await this.prisma.user.findUnique({ where: { id: userId } });
+    const actorName = actor
+      ? [actor.firstName, actor.lastName].filter(Boolean).join(' ') ||
+        actor.email
       : 'El propietario';
 
     this.eventEmitter.emit(
@@ -344,10 +376,10 @@ export class LandlordService {
         applicationId,
         app.property.id,
         app.tenantId,
-        landlordId,
+        app.property.landlordId, // Notify the actual landlord
         ApplicationStatus.APPROVED,
         app.property.title,
-        landlordName,
+        actorName,
       ),
     );
 
@@ -362,10 +394,10 @@ export class LandlordService {
    */
   async reject(
     applicationId: string,
-    landlordId: string,
+    userId: string,
     dto: RejectCandidateDto,
   ): Promise<Application> {
-    const app = await this.verifyApplicationOwnership(applicationId, landlordId);
+    const app = await this.verifyApplicationAccess(applicationId, userId);
 
     // Validate transition
     this.stateMachine.validateTransition(
@@ -382,18 +414,17 @@ export class LandlordService {
     // Log event with rejection reason
     await this.eventService.logStatusChanged(
       applicationId,
-      landlordId,
+      userId,
       app.status as ApplicationStatus,
       ApplicationStatus.REJECTED,
       dto.reason,
     );
 
-    // Emit notification event
-    const landlord = await this.prisma.user.findUnique({
-      where: { id: landlordId },
-    });
-    const landlordName = landlord
-      ? [landlord.firstName, landlord.lastName].filter(Boolean).join(' ') || landlord.email
+    // Emit notification event - use property landlord for notification target
+    const actor = await this.prisma.user.findUnique({ where: { id: userId } });
+    const actorName = actor
+      ? [actor.firstName, actor.lastName].filter(Boolean).join(' ') ||
+        actor.email
       : 'El propietario';
 
     this.eventEmitter.emit(
@@ -402,10 +433,10 @@ export class LandlordService {
         applicationId,
         app.property.id,
         app.tenantId,
-        landlordId,
+        app.property.landlordId, // Notify the actual landlord
         ApplicationStatus.REJECTED,
         app.property.title,
-        landlordName,
+        actorName,
       ),
     );
 
@@ -420,10 +451,10 @@ export class LandlordService {
    */
   async requestInfo(
     applicationId: string,
-    landlordId: string,
+    userId: string,
     dto: RequestInfoDto,
   ): Promise<Application> {
-    const app = await this.verifyApplicationOwnership(applicationId, landlordId);
+    const app = await this.verifyApplicationAccess(applicationId, userId);
 
     // Validate transition
     this.stateMachine.validateTransition(
@@ -438,23 +469,22 @@ export class LandlordService {
     });
 
     // Log INFO_REQUESTED event with the specific request
-    await this.eventService.logInfoRequested(applicationId, landlordId, dto.message);
+    await this.eventService.logInfoRequested(applicationId, userId, dto.message);
 
     // Log status change event
     await this.eventService.logStatusChanged(
       applicationId,
-      landlordId,
+      userId,
       app.status as ApplicationStatus,
       ApplicationStatus.NEEDS_INFO,
       dto.message,
     );
 
-    // Emit notification event
-    const landlord = await this.prisma.user.findUnique({
-      where: { id: landlordId },
-    });
-    const landlordName = landlord
-      ? [landlord.firstName, landlord.lastName].filter(Boolean).join(' ') || landlord.email
+    // Emit notification event - use property landlord for notification target
+    const actor = await this.prisma.user.findUnique({ where: { id: userId } });
+    const actorName = actor
+      ? [actor.firstName, actor.lastName].filter(Boolean).join(' ') ||
+        actor.email
       : 'El propietario';
 
     this.eventEmitter.emit(
@@ -463,10 +493,10 @@ export class LandlordService {
         applicationId,
         app.property.id,
         app.tenantId,
-        landlordId,
+        app.property.landlordId, // Notify the actual landlord
         ApplicationStatus.NEEDS_INFO,
         app.property.title,
-        landlordName,
+        actorName,
       ),
     );
 
@@ -481,16 +511,16 @@ export class LandlordService {
    */
   async upsertNote(
     applicationId: string,
-    landlordId: string,
+    userId: string,
     dto: CreateNoteDto,
   ): Promise<LandlordNote> {
-    await this.verifyApplicationOwnership(applicationId, landlordId);
+    await this.verifyApplicationAccess(applicationId, userId);
 
     return this.prisma.landlordNote.upsert({
       where: {
         applicationId_landlordId: {
           applicationId,
-          landlordId,
+          landlordId: userId,
         },
       },
       update: {
@@ -498,7 +528,7 @@ export class LandlordService {
       },
       create: {
         applicationId,
-        landlordId,
+        landlordId: userId,
         content: dto.content,
       },
     });
@@ -509,16 +539,13 @@ export class LandlordService {
    *
    * Requirements: LAND-09
    */
-  async deleteNote(
-    applicationId: string,
-    landlordId: string,
-  ): Promise<void> {
-    await this.verifyApplicationOwnership(applicationId, landlordId);
+  async deleteNote(applicationId: string, userId: string): Promise<void> {
+    await this.verifyApplicationAccess(applicationId, userId);
 
     await this.prisma.landlordNote.deleteMany({
       where: {
         applicationId,
-        landlordId,
+        landlordId: userId,
       },
     });
   }

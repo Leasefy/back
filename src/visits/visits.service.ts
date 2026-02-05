@@ -11,7 +11,11 @@ import { SlotsService } from './availability/slots.service.js';
 import { VisitStateMachine } from './state-machine/visit-state-machine.js';
 import { VisitStatus } from '../common/enums/index.js';
 import { CreateVisitDto, RescheduleVisitDto } from './dto/index.js';
-import { VisitRequestedEvent, VisitStatusChangedEvent } from './events/index.js';
+import {
+  VisitRequestedEvent,
+  VisitStatusChangedEvent,
+} from './events/index.js';
+import { PropertyAccessService } from '../property-access/property-access.service.js';
 
 /**
  * Visit with included property and tenant details.
@@ -46,6 +50,7 @@ export class VisitsService {
     private readonly slotsService: SlotsService,
     private readonly eventEmitter: EventEmitter2,
     private readonly stateMachine: VisitStateMachine,
+    private readonly propertyAccessService: PropertyAccessService,
   ) {}
 
   /**
@@ -54,7 +59,10 @@ export class VisitsService {
    * VISIT-04: Tenant can request a visit
    * VISIT-05: System prevents double-booking
    */
-  async create(tenantId: string, dto: CreateVisitDto): Promise<VisitWithDetails> {
+  async create(
+    tenantId: string,
+    dto: CreateVisitDto,
+  ): Promise<VisitWithDetails> {
     // Verify slot is available (throws if not)
     const { slotDuration } = await this.slotsService.verifySlotAvailable(
       dto.propertyId,
@@ -78,7 +86,9 @@ export class VisitsService {
 
     // Prevent tenant from requesting visit on their own property
     if (property.landlordId === tenantId) {
-      throw new ForbiddenException('Cannot request a visit on your own property');
+      throw new ForbiddenException(
+        'Cannot request a visit on your own property',
+      );
     }
 
     // Check tenant doesn't already have an active visit for this property
@@ -99,7 +109,13 @@ export class VisitsService {
     // Get tenant details for event
     const tenant = await this.prisma.user.findUnique({
       where: { id: tenantId },
-      select: { id: true, firstName: true, lastName: true, email: true, phone: true },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        phone: true,
+      },
     });
 
     if (!tenant) {
@@ -144,19 +160,32 @@ export class VisitsService {
               city: true,
               landlordId: true,
               landlord: {
-                select: { id: true, firstName: true, lastName: true, email: true },
+                select: {
+                  id: true,
+                  firstName: true,
+                  lastName: true,
+                  email: true,
+                },
               },
             },
           },
           tenant: {
-            select: { id: true, firstName: true, lastName: true, email: true, phone: true },
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+              phone: true,
+            },
           },
         },
       });
     });
 
     // Emit event for notifications (Phase 13)
-    const tenantName = [tenant.firstName, tenant.lastName].filter(Boolean).join(' ') || tenant.email;
+    const tenantName =
+      [tenant.firstName, tenant.lastName].filter(Boolean).join(' ') ||
+      tenant.email;
 
     this.eventEmitter.emit(
       'visit.requested',
@@ -194,12 +223,23 @@ export class VisitsService {
             city: true,
             landlordId: true,
             landlord: {
-              select: { id: true, firstName: true, lastName: true, email: true },
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+              },
             },
           },
         },
         tenant: {
-          select: { id: true, firstName: true, lastName: true, email: true, phone: true },
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            phone: true,
+          },
         },
       },
       orderBy: [{ visitDate: 'asc' }, { startTime: 'asc' }],
@@ -226,12 +266,23 @@ export class VisitsService {
             city: true,
             landlordId: true,
             landlord: {
-              select: { id: true, firstName: true, lastName: true, email: true },
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+              },
             },
           },
         },
         tenant: {
-          select: { id: true, firstName: true, lastName: true, email: true, phone: true },
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            phone: true,
+          },
         },
       },
       orderBy: [{ visitDate: 'asc' }, { startTime: 'asc' }],
@@ -242,13 +293,22 @@ export class VisitsService {
 
   /**
    * Get a single visit by ID.
-   * Validates the requesting user is the tenant or landlord.
+   * Validates the requesting user is the tenant, landlord, or assigned agent.
    */
   async findById(visitId: string, userId: string): Promise<VisitWithDetails> {
     const visit = await this.findByIdWithValidation(visitId);
 
-    // Only tenant or landlord can view
-    if (visit.tenantId !== userId && visit.property.landlordId !== userId) {
+    // Tenant can always view their own visits
+    if (visit.tenantId === userId) {
+      return visit;
+    }
+
+    // Check if user has property access (landlord or agent)
+    const canAccess = await this.propertyAccessService.canAccessProperty(
+      userId,
+      visit.propertyId,
+    );
+    if (!canAccess) {
       throw new ForbiddenException('You do not have access to this visit');
     }
 
@@ -257,22 +317,14 @@ export class VisitsService {
 
   /**
    * Get visits for a specific property.
-   * Validates the requesting user is the landlord.
+   * Validates the requesting user is the landlord or assigned agent.
    */
-  async findByProperty(propertyId: string, landlordId: string): Promise<VisitWithDetails[]> {
-    // Verify ownership
-    const property = await this.prisma.property.findUnique({
-      where: { id: propertyId },
-      select: { landlordId: true },
-    });
-
-    if (!property) {
-      throw new NotFoundException('Property not found');
-    }
-
-    if (property.landlordId !== landlordId) {
-      throw new ForbiddenException('You do not own this property');
-    }
+  async findByProperty(
+    propertyId: string,
+    userId: string,
+  ): Promise<VisitWithDetails[]> {
+    // Verify access (landlord or agent)
+    await this.propertyAccessService.ensurePropertyAccess(userId, propertyId);
 
     const visits = await this.prisma.propertyVisit.findMany({
       where: { propertyId },
@@ -285,12 +337,23 @@ export class VisitsService {
             city: true,
             landlordId: true,
             landlord: {
-              select: { id: true, firstName: true, lastName: true, email: true },
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+              },
             },
           },
         },
         tenant: {
-          select: { id: true, firstName: true, lastName: true, email: true, phone: true },
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            phone: true,
+          },
         },
       },
       orderBy: [{ visitDate: 'asc' }, { startTime: 'asc' }],
@@ -301,15 +364,16 @@ export class VisitsService {
 
   /**
    * Accept a visit request.
-   * VISIT-06: Landlord can accept visit request
+   * VISIT-06: Landlord or agent can accept visit request
    */
-  async accept(landlordId: string, visitId: string): Promise<VisitWithDetails> {
+  async accept(userId: string, visitId: string): Promise<VisitWithDetails> {
     const visit = await this.findByIdWithValidation(visitId);
 
-    // Verify landlord owns the property
-    if (visit.property.landlordId !== landlordId) {
-      throw new ForbiddenException('You do not own this property');
-    }
+    // Verify access to property (landlord or agent)
+    await this.propertyAccessService.ensurePropertyAccess(
+      userId,
+      visit.propertyId,
+    );
 
     // Validate transition
     this.stateMachine.validateTransition(
@@ -330,7 +394,7 @@ export class VisitsService {
       visit.status as VisitStatus,
       VisitStatus.ACCEPTED,
       'LANDLORD',
-      landlordId,
+      userId,
     );
 
     return updatedVisit as VisitWithDetails;
@@ -338,19 +402,20 @@ export class VisitsService {
 
   /**
    * Reject a visit request.
-   * VISIT-07: Landlord can reject visit request with reason
+   * VISIT-07: Landlord or agent can reject visit request with reason
    */
   async reject(
-    landlordId: string,
+    userId: string,
     visitId: string,
     reason: string,
   ): Promise<VisitWithDetails> {
     const visit = await this.findByIdWithValidation(visitId);
 
-    // Verify landlord owns the property
-    if (visit.property.landlordId !== landlordId) {
-      throw new ForbiddenException('You do not own this property');
-    }
+    // Verify access to property (landlord or agent)
+    await this.propertyAccessService.ensurePropertyAccess(
+      userId,
+      visit.propertyId,
+    );
 
     // Validate transition
     this.stateMachine.validateTransition(
@@ -374,7 +439,7 @@ export class VisitsService {
       visit.status as VisitStatus,
       VisitStatus.REJECTED,
       'LANDLORD',
-      landlordId,
+      userId,
       reason,
     );
 
@@ -396,10 +461,17 @@ export class VisitsService {
     let role: 'TENANT' | 'LANDLORD';
     if (visit.tenantId === userId) {
       role = 'TENANT';
-    } else if (visit.property.landlordId === userId) {
-      role = 'LANDLORD';
     } else {
-      throw new ForbiddenException('You do not have access to this visit');
+      // Check if user has property access (landlord or agent)
+      const canAccess = await this.propertyAccessService.canAccessProperty(
+        userId,
+        visit.propertyId,
+      );
+      if (canAccess) {
+        role = 'LANDLORD';
+      } else {
+        throw new ForbiddenException('You do not have access to this visit');
+      }
     }
 
     // Validate transition
@@ -434,7 +506,7 @@ export class VisitsService {
 
   /**
    * Reschedule a visit to a new date/time.
-   * VISIT-08: Tenant can reschedule a pending visit
+   * VISIT-08: Tenant or landlord/agent can reschedule a visit
    * Creates a new PENDING visit and marks original as RESCHEDULED.
    */
   async reschedule(
@@ -448,10 +520,17 @@ export class VisitsService {
     let role: 'TENANT' | 'LANDLORD';
     if (originalVisit.tenantId === userId) {
       role = 'TENANT';
-    } else if (originalVisit.property.landlordId === userId) {
-      role = 'LANDLORD';
     } else {
-      throw new ForbiddenException('You do not have access to this visit');
+      // Check if user has property access (landlord or agent)
+      const canAccess = await this.propertyAccessService.canAccessProperty(
+        userId,
+        originalVisit.propertyId,
+      );
+      if (canAccess) {
+        role = 'LANDLORD';
+      } else {
+        throw new ForbiddenException('You do not have access to this visit');
+      }
     }
 
     // Validate transition
@@ -504,7 +583,7 @@ export class VisitsService {
 
     // Emit status change event for original visit
     this.emitStatusChangedEvent(
-      originalVisit as VisitWithDetails,
+      originalVisit,
       originalVisit.status as VisitStatus,
       VisitStatus.RESCHEDULED,
       role,
@@ -540,15 +619,16 @@ export class VisitsService {
 
   /**
    * Mark a visit as completed.
-   * Only landlord can mark completion after the visit date.
+   * Only landlord or agent can mark completion after the visit date.
    */
-  async complete(landlordId: string, visitId: string): Promise<VisitWithDetails> {
+  async complete(userId: string, visitId: string): Promise<VisitWithDetails> {
     const visit = await this.findByIdWithValidation(visitId);
 
-    // Verify landlord owns the property
-    if (visit.property.landlordId !== landlordId) {
-      throw new ForbiddenException('You do not own this property');
-    }
+    // Verify access to property (landlord or agent)
+    await this.propertyAccessService.ensurePropertyAccess(
+      userId,
+      visit.propertyId,
+    );
 
     // Validate transition
     this.stateMachine.validateTransition(
@@ -569,7 +649,7 @@ export class VisitsService {
       visit.status as VisitStatus,
       VisitStatus.COMPLETED,
       'LANDLORD',
-      landlordId,
+      userId,
     );
 
     return updatedVisit as VisitWithDetails;
@@ -578,7 +658,9 @@ export class VisitsService {
   /**
    * Get visit by ID with validation.
    */
-  private async findByIdWithValidation(visitId: string): Promise<VisitWithDetails> {
+  private async findByIdWithValidation(
+    visitId: string,
+  ): Promise<VisitWithDetails> {
     const visit = await this.prisma.propertyVisit.findUnique({
       where: { id: visitId },
       include: this.getVisitIncludes(),
@@ -609,7 +691,13 @@ export class VisitsService {
         },
       },
       tenant: {
-        select: { id: true, firstName: true, lastName: true, email: true, phone: true },
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+          phone: true,
+        },
       },
     };
   }
