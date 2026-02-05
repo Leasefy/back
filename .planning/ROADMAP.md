@@ -23,6 +23,7 @@ Backend API en NestJS para el marketplace de arriendos "Arriendo Facil". Provee 
 
 - [x] **Phase 1: Foundation** - Project scaffold, Prisma, Supabase config
 - [x] **Phase 2: Auth & Users** - Supabase Auth, guards, user management
+- [ ] **Phase 2.1: User Roles & Property Agents** - AGENT role, property delegation, application chat (INSERTED)
 - [x] **Phase 3: Properties** - CRUD, filtering, image upload, plans
 - [x] **Phase 3.1: Property Visits Scheduling** - Visit requests, availability, accept/reject (INSERTED)
 - [x] **Phase 3.2: Natural Language Search** - Smart property search with keyword parsing (INSERTED)
@@ -78,6 +79,48 @@ Plans:
 - [x] 02-01-PLAN.md - Create User model in Prisma and database trigger for Supabase sync
 - [x] 02-02-PLAN.md - Implement Supabase JWT authentication with Passport and RBAC
 - [x] 02-03-PLAN.md - Create user profile management endpoints
+
+### Phase 2.1: User Roles & Property Agents (INSERTED)
+**Goal**: Simplified role system with AGENT role for property delegation, plus application chat using Supabase Realtime
+**Depends on**: Phase 2 (Auth & Users)
+**Requirements**: ROLE-01 through ROLE-05, AGENT-01 through AGENT-06, CHAT-01 through CHAT-05
+**Tier**: FREE
+**Success Criteria** (what must be TRUE):
+  1. Role enum has AGENT instead of BOTH
+  2. User model has no activeRole field (no more context switching)
+  3. AGENT role users can access landlord endpoints for assigned properties only
+  4. Landlord can assign/remove agents by email
+  5. Agent can view assigned properties and landlord info
+  6. Chat conversation created when application submitted
+  7. Tenant and landlord/agent can send messages in application chat
+  8. Messages have read receipts
+  9. Conversation deleted on application reject/withdraw
+**Plans**: 4 plans
+
+Plans:
+- [ ] 2.1-01-PLAN.md - Database changes (Role enum, remove activeRole, PropertyAccess model, chat models)
+- [ ] 2.1-02-PLAN.md - Remove BOTH role from codebase, update guards and decorators
+- [ ] 2.1-03-PLAN.md - PropertyAccessService, agent endpoints, update authorization in 9 services
+- [ ] 2.1-04-PLAN.md - ChatService, chat endpoints, integration with application lifecycle
+
+**Wave Structure:**
+- Wave 1: 2.1-01 (database foundation)
+- Wave 2 (parallel): 2.1-02 (role cleanup), 2.1-03 (agent system)
+- Wave 3: 2.1-04 (chat, depends on 02 and 03)
+
+**Role Changes:**
+- OLD: TENANT, LANDLORD, BOTH, ADMIN
+- NEW: TENANT, LANDLORD, AGENT, ADMIN
+
+**Key Behaviors:**
+- Agent has FULL access to assigned properties (like being the landlord, except can't change landlordId)
+- Authorization moved from guard level (Role.BOTH special case) to service level (PropertyAccessService)
+- Chat uses Supabase Realtime for live updates (frontend subscribes to chat_messages table)
+
+**Future Enhancement Note:**
+For higher scale (>200 concurrent connections), implement NestJS @WebSocketGateway
+with Socket.io instead of Supabase Realtime. This is free but more complex to implement
+(auth handling, scaling with Redis, testing). Current Supabase Realtime is sufficient for MVP.
 
 ### Phase 3: Properties
 **Goal**: Landlords can manage properties, anyone can browse
@@ -491,12 +534,13 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 3.2 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10 -> 11 -> 12 -> 13 -> **14 -> 15 -> 16 (IA al final)**
+Phases execute in numeric order: 1 -> 2 -> **2.1** -> 3 -> 3.1 -> 3.2 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10 -> 11 -> 12 -> 13 -> **14 -> 15 -> 16 (IA al final)**
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 3/3 | Complete | 2026-01-25 |
 | 2. Auth & Users | 3/3 | Complete | 2026-01-26 |
+| **2.1. User Roles & Agents** | 0/4 | Planned | - |
 | 3. Properties | 4/4 | Complete | 2026-01-29 |
 | 3.1. Property Visits | 4/4 | Complete | 2026-02-03 |
 | 3.2. Natural Search | 1/1 | Complete | 2026-02-03 |
@@ -589,7 +633,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 3.2 -> 4 -> 5 -> 6 -> 7 -
 
 | Service | Purpose | Config | Tier |
 |---------|---------|--------|------|
-| Supabase | DB, Auth, Storage | SUPABASE_URL, SUPABASE_KEY | All |
+| Supabase | DB, Auth, Storage, Realtime | SUPABASE_URL, SUPABASE_KEY | All |
 | Redis | BullMQ queues | REDIS_URL | All |
 | Claude API | Document analysis | ANTHROPIC_API_KEY | PRO+ |
 | Resend | Email | RESEND_API_KEY | All |
@@ -597,4 +641,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 3.2 -> 4 -> 5 -> 6 -> 7 -
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-02-04 - Phase 13 Insurance complete (2 plans, 2 waves)*
+*Last updated: 2026-02-05 - Phase 2.1 User Roles & Property Agents planned (4 plans, 3 waves)*
