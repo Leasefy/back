@@ -30,14 +30,14 @@ import {
  * Controller for landlord payment method management.
  * Allows landlords to configure bank accounts for tenants to use when paying rent.
  *
- * All endpoints require LANDLORD or BOTH role.
+ * All endpoints require LANDLORD role (AGENT gets access via RolesGuard).
  *
  * Requirements: TPAY-01, TPAY-02
  */
 @ApiTags('Landlord Payment Methods')
 @ApiBearerAuth()
 @Controller('landlords/me/payment-methods')
-@Roles(Role.LANDLORD, Role.BOTH)
+@Roles(Role.LANDLORD)
 export class LandlordPaymentMethodsController {
   constructor(
     private readonly paymentMethodsService: LandlordPaymentMethodsService,

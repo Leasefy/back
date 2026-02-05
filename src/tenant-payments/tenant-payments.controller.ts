@@ -48,7 +48,7 @@ export class TenantPaymentsController {
    * Requirements: TPAY-03
    */
   @Get('payment-methods')
-  @Roles(Role.TENANT, Role.BOTH)
+  @Roles(Role.TENANT)
   @ApiOperation({ summary: 'Get landlord payment methods for lease' })
   @ApiParam({ name: 'leaseId', type: String, description: 'Lease ID' })
   @ApiResponse({ status: 200, description: 'List of landlord payment methods' })
@@ -68,7 +68,7 @@ export class TenantPaymentsController {
    * Requirements: TPAY-05
    */
   @Get('payment-info')
-  @Roles(Role.TENANT, Role.BOTH)
+  @Roles(Role.TENANT)
   @ApiOperation({ summary: 'Get payment info with auto-filled amount' })
   @ApiParam({ name: 'leaseId', type: String, description: 'Lease ID' })
   @ApiResponse({ status: 200, description: 'Payment info with amount and methods', type: PaymentInfoResponseDto })
@@ -88,7 +88,7 @@ export class TenantPaymentsController {
    * Requirements: TPAY-06, TPAY-09
    */
   @Post('payment-requests')
-  @Roles(Role.TENANT, Role.BOTH)
+  @Roles(Role.TENANT)
   @UseInterceptors(FileInterceptor('receipt'))
   @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: 'Create payment request with receipt upload' })
@@ -160,7 +160,7 @@ export class TenantPaymentsController {
    * List my payment requests for this lease.
    */
   @Get('payment-requests')
-  @Roles(Role.TENANT, Role.BOTH)
+  @Roles(Role.TENANT)
   @ApiOperation({ summary: 'List my payment requests for this lease' })
   @ApiParam({ name: 'leaseId', type: String, description: 'Lease ID' })
   @ApiResponse({ status: 200, description: 'List of payment requests' })
@@ -178,7 +178,7 @@ export class TenantPaymentsController {
    * Get payment request details.
    */
   @Get('payment-requests/:requestId')
-  @Roles(Role.TENANT, Role.BOTH)
+  @Roles(Role.TENANT)
   @ApiOperation({ summary: 'Get payment request details' })
   @ApiParam({ name: 'leaseId', type: String, description: 'Lease ID' })
   @ApiParam({ name: 'requestId', type: String, description: 'Payment request ID' })
@@ -198,7 +198,7 @@ export class TenantPaymentsController {
    * Cancel a pending payment request.
    */
   @Delete('payment-requests/:requestId')
-  @Roles(Role.TENANT, Role.BOTH)
+  @Roles(Role.TENANT)
   @ApiOperation({ summary: 'Cancel pending payment request' })
   @ApiParam({ name: 'leaseId', type: String, description: 'Lease ID' })
   @ApiParam({ name: 'requestId', type: String, description: 'Payment request ID' })

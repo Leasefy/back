@@ -90,7 +90,7 @@ Explicit filter parameters override parsed values.
    */
   @Get('mine')
   @ApiBearerAuth()
-  @Roles(Role.LANDLORD, Role.BOTH)
+  @Roles(Role.LANDLORD)
   @ApiOperation({ summary: 'Get my properties' })
   @ApiOkResponse({ description: 'List of landlord properties' })
   async findMine(@CurrentUser('id') landlordId: string): Promise<Property[]> {
@@ -117,7 +117,7 @@ Explicit filter parameters override parsed values.
    */
   @Post()
   @ApiBearerAuth()
-  @Roles(Role.LANDLORD, Role.BOTH)
+  @Roles(Role.LANDLORD)
   @ApiOperation({ summary: 'Create a new property' })
   @ApiCreatedResponse({ description: 'Property created successfully' })
   async create(
@@ -132,7 +132,7 @@ Explicit filter parameters override parsed values.
    */
   @Patch(':id')
   @ApiBearerAuth()
-  @Roles(Role.LANDLORD, Role.BOTH)
+  @Roles(Role.LANDLORD)
   @ApiOperation({ summary: 'Update a property' })
   @ApiOkResponse({ description: 'Property updated successfully' })
   async update(
@@ -148,7 +148,7 @@ Explicit filter parameters override parsed values.
    */
   @Delete(':id')
   @ApiBearerAuth()
-  @Roles(Role.LANDLORD, Role.BOTH)
+  @Roles(Role.LANDLORD)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete a property' })
   @ApiNoContentResponse({ description: 'Property deleted successfully' })
@@ -169,7 +169,7 @@ Explicit filter parameters override parsed values.
    */
   @Post(':id/images')
   @ApiBearerAuth()
-  @Roles(Role.LANDLORD, Role.BOTH)
+  @Roles(Role.LANDLORD)
   @UseInterceptors(FileInterceptor('file'))
   @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: 'Upload property image' })
@@ -190,7 +190,7 @@ Explicit filter parameters override parsed values.
    */
   @Delete(':id/images/:imageId')
   @ApiBearerAuth()
-  @Roles(Role.LANDLORD, Role.BOTH)
+  @Roles(Role.LANDLORD)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete property image' })
   @ApiNoContentResponse({ description: 'Image deleted successfully' })
@@ -208,7 +208,7 @@ Explicit filter parameters override parsed values.
    */
   @Patch(':id/images/order')
   @ApiBearerAuth()
-  @Roles(Role.LANDLORD, Role.BOTH)
+  @Roles(Role.LANDLORD)
   @ApiOperation({ summary: 'Reorder property images' })
   @ApiOkResponse({ description: 'Images reordered successfully' })
   async reorderImages(

@@ -9,8 +9,6 @@ export enum UserType {
   TENANT = 'TENANT',
   /** Usuario que arrienda inmuebles a otros (propietario) */
   LANDLORD = 'LANDLORD',
-  /** Usuario que hace ambas cosas */
-  BOTH = 'BOTH',
 }
 
 /**
@@ -18,7 +16,7 @@ export enum UserType {
  *
  * This endpoint allows new users to:
  * 1. Set their profile information (name, phone)
- * 2. Select their user type (tenant, landlord, or both)
+ * 2. Select their user type (tenant or landlord)
  *
  * @example
  * POST /users/me/onboarding
@@ -61,12 +59,11 @@ export class CompleteOnboardingDto {
    * Type of user account:
    * - TENANT: Looking to rent a property (inquilino)
    * - LANDLORD: Has properties to rent out (propietario)
-   * - BOTH: Does both activities
    *
    * @example "LANDLORD"
    */
   @IsEnum(UserType, {
-    message: 'Tipo de usuario invalido. Debe ser: TENANT, LANDLORD, o BOTH',
+    message: 'Tipo de usuario invalido. Debe ser: TENANT o LANDLORD',
   })
   @IsNotEmpty({ message: 'El tipo de usuario es requerido' })
   userType!: UserType;

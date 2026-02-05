@@ -10,7 +10,7 @@ import { RolesGuard } from './guards/roles.guard.js';
  *
  * Exports:
  * - SupabaseAuthGuard: Validates JWT tokens, respects @Public() decorator
- * - RolesGuard: Enforces @Roles() restrictions, allows BOTH role full access
+ * - RolesGuard: Enforces @Roles() restrictions, allows AGENT role access to LANDLORD routes
  *
  * Usage:
  * 1. Import AuthModule in AppModule

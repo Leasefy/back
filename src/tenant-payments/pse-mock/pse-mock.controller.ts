@@ -66,7 +66,7 @@ export class PseMockController {
    * - Others: Success
    */
   @Post('process')
-  @Roles(Role.TENANT, Role.BOTH)
+  @Roles(Role.TENANT)
   @ApiOperation({ summary: 'Process PSE mock payment' })
   @ApiResponse({
     status: 201,

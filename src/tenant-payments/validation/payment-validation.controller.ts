@@ -25,14 +25,14 @@ import { RejectPaymentDto } from './dto/index.js';
  * Controller for landlord payment validation.
  * Allows landlords to view, approve, or reject tenant payment requests.
  *
- * All endpoints require LANDLORD or BOTH role.
+ * All endpoints require LANDLORD role (AGENT gets access via RolesGuard).
  *
  * Requirement: TPAY-10
  */
 @ApiTags('Payment Validation')
 @ApiBearerAuth()
 @Controller()
-@Roles(Role.LANDLORD, Role.BOTH)
+@Roles(Role.LANDLORD)
 export class PaymentValidationController {
   constructor(
     private readonly validationService: PaymentValidationService,

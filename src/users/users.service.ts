@@ -57,28 +57,16 @@ export class UsersService {
   }
 
   /**
-   * Set the active role for users with BOTH role.
-   * Allows switching between TENANT and LANDLORD context.
-   *
-   * @param userId - User UUID
-   * @param activeRole - Role to switch to (TENANT or LANDLORD)
-   * @returns Updated user object
-   * @throws ForbiddenException if user doesn't have BOTH role
+   * @deprecated BOTH role removed. This method is kept for backward compatibility but throws an error.
+   * Role switching is no longer supported - users have a single role.
    */
   async setActiveRole(
-    userId: string,
-    activeRole: Role.TENANT | Role.LANDLORD,
+    _userId: string,
+    _activeRole: Role.TENANT | Role.LANDLORD,
   ): Promise<User> {
-    const user = await this.findById(userId);
-
-    if (user.role !== Role.BOTH) {
-      throw new ForbiddenException('Only users with BOTH role can switch roles');
-    }
-
-    return this.prisma.user.update({
-      where: { id: userId },
-      data: { activeRole },
-    });
+    throw new ForbiddenException(
+      'Role switching is no longer supported. Users have a single role.',
+    );
   }
 
   /**
@@ -87,7 +75,6 @@ export class UsersService {
    * This method:
    * 1. Updates the user's profile (firstName, lastName, phone)
    * 2. Sets the user's role based on their selection
-   * 3. For BOTH users, sets activeRole to their primary activity
    *
    * @param userId - User UUID
    * @param dto - Onboarding data (name, phone, userType)
@@ -112,10 +99,6 @@ export class UsersService {
     // Map userType to Role enum
     const role = dto.userType as unknown as Role;
 
-    // For BOTH users, set activeRole to LANDLORD by default
-    // (they registered as wanting to do both, but start in landlord context)
-    const activeRole = role === Role.BOTH ? Role.LANDLORD : null;
-
     return this.prisma.user.update({
       where: { id: userId },
       data: {
@@ -123,7 +106,6 @@ export class UsersService {
         lastName: dto.lastName,
         phone: dto.phone,
         role: role as unknown as PrismaRole,
-        activeRole: activeRole as unknown as PrismaRole | null,
       },
     });
   }

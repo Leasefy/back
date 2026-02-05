@@ -55,7 +55,7 @@ export class DisputesController {
    * Requirements: TPAY-11, TPAY-12
    */
   @Post('payment-requests/:id/dispute')
-  @Roles(Role.TENANT, Role.BOTH)
+  @Roles(Role.TENANT)
   @UseInterceptors(FileInterceptor('evidence'))
   @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: 'Open dispute for rejected payment' })
@@ -97,7 +97,7 @@ export class DisputesController {
    * Returns disputes with payment request details (amount, period, rejection reason).
    */
   @Get('disputes')
-  @Roles(Role.TENANT, Role.BOTH)
+  @Roles(Role.TENANT)
   @ApiOperation({ summary: 'List my disputes' })
   @ApiResponse({
     status: 200,
@@ -114,7 +114,7 @@ export class DisputesController {
    * Includes full payment request information.
    */
   @Get('disputes/:id')
-  @Roles(Role.TENANT, Role.BOTH)
+  @Roles(Role.TENANT)
   @ApiOperation({ summary: 'Get dispute details' })
   @ApiParam({ name: 'id', type: String, description: 'Dispute ID' })
   @ApiResponse({
@@ -143,7 +143,7 @@ export class DisputesController {
    * Returns 404 if no additional evidence was attached.
    */
   @Get('disputes/:id/evidence-url')
-  @Roles(Role.TENANT, Role.BOTH)
+  @Roles(Role.TENANT)
   @ApiOperation({ summary: 'Get signed URL for additional evidence' })
   @ApiParam({ name: 'id', type: String, description: 'Dispute ID' })
   @ApiResponse({

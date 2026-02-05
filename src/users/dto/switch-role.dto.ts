@@ -3,9 +3,8 @@ import { IsEnum } from 'class-validator';
 import { Role } from '../../common/enums/role.enum.js';
 
 /**
- * DTO for switching active role.
- * Only users with BOTH role can use this endpoint.
- * Valid values are TENANT or LANDLORD (not BOTH).
+ * @deprecated Role switching is no longer supported.
+ * DTO kept for backward compatibility.
  */
 export class SwitchRoleDto {
   @ApiProperty({

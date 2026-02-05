@@ -40,10 +40,10 @@ export class ScoringController {
 
   /**
    * Get current user's payment reputation.
-   * Available to tenants and users with BOTH role.
+   * Available to tenants.
    */
   @Get('my-reputation')
-  @Roles(Role.TENANT, Role.BOTH)
+  @Roles(Role.TENANT)
   @ApiOperation({
     summary: 'Get my payment reputation',
     description: 'Returns payment history score and metrics for the authenticated tenant',

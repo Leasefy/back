@@ -37,7 +37,7 @@ export class ApplicationsController {
   constructor(private readonly applicationsService: ApplicationsService) {}
 
   @Post()
-  @Roles(Role.TENANT, Role.BOTH)
+  @Roles(Role.TENANT)
   @ApiOperation({ summary: 'Create a new application for a property' })
   @ApiResponse({ status: 201, description: 'Application created' })
   @ApiResponse({ status: 400, description: 'Property not available' })
@@ -51,7 +51,7 @@ export class ApplicationsController {
   }
 
   @Patch(':id/steps/1')
-  @Roles(Role.TENANT, Role.BOTH)
+  @Roles(Role.TENANT)
   @ApiOperation({ summary: 'Update step 1: Personal Information' })
   @ApiParam({ name: 'id', description: 'Application ID' })
   @ApiResponse({ status: 200, description: 'Step updated' })
@@ -67,7 +67,7 @@ export class ApplicationsController {
   }
 
   @Patch(':id/steps/2')
-  @Roles(Role.TENANT, Role.BOTH)
+  @Roles(Role.TENANT)
   @ApiOperation({ summary: 'Update step 2: Employment Information' })
   @ApiParam({ name: 'id', description: 'Application ID' })
   @ApiResponse({ status: 200, description: 'Step updated' })
@@ -80,7 +80,7 @@ export class ApplicationsController {
   }
 
   @Patch(':id/steps/3')
-  @Roles(Role.TENANT, Role.BOTH)
+  @Roles(Role.TENANT)
   @ApiOperation({ summary: 'Update step 3: Income Information' })
   @ApiParam({ name: 'id', description: 'Application ID' })
   @ApiResponse({ status: 200, description: 'Step updated' })
@@ -93,7 +93,7 @@ export class ApplicationsController {
   }
 
   @Patch(':id/steps/4')
-  @Roles(Role.TENANT, Role.BOTH)
+  @Roles(Role.TENANT)
   @ApiOperation({ summary: 'Update step 4: References' })
   @ApiParam({ name: 'id', description: 'Application ID' })
   @ApiResponse({ status: 200, description: 'Step updated' })
@@ -106,7 +106,7 @@ export class ApplicationsController {
   }
 
   @Get('mine')
-  @Roles(Role.TENANT, Role.BOTH)
+  @Roles(Role.TENANT)
   @ApiOperation({ summary: 'Get all applications for current tenant' })
   @ApiResponse({ status: 200, description: 'List of tenant applications' })
   async findMine(@CurrentUser() user: User) {
@@ -140,7 +140,7 @@ export class ApplicationsController {
   }
 
   @Get(':id/info-requests')
-  @Roles(Role.TENANT, Role.BOTH)
+  @Roles(Role.TENANT)
   @ApiOperation({ summary: 'Get information requests from landlord' })
   @ApiParam({ name: 'id', description: 'Application ID' })
   @ApiResponse({ status: 200, description: 'List of information requests with messages' })
@@ -154,7 +154,7 @@ export class ApplicationsController {
   }
 
   @Post(':id/submit')
-  @Roles(Role.TENANT, Role.BOTH)
+  @Roles(Role.TENANT)
   @ApiOperation({ summary: 'Submit a completed application' })
   @ApiParam({ name: 'id', description: 'Application ID' })
   @ApiResponse({ status: 200, description: 'Application submitted' })
@@ -170,7 +170,7 @@ export class ApplicationsController {
   }
 
   @Post(':id/withdraw')
-  @Roles(Role.TENANT, Role.BOTH)
+  @Roles(Role.TENANT)
   @ApiOperation({ summary: 'Withdraw an application' })
   @ApiParam({ name: 'id', description: 'Application ID' })
   @ApiResponse({ status: 200, description: 'Application withdrawn' })
@@ -186,7 +186,7 @@ export class ApplicationsController {
   }
 
   @Post(':id/reactivate')
-  @Roles(Role.TENANT, Role.BOTH)
+  @Roles(Role.TENANT)
   @ApiOperation({ summary: 'Reactivate a withdrawn application' })
   @ApiParam({ name: 'id', description: 'Application ID' })
   @ApiResponse({ status: 200, description: 'Application reactivated to DRAFT status' })
@@ -202,7 +202,7 @@ export class ApplicationsController {
   }
 
   @Post(':id/respond-info')
-  @Roles(Role.TENANT, Role.BOTH)
+  @Roles(Role.TENANT)
   @ApiOperation({ summary: 'Respond to landlord info request' })
   @ApiParam({ name: 'id', description: 'Application ID' })
   @ApiResponse({ status: 200, description: 'Response recorded' })

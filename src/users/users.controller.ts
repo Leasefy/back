@@ -48,13 +48,16 @@ export class UsersController {
   }
 
   /**
-   * Switch the active role for users with BOTH role.
-   * Only users with BOTH role can access this endpoint.
+   * @deprecated Role switching is no longer supported.
+   * This endpoint is kept for backward compatibility but returns an error.
    */
   @Patch('me/role')
-  @Roles(Role.BOTH)
-  @ApiOperation({ summary: 'Switch active role (BOTH users only)' })
-  @ApiOkResponse({ description: 'Active role switched successfully' })
+  @ApiOperation({
+    summary: 'Switch active role (deprecated)',
+    deprecated: true,
+    description: 'Role switching is no longer supported. Users have a single role.',
+  })
+  @ApiOkResponse({ description: 'This endpoint is deprecated and will return an error' })
   async switchRole(
     @CurrentUser('id') userId: string,
     @Body() dto: SwitchRoleDto,
@@ -70,10 +73,8 @@ export class UsersController {
    * 2. Select their user type:
    *    - TENANT: Looking to rent a property (inquilino)
    *    - LANDLORD: Has properties to rent out (propietario)
-   *    - BOTH: Does both activities
    *
    * The user's role will be updated based on their selection.
-   * For BOTH users, activeRole is set to LANDLORD by default.
    */
   @Post('me/onboarding')
   @ApiOperation({

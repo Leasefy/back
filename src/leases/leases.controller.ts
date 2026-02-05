@@ -44,7 +44,7 @@ export class LeasesController {
    * Requirements: LEAS-07
    */
   @Get('my-lease')
-  @Roles(Role.TENANT, Role.BOTH)
+  @Roles(Role.TENANT)
   @ApiOperation({ summary: 'Get current active lease (tenant)' })
   @ApiResponse({ status: 200, description: 'Active lease or null' })
   async getMyLease(@CurrentUser() user: User): Promise<Lease | null> {
@@ -58,7 +58,7 @@ export class LeasesController {
    * Requirements: LEAS-08
    */
   @Get()
-  @Roles(Role.LANDLORD, Role.BOTH)
+  @Roles(Role.LANDLORD)
   @ApiOperation({ summary: 'List all leases (landlord)' })
   @ApiResponse({ status: 200, description: 'List of leases with payment counts' })
   async listLeases(@CurrentUser() user: User) {
@@ -91,7 +91,7 @@ export class LeasesController {
    * Requirements: LEAS-04, LEAS-05
    */
   @Post(':id/payments')
-  @Roles(Role.LANDLORD, Role.BOTH)
+  @Roles(Role.LANDLORD)
   @ApiOperation({ summary: 'Record payment received' })
   @ApiParam({ name: 'id', type: String, description: 'Lease ID' })
   @ApiResponse({ status: 201, description: 'Payment recorded' })

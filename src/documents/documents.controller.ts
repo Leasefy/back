@@ -34,7 +34,7 @@ export class DocumentsController {
   constructor(private readonly documentsService: DocumentsService) {}
 
   @Post()
-  @Roles(Role.TENANT, Role.BOTH)
+  @Roles(Role.TENANT)
   @UseInterceptors(FileInterceptor('file'))
   @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: 'Upload a document to an application' })
@@ -99,7 +99,7 @@ export class DocumentsController {
   }
 
   @Delete(':documentId')
-  @Roles(Role.TENANT, Role.BOTH)
+  @Roles(Role.TENANT)
   @ApiOperation({ summary: 'Delete a document from an application' })
   @ApiParam({ name: 'applicationId', description: 'Application ID' })
   @ApiParam({ name: 'documentId', description: 'Document ID' })

@@ -61,7 +61,7 @@ export class VisitsController {
    */
   @Post('properties/:propertyId/availability')
   @ApiBearerAuth()
-  @Roles(Role.LANDLORD, Role.BOTH)
+  @Roles(Role.LANDLORD)
   @ApiOperation({ summary: 'Configure availability for property visits' })
   @ApiCreatedResponse({ description: 'Availability created' })
   async createAvailability(
@@ -91,7 +91,7 @@ export class VisitsController {
    */
   @Patch('properties/:propertyId/availability/:availabilityId')
   @ApiBearerAuth()
-  @Roles(Role.LANDLORD, Role.BOTH)
+  @Roles(Role.LANDLORD)
   @ApiOperation({ summary: 'Update availability settings' })
   @ApiOkResponse({ description: 'Availability updated' })
   async updateAvailability(
@@ -108,7 +108,7 @@ export class VisitsController {
    */
   @Delete('properties/:propertyId/availability/:availabilityId')
   @ApiBearerAuth()
-  @Roles(Role.LANDLORD, Role.BOTH)
+  @Roles(Role.LANDLORD)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete availability window' })
   @ApiNoContentResponse({ description: 'Availability deleted' })
@@ -150,7 +150,7 @@ export class VisitsController {
    */
   @Post()
   @ApiBearerAuth()
-  @Roles(Role.TENANT, Role.BOTH)
+  @Roles(Role.TENANT)
   @ApiOperation({ summary: 'Request a property visit' })
   @ApiCreatedResponse({ description: 'Visit request created' })
   async createVisit(
@@ -166,7 +166,7 @@ export class VisitsController {
    */
   @Get('mine')
   @ApiBearerAuth()
-  @Roles(Role.TENANT, Role.BOTH)
+  @Roles(Role.TENANT)
   @ApiOperation({ summary: 'Get my scheduled visits' })
   @ApiOkResponse({ description: 'List of visits' })
   async getMyVisits(@CurrentUser('id') tenantId: string): Promise<VisitWithDetails[]> {
@@ -199,7 +199,7 @@ export class VisitsController {
    */
   @Get('landlord')
   @ApiBearerAuth()
-  @Roles(Role.LANDLORD, Role.BOTH)
+  @Roles(Role.LANDLORD)
   @ApiOperation({ summary: 'Get all visits for my properties' })
   @ApiOkResponse({ description: 'List of visits' })
   async getLandlordVisits(
@@ -213,7 +213,7 @@ export class VisitsController {
    */
   @Get('properties/:propertyId')
   @ApiBearerAuth()
-  @Roles(Role.LANDLORD, Role.BOTH)
+  @Roles(Role.LANDLORD)
   @ApiOperation({ summary: 'Get visits for a specific property' })
   @ApiOkResponse({ description: 'List of visits' })
   async getPropertyVisits(
@@ -229,7 +229,7 @@ export class VisitsController {
    */
   @Patch(':id/accept')
   @ApiBearerAuth()
-  @Roles(Role.LANDLORD, Role.BOTH)
+  @Roles(Role.LANDLORD)
   @ApiOperation({ summary: 'Accept a visit request' })
   @ApiOkResponse({ description: 'Visit accepted' })
   async acceptVisit(
@@ -245,7 +245,7 @@ export class VisitsController {
    */
   @Patch(':id/reject')
   @ApiBearerAuth()
-  @Roles(Role.LANDLORD, Role.BOTH)
+  @Roles(Role.LANDLORD)
   @ApiOperation({ summary: 'Reject a visit request' })
   @ApiOkResponse({ description: 'Visit rejected' })
   async rejectVisit(
@@ -261,7 +261,7 @@ export class VisitsController {
    */
   @Patch(':id/complete')
   @ApiBearerAuth()
-  @Roles(Role.LANDLORD, Role.BOTH)
+  @Roles(Role.LANDLORD)
   @ApiOperation({ summary: 'Mark visit as completed' })
   @ApiOkResponse({ description: 'Visit completed' })
   async completeVisit(

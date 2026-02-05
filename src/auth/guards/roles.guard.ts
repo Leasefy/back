@@ -14,7 +14,7 @@ import { ROLES_KEY } from '../decorators/roles.decorator.js';
  * Guard that enforces role-based access control.
  *
  * Checks if the authenticated user has one of the required roles.
- * Users with BOTH role can access any role-restricted route.
+ * Users with AGENT role can access LANDLORD routes (agents manage properties on behalf of landlords).
  *
  * Must be applied AFTER SupabaseAuthGuard to ensure user is authenticated.
  *
@@ -24,7 +24,7 @@ import { ROLES_KEY } from '../decorators/roles.decorator.js';
  * @Get('properties')
  * getProperties() { ... }
  *
- * // Users with BOTH role can access TENANT or LANDLORD routes
+ * // Users with AGENT role can access LANDLORD routes
  * ```
  */
 @Injectable()
@@ -57,8 +57,8 @@ export class RolesGuard implements CanActivate {
       throw new ForbiddenException('User not authenticated');
     }
 
-    // Users with BOTH role can access any role-restricted route
-    if (user.role === Role.BOTH) {
+    // Users with AGENT role can access LANDLORD routes (agents manage properties on behalf of landlords)
+    if (user.role === Role.AGENT && requiredRoles.includes(Role.LANDLORD)) {
       return true;
     }
 

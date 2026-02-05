@@ -4,12 +4,12 @@
  *
  * TENANT: Can apply for properties
  * LANDLORD: Can list properties, view applications
- * BOTH: Can do both (switches context via activeRole)
+ * AGENT: Can manage assigned properties on behalf of landlords
  * ADMIN: System administrator, can manage notification templates
  */
 export enum Role {
   TENANT = 'TENANT',
   LANDLORD = 'LANDLORD',
-  BOTH = 'BOTH',
+  AGENT = 'AGENT',
   ADMIN = 'ADMIN',
 }

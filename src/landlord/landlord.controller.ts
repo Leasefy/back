@@ -24,13 +24,13 @@ import type { User, Application, LandlordNote } from '@prisma/client';
  * LandlordController
  *
  * Endpoints for landlord candidate management.
- * All endpoints require LANDLORD or BOTH role.
+ * All endpoints require LANDLORD role (AGENT gets access via RolesGuard).
  * All endpoints verify property ownership before access.
  */
 @ApiTags('Landlord')
 @ApiBearerAuth()
 @Controller('landlord')
-@Roles(Role.LANDLORD, Role.BOTH)
+@Roles(Role.LANDLORD)
 export class LandlordController {
   constructor(private readonly landlordService: LandlordService) {}
 

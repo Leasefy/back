@@ -23,10 +23,10 @@ import type { User } from '@prisma/client';
  *
  * All endpoints require authentication.
  * Role-based access:
- * - POST /contracts - LANDLORD or BOTH
- * - POST /contracts/:id/send - LANDLORD or BOTH
- * - POST /contracts/:id/sign/landlord - LANDLORD or BOTH
- * - POST /contracts/:id/sign/tenant - TENANT or BOTH
+ * - POST /contracts - LANDLORD (AGENT gets access via RolesGuard)
+ * - POST /contracts/:id/send - LANDLORD (AGENT gets access via RolesGuard)
+ * - POST /contracts/:id/sign/landlord - LANDLORD (AGENT gets access via RolesGuard)
+ * - POST /contracts/:id/sign/tenant - TENANT
  * - GET endpoints - any authenticated user (access validated in service)
  */
 @ApiTags('Contracts')
@@ -42,7 +42,7 @@ export class ContractsController {
    * Requirements: CONT-02, CONT-03, CONT-04, CONT-05
    */
   @Post()
-  @Roles(Role.LANDLORD, Role.BOTH)
+  @Roles(Role.LANDLORD)
   @ApiOperation({ summary: 'Create contract for approved application' })
   @ApiResponse({ status: 201, description: 'Contract created' })
   @ApiResponse({ status: 400, description: 'Invalid application state or dates' })
@@ -101,7 +101,7 @@ export class ContractsController {
    * Landlord only.
    */
   @Post(':id/send')
-  @Roles(Role.LANDLORD, Role.BOTH)
+  @Roles(Role.LANDLORD)
   @ApiOperation({ summary: 'Send contract for signing' })
   @ApiResponse({ status: 200, description: 'Contract sent for signing' })
   async sendForSigning(
@@ -118,7 +118,7 @@ export class ContractsController {
    * Requirements: CONT-06, CONT-08
    */
   @Post(':id/sign/landlord')
-  @Roles(Role.LANDLORD, Role.BOTH)
+  @Roles(Role.LANDLORD)
   @ApiOperation({ summary: 'Landlord signs contract' })
   @ApiResponse({ status: 200, description: 'Contract signed by landlord' })
   @ApiResponse({ status: 400, description: 'Invalid state or missing consent' })
@@ -141,7 +141,7 @@ export class ContractsController {
    * Requirements: CONT-07, CONT-08, CONT-09
    */
   @Post(':id/sign/tenant')
-  @Roles(Role.TENANT, Role.BOTH)
+  @Roles(Role.TENANT)
   @ApiOperation({ summary: 'Tenant signs contract' })
   @ApiResponse({ status: 200, description: 'Contract signed by tenant, PDF generated' })
   @ApiResponse({ status: 400, description: 'Invalid state or missing consent' })
@@ -164,7 +164,7 @@ export class ContractsController {
    * Requirements: LEAS-01
    */
   @Post(':id/activate')
-  @Roles(Role.LANDLORD, Role.BOTH)
+  @Roles(Role.LANDLORD)
   @ApiOperation({ summary: 'Activate a signed contract (creates lease)' })
   @ApiParam({ name: 'id', type: String, description: 'Contract ID' })
   @ApiResponse({ status: 200, description: 'Contract activated, lease created' })

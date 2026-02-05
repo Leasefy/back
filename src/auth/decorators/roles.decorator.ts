@@ -9,7 +9,7 @@ export const ROLES_KEY = 'roles';
 
 /**
  * Restricts route access to users with specific roles.
- * Users with BOTH role can access any role-restricted route.
+ * Users with AGENT role can access LANDLORD routes (via RolesGuard).
  *
  * @param roles - Array of roles that can access this route
  *

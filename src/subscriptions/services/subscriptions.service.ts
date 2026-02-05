@@ -82,7 +82,7 @@ export class SubscriptionsService {
     // No active subscription - return FREE plan for user's role
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      select: { role: true, activeRole: true },
+      select: { role: true },
     });
 
     if (!user) {
@@ -90,7 +90,7 @@ export class SubscriptionsService {
     }
 
     // Determine plan type based on user's role
-    const planType = this.getUserPlanType(user.role, user.activeRole);
+    const planType = this.getUserPlanType(user.role);
 
     return this.plansService.findByTypeAndTier(
       planType as PlanType,
@@ -673,15 +673,10 @@ export class SubscriptionsService {
 
   /**
    * Determine PlanType based on user's role.
+   * LANDLORD and AGENT users get LANDLORD plan type (agents manage properties).
    */
-  private getUserPlanType(
-    role: string,
-    activeRole: string | null,
-  ): PlanType {
-    if (
-      role === 'LANDLORD' ||
-      activeRole === 'LANDLORD'
-    ) {
+  private getUserPlanType(role: string): PlanType {
+    if (role === 'LANDLORD' || role === 'AGENT') {
       return PlanType.LANDLORD;
     }
     return PlanType.TENANT;
