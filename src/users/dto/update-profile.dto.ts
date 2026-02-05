@@ -36,7 +36,8 @@ export class UpdateProfileDto {
   @IsOptional()
   @IsString()
   @Matches(/^(\+57)?3[0-9]{9}$/, {
-    message: 'Phone must be a valid Colombian mobile number (e.g., +573001234567 or 3001234567)',
+    message:
+      'Phone must be a valid Colombian mobile number (e.g., +573001234567 or 3001234567)',
   })
   phone?: string;
 }

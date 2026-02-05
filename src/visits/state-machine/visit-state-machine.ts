@@ -1,4 +1,8 @@
-import { Injectable, BadRequestException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { VisitStatus } from '../../common/enums/index.js';
 
 type ActorRole = 'TENANT' | 'LANDLORD';
@@ -26,23 +30,51 @@ interface Transition {
 export class VisitStateMachine {
   private readonly transitions: Transition[] = [
     // Landlord accepts/rejects pending visits
-    { from: VisitStatus.PENDING, to: VisitStatus.ACCEPTED, allowedRoles: ['LANDLORD'] },
-    { from: VisitStatus.PENDING, to: VisitStatus.REJECTED, allowedRoles: ['LANDLORD'] },
+    {
+      from: VisitStatus.PENDING,
+      to: VisitStatus.ACCEPTED,
+      allowedRoles: ['LANDLORD'],
+    },
+    {
+      from: VisitStatus.PENDING,
+      to: VisitStatus.REJECTED,
+      allowedRoles: ['LANDLORD'],
+    },
 
     // Either party can cancel pending
-    { from: VisitStatus.PENDING, to: VisitStatus.CANCELLED, allowedRoles: ['TENANT', 'LANDLORD'] },
+    {
+      from: VisitStatus.PENDING,
+      to: VisitStatus.CANCELLED,
+      allowedRoles: ['TENANT', 'LANDLORD'],
+    },
 
     // Tenant can reschedule pending (creates new visit)
-    { from: VisitStatus.PENDING, to: VisitStatus.RESCHEDULED, allowedRoles: ['TENANT'] },
+    {
+      from: VisitStatus.PENDING,
+      to: VisitStatus.RESCHEDULED,
+      allowedRoles: ['TENANT'],
+    },
 
     // Either party can cancel accepted
-    { from: VisitStatus.ACCEPTED, to: VisitStatus.CANCELLED, allowedRoles: ['TENANT', 'LANDLORD'] },
+    {
+      from: VisitStatus.ACCEPTED,
+      to: VisitStatus.CANCELLED,
+      allowedRoles: ['TENANT', 'LANDLORD'],
+    },
 
     // Landlord marks visit as completed
-    { from: VisitStatus.ACCEPTED, to: VisitStatus.COMPLETED, allowedRoles: ['LANDLORD'] },
+    {
+      from: VisitStatus.ACCEPTED,
+      to: VisitStatus.COMPLETED,
+      allowedRoles: ['LANDLORD'],
+    },
 
     // Accepted can be rescheduled (either party, needs confirmation flow)
-    { from: VisitStatus.ACCEPTED, to: VisitStatus.RESCHEDULED, allowedRoles: ['TENANT', 'LANDLORD'] },
+    {
+      from: VisitStatus.ACCEPTED,
+      to: VisitStatus.RESCHEDULED,
+      allowedRoles: ['TENANT', 'LANDLORD'],
+    },
   ];
 
   /**
@@ -57,8 +89,14 @@ export class VisitStateMachine {
   /**
    * Validate a transition, throwing appropriate exception if invalid.
    */
-  validateTransition(from: VisitStatus, to: VisitStatus, role: ActorRole): void {
-    const transition = this.transitions.find((t) => t.from === from && t.to === to);
+  validateTransition(
+    from: VisitStatus,
+    to: VisitStatus,
+    role: ActorRole,
+  ): void {
+    const transition = this.transitions.find(
+      (t) => t.from === from && t.to === to,
+    );
 
     if (!transition) {
       throw new BadRequestException(`Invalid transition from ${from} to ${to}`);
@@ -84,9 +122,11 @@ export class VisitStateMachine {
    * Check if a state is terminal (no further transitions).
    */
   isTerminal(status: VisitStatus): boolean {
-    return [VisitStatus.COMPLETED, VisitStatus.REJECTED, VisitStatus.CANCELLED].includes(
-      status,
-    );
+    return [
+      VisitStatus.COMPLETED,
+      VisitStatus.REJECTED,
+      VisitStatus.CANCELLED,
+    ].includes(status);
   }
 
   /**

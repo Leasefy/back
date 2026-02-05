@@ -22,7 +22,9 @@ export class PaymentNotificationListener {
    * Notify landlord of new payment receipt.
    */
   @OnEvent('payment.receiptUploaded')
-  async handleReceiptUploaded(event: PaymentReceiptUploadedEvent): Promise<void> {
+  async handleReceiptUploaded(
+    event: PaymentReceiptUploadedEvent,
+  ): Promise<void> {
     this.logger.log(`Payment receipt uploaded: ${event.paymentRequestId}`);
 
     await this.notificationsService.send({
@@ -49,7 +51,9 @@ export class PaymentNotificationListener {
       `Payment validated: ${event.paymentRequestId}, approved: ${event.approved}`,
     );
 
-    const templateCode = event.approved ? 'PAYMENT_APPROVED' : 'PAYMENT_REJECTED';
+    const templateCode = event.approved
+      ? 'PAYMENT_APPROVED'
+      : 'PAYMENT_REJECTED';
 
     await this.notificationsService.send({
       userId: event.tenantId,

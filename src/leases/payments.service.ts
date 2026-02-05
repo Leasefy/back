@@ -1,7 +1,4 @@
-import {
-  Injectable,
-  BadRequestException,
-} from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service.js';
 import { LeasesService } from './leases.service.js';
 import { CreatePaymentDto } from './dto/create-payment.dto.js';
@@ -76,19 +73,13 @@ export class PaymentsService {
    *
    * Requirements: LEAS-06
    */
-  async getPaymentHistory(
-    leaseId: string,
-    userId: string,
-  ): Promise<Payment[]> {
+  async getPaymentHistory(leaseId: string, userId: string): Promise<Payment[]> {
     // Verify user has access to this lease
     await this.leasesService.verifyAccess(leaseId, userId);
 
     return this.prisma.payment.findMany({
       where: { leaseId },
-      orderBy: [
-        { periodYear: 'desc' },
-        { periodMonth: 'desc' },
-      ],
+      orderBy: [{ periodYear: 'desc' }, { periodMonth: 'desc' }],
     });
   }
 
@@ -116,7 +107,8 @@ export class PaymentsService {
     });
 
     const totalPaid = payments.reduce((sum, p) => sum + p.amount, 0);
-    const lastPaymentDate = payments.length > 0 ? payments[0].paymentDate : null;
+    const lastPaymentDate =
+      payments.length > 0 ? payments[0].paymentDate : null;
 
     return {
       totalPaid,

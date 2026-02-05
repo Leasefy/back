@@ -24,7 +24,10 @@ export class PropertyAccessService {
    * @param propertyId - Property UUID
    * @returns true if user can access, false otherwise
    */
-  async canAccessProperty(userId: string, propertyId: string): Promise<boolean> {
+  async canAccessProperty(
+    userId: string,
+    propertyId: string,
+  ): Promise<boolean> {
     const property = await this.prisma.property.findUnique({
       where: { id: propertyId },
       select: { landlordId: true },
@@ -57,7 +60,10 @@ export class PropertyAccessService {
    *
    * @throws ForbiddenException if user cannot access property
    */
-  async ensurePropertyAccess(userId: string, propertyId: string): Promise<void> {
+  async ensurePropertyAccess(
+    userId: string,
+    propertyId: string,
+  ): Promise<void> {
     const canAccess = await this.canAccessProperty(userId, propertyId);
     if (!canAccess) {
       throw new ForbiddenException('No tienes acceso a esta propiedad');
@@ -123,7 +129,9 @@ export class PropertyAccessService {
     });
 
     if (!agent) {
-      throw new NotFoundException(`No existe un usuario con el email ${agentEmail}`);
+      throw new NotFoundException(
+        `No existe un usuario con el email ${agentEmail}`,
+      );
     }
 
     if (agent.role !== Role.AGENT) {
@@ -150,7 +158,12 @@ export class PropertyAccessService {
           data: { isActive: true },
           include: {
             agent: {
-              select: { id: true, email: true, firstName: true, lastName: true },
+              select: {
+                id: true,
+                email: true,
+                firstName: true,
+                lastName: true,
+              },
             },
           },
         });

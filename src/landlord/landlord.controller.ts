@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Delete, Param, Body, ParseUUIDPipe, HttpCode, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Delete,
+  Param,
+  Body,
+  ParseUUIDPipe,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
 import {
   ApiTags,
   ApiBearerAuth,
@@ -43,10 +53,15 @@ export class LandlordController {
   @Get('properties/:propertyId/candidates')
   @ApiOperation({
     summary: 'Get candidates for a property',
-    description: 'Returns all applications in reviewable states, sorted by risk score (highest first).',
+    description:
+      'Returns all applications in reviewable states, sorted by risk score (highest first).',
   })
   @ApiParam({ name: 'propertyId', type: 'string', format: 'uuid' })
-  @ApiResponse({ status: 200, description: 'List of candidates', type: [CandidateCardDto] })
+  @ApiResponse({
+    status: 200,
+    description: 'List of candidates',
+    type: [CandidateCardDto],
+  })
   @ApiResponse({ status: 403, description: 'You do not own this property' })
   @ApiResponse({ status: 404, description: 'Property not found' })
   async getCandidates(
@@ -65,11 +80,19 @@ export class LandlordController {
   @Get('applications/:applicationId')
   @ApiOperation({
     summary: 'Get candidate detail',
-    description: 'Returns full candidate detail including score breakdown, documents, timeline, and private note.',
+    description:
+      'Returns full candidate detail including score breakdown, documents, timeline, and private note.',
   })
   @ApiParam({ name: 'applicationId', type: 'string', format: 'uuid' })
-  @ApiResponse({ status: 200, description: 'Candidate detail', type: CandidateDetailDto })
-  @ApiResponse({ status: 403, description: 'You do not have access to this application' })
+  @ApiResponse({
+    status: 200,
+    description: 'Candidate detail',
+    type: CandidateDetailDto,
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'You do not have access to this application',
+  })
   @ApiResponse({ status: 404, description: 'Application not found' })
   async getCandidateDetail(
     @CurrentUser() user: User,
@@ -86,19 +109,30 @@ export class LandlordController {
   @Get('applications/:applicationId/documents/:documentId/url')
   @ApiOperation({
     summary: 'Get document URL',
-    description: 'Returns a signed URL (1 hour expiry) for accessing a candidate document.',
+    description:
+      'Returns a signed URL (1 hour expiry) for accessing a candidate document.',
   })
   @ApiParam({ name: 'applicationId', type: 'string', format: 'uuid' })
   @ApiParam({ name: 'documentId', type: 'string', format: 'uuid' })
   @ApiResponse({ status: 200, description: 'Signed URL for document' })
-  @ApiResponse({ status: 403, description: 'You do not have access to this document' })
-  @ApiResponse({ status: 404, description: 'Application or document not found' })
+  @ApiResponse({
+    status: 403,
+    description: 'You do not have access to this document',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Application or document not found',
+  })
   async getDocumentUrl(
     @CurrentUser() user: User,
     @Param('applicationId', ParseUUIDPipe) applicationId: string,
     @Param('documentId', ParseUUIDPipe) documentId: string,
   ): Promise<{ url: string; expiresAt: Date }> {
-    return this.landlordService.getDocumentUrl(applicationId, documentId, user.id);
+    return this.landlordService.getDocumentUrl(
+      applicationId,
+      documentId,
+      user.id,
+    );
   }
 
   /**
@@ -110,12 +144,16 @@ export class LandlordController {
   @Post('applications/:applicationId/preapprove')
   @ApiOperation({
     summary: 'Pre-approve a candidate',
-    description: 'Signals interest in the candidate. Application moves to PREAPPROVED status.',
+    description:
+      'Signals interest in the candidate. Application moves to PREAPPROVED status.',
   })
   @ApiParam({ name: 'applicationId', type: 'string', format: 'uuid' })
   @ApiResponse({ status: 200, description: 'Candidate pre-approved' })
   @ApiResponse({ status: 400, description: 'Invalid state transition' })
-  @ApiResponse({ status: 403, description: 'You do not have access to this application' })
+  @ApiResponse({
+    status: 403,
+    description: 'You do not have access to this application',
+  })
   @ApiResponse({ status: 404, description: 'Application not found' })
   async preapprove(
     @CurrentUser() user: User,
@@ -134,12 +172,16 @@ export class LandlordController {
   @Post('applications/:applicationId/approve')
   @ApiOperation({
     summary: 'Approve a candidate',
-    description: 'Final approval. Tenant can proceed to contract. Application moves to APPROVED status.',
+    description:
+      'Final approval. Tenant can proceed to contract. Application moves to APPROVED status.',
   })
   @ApiParam({ name: 'applicationId', type: 'string', format: 'uuid' })
   @ApiResponse({ status: 200, description: 'Candidate approved' })
   @ApiResponse({ status: 400, description: 'Invalid state transition' })
-  @ApiResponse({ status: 403, description: 'You do not have access to this application' })
+  @ApiResponse({
+    status: 403,
+    description: 'You do not have access to this application',
+  })
   @ApiResponse({ status: 404, description: 'Application not found' })
   async approve(
     @CurrentUser() user: User,
@@ -157,12 +199,16 @@ export class LandlordController {
   @Post('applications/:applicationId/reject')
   @ApiOperation({
     summary: 'Reject a candidate',
-    description: 'Reject the application. Reason is required. Application moves to REJECTED status.',
+    description:
+      'Reject the application. Reason is required. Application moves to REJECTED status.',
   })
   @ApiParam({ name: 'applicationId', type: 'string', format: 'uuid' })
   @ApiResponse({ status: 200, description: 'Candidate rejected' })
   @ApiResponse({ status: 400, description: 'Invalid state transition' })
-  @ApiResponse({ status: 403, description: 'You do not have access to this application' })
+  @ApiResponse({
+    status: 403,
+    description: 'You do not have access to this application',
+  })
   @ApiResponse({ status: 404, description: 'Application not found' })
   async reject(
     @CurrentUser() user: User,
@@ -180,12 +226,16 @@ export class LandlordController {
   @Post('applications/:applicationId/request-info')
   @ApiOperation({
     summary: 'Request additional info',
-    description: 'Request more information from the candidate. Application moves to NEEDS_INFO status.',
+    description:
+      'Request more information from the candidate. Application moves to NEEDS_INFO status.',
   })
   @ApiParam({ name: 'applicationId', type: 'string', format: 'uuid' })
   @ApiResponse({ status: 200, description: 'Info requested' })
   @ApiResponse({ status: 400, description: 'Invalid state transition' })
-  @ApiResponse({ status: 403, description: 'You do not have access to this application' })
+  @ApiResponse({
+    status: 403,
+    description: 'You do not have access to this application',
+  })
   @ApiResponse({ status: 404, description: 'Application not found' })
   async requestInfo(
     @CurrentUser() user: User,
@@ -203,11 +253,15 @@ export class LandlordController {
   @Post('applications/:applicationId/notes')
   @ApiOperation({
     summary: 'Create or update private note',
-    description: 'Creates a new note or updates existing. Notes are private and not visible to tenants.',
+    description:
+      'Creates a new note or updates existing. Notes are private and not visible to tenants.',
   })
   @ApiParam({ name: 'applicationId', type: 'string', format: 'uuid' })
   @ApiResponse({ status: 200, description: 'Note saved' })
-  @ApiResponse({ status: 403, description: 'You do not have access to this application' })
+  @ApiResponse({
+    status: 403,
+    description: 'You do not have access to this application',
+  })
   @ApiResponse({ status: 404, description: 'Application not found' })
   async upsertNote(
     @CurrentUser() user: User,
@@ -230,7 +284,10 @@ export class LandlordController {
   })
   @ApiParam({ name: 'applicationId', type: 'string', format: 'uuid' })
   @ApiResponse({ status: 204, description: 'Note deleted' })
-  @ApiResponse({ status: 403, description: 'You do not have access to this application' })
+  @ApiResponse({
+    status: 403,
+    description: 'You do not have access to this application',
+  })
   @ApiResponse({ status: 404, description: 'Application not found' })
   async deleteNote(
     @CurrentUser() user: User,

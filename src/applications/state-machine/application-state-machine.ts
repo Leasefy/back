@@ -17,35 +17,36 @@ export class ApplicationStateMachine {
    * Map of valid transitions from each state.
    * Empty array = terminal state (no transitions allowed).
    */
-  private readonly transitions: Record<ApplicationStatus, ApplicationStatus[]> = {
-    [ApplicationStatus.DRAFT]: [
-      ApplicationStatus.SUBMITTED,
-      ApplicationStatus.WITHDRAWN,
-    ],
-    [ApplicationStatus.SUBMITTED]: [
-      ApplicationStatus.UNDER_REVIEW,
-      ApplicationStatus.WITHDRAWN,
-    ],
-    [ApplicationStatus.UNDER_REVIEW]: [
-      ApplicationStatus.NEEDS_INFO,
-      ApplicationStatus.PREAPPROVED,
-      ApplicationStatus.APPROVED,
-      ApplicationStatus.REJECTED,
-    ],
-    [ApplicationStatus.NEEDS_INFO]: [
-      ApplicationStatus.UNDER_REVIEW,
-      ApplicationStatus.WITHDRAWN,
-    ],
-    [ApplicationStatus.PREAPPROVED]: [
-      ApplicationStatus.APPROVED,
-      ApplicationStatus.REJECTED,
-    ],
-    [ApplicationStatus.APPROVED]: [], // Terminal
-    [ApplicationStatus.REJECTED]: [], // Terminal
-    [ApplicationStatus.WITHDRAWN]: [
-      ApplicationStatus.DRAFT, // Reactivate - allows tenant to re-apply with same data
-    ],
-  };
+  private readonly transitions: Record<ApplicationStatus, ApplicationStatus[]> =
+    {
+      [ApplicationStatus.DRAFT]: [
+        ApplicationStatus.SUBMITTED,
+        ApplicationStatus.WITHDRAWN,
+      ],
+      [ApplicationStatus.SUBMITTED]: [
+        ApplicationStatus.UNDER_REVIEW,
+        ApplicationStatus.WITHDRAWN,
+      ],
+      [ApplicationStatus.UNDER_REVIEW]: [
+        ApplicationStatus.NEEDS_INFO,
+        ApplicationStatus.PREAPPROVED,
+        ApplicationStatus.APPROVED,
+        ApplicationStatus.REJECTED,
+      ],
+      [ApplicationStatus.NEEDS_INFO]: [
+        ApplicationStatus.UNDER_REVIEW,
+        ApplicationStatus.WITHDRAWN,
+      ],
+      [ApplicationStatus.PREAPPROVED]: [
+        ApplicationStatus.APPROVED,
+        ApplicationStatus.REJECTED,
+      ],
+      [ApplicationStatus.APPROVED]: [], // Terminal
+      [ApplicationStatus.REJECTED]: [], // Terminal
+      [ApplicationStatus.WITHDRAWN]: [
+        ApplicationStatus.DRAFT, // Reactivate - allows tenant to re-apply with same data
+      ],
+    };
 
   /**
    * Check if a transition is valid.
@@ -67,7 +68,8 @@ export class ApplicationStateMachine {
   validateTransition(from: ApplicationStatus, to: ApplicationStatus): void {
     if (!this.canTransition(from, to)) {
       const available = this.getAvailableTransitions(from);
-      const availableStr = available.length > 0 ? available.join(', ') : 'none (terminal state)';
+      const availableStr =
+        available.length > 0 ? available.join(', ') : 'none (terminal state)';
       throw new BadRequestException(
         `Invalid transition from ${from} to ${to}. Valid transitions: ${availableStr}`,
       );

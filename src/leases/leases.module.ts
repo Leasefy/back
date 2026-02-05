@@ -18,11 +18,7 @@ import { ContractActivatedListener } from './events/contract-activated.listener.
  */
 @Module({
   controllers: [LeasesController],
-  providers: [
-    LeasesService,
-    PaymentsService,
-    ContractActivatedListener,
-  ],
+  providers: [LeasesService, PaymentsService, ContractActivatedListener],
   exports: [LeasesService, PaymentsService],
 })
 export class LeasesModule {}

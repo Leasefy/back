@@ -98,7 +98,7 @@ export class FilterPropertiesDto {
   @Transform(({ value }) => {
     // Handle comma-separated string from query params
     if (typeof value === 'string') {
-      return value.split(',').map(s => s.trim());
+      return value.split(',').map((s) => s.trim());
     }
     return value;
   })
@@ -113,7 +113,8 @@ export class FilterPropertiesDto {
 
   @ApiPropertyOptional({
     example: 'busco casa en bogota con 2 habitaciones y parqueadero',
-    description: 'Natural language search query. Parsed to extract filters automatically.',
+    description:
+      'Natural language search query. Parsed to extract filters automatically.',
   })
   @IsOptional()
   @IsString()

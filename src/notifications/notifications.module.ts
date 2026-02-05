@@ -73,11 +73,6 @@ import { NotificationsScheduler } from './scheduled/notifications-scheduler.js';
     // Scheduler
     NotificationsScheduler,
   ],
-  exports: [
-    NotificationsService,
-    EmailService,
-    PushService,
-    TemplateService,
-  ],
+  exports: [NotificationsService, EmailService, PushService, TemplateService],
 })
 export class NotificationsModule {}

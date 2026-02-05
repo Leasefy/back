@@ -9,7 +9,10 @@ import { PrismaService } from '../../database/prisma.service.js';
 import { PaymentsService } from '../../leases/payments.service.js';
 import { ReceiptStorageService } from '../receipt-storage/receipt-storage.service.js';
 import { LeasesService } from '../../leases/leases.service.js';
-import { TenantPaymentRequestStatus, PaymentMethod } from '../../common/enums/index.js';
+import {
+  TenantPaymentRequestStatus,
+  PaymentMethod,
+} from '../../common/enums/index.js';
 import { PaymentValidatedEvent } from '../../notifications/events/payment.events.js';
 import type { TenantPaymentRequest, Payment } from '@prisma/client';
 
@@ -82,10 +85,21 @@ export class PaymentValidationService {
   async findByIdForLandlord(
     requestId: string,
     landlordId: string,
-  ): Promise<TenantPaymentRequest & {
-    tenant: { firstName: string | null; lastName: string | null; email: string };
-    lease: { id: string; propertyAddress: string; monthlyRent: number; landlordId: string };
-  }> {
+  ): Promise<
+    TenantPaymentRequest & {
+      tenant: {
+        firstName: string | null;
+        lastName: string | null;
+        email: string;
+      };
+      lease: {
+        id: string;
+        propertyAddress: string;
+        monthlyRent: number;
+        landlordId: string;
+      };
+    }
+  > {
     const request = await this.prisma.tenantPaymentRequest.findUnique({
       where: { id: requestId },
       include: {
@@ -112,7 +126,9 @@ export class PaymentValidationService {
     }
 
     if (request.lease.landlordId !== landlordId) {
-      throw new ForbiddenException('You do not have access to this payment request');
+      throw new ForbiddenException(
+        'You do not have access to this payment request',
+      );
     }
 
     return request;
@@ -175,7 +191,8 @@ export class PaymentValidationService {
       where: { id: landlordId },
     });
     const landlordName = landlord
-      ? [landlord.firstName, landlord.lastName].filter(Boolean).join(' ') || landlord.email
+      ? [landlord.firstName, landlord.lastName].filter(Boolean).join(' ') ||
+        landlord.email
       : 'El propietario';
 
     this.eventEmitter.emit(
@@ -233,7 +250,8 @@ export class PaymentValidationService {
       where: { id: landlordId },
     });
     const landlordName = landlord
-      ? [landlord.firstName, landlord.lastName].filter(Boolean).join(' ') || landlord.email
+      ? [landlord.firstName, landlord.lastName].filter(Boolean).join(' ') ||
+        landlord.email
       : 'El propietario';
 
     this.eventEmitter.emit(

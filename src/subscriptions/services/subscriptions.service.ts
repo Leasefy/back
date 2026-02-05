@@ -92,20 +92,14 @@ export class SubscriptionsService {
     // Determine plan type based on user's role
     const planType = this.getUserPlanType(user.role);
 
-    return this.plansService.findByTypeAndTier(
-      planType as PlanType,
-      SubscriptionPlan.FREE,
-    );
+    return this.plansService.findByTypeAndTier(planType, SubscriptionPlan.FREE);
   }
 
   /**
    * Start a 7-day trial for a plan.
    * User must not already have an active subscription.
    */
-  async startTrial(
-    userId: string,
-    planId: string,
-  ): Promise<Subscription> {
+  async startTrial(userId: string, planId: string): Promise<Subscription> {
     // Validate plan exists and is active
     const plan = await this.plansService.findById(planId);
 
@@ -172,7 +166,11 @@ export class SubscriptionsService {
     dto: CreateSubscriptionDto,
   ): Promise<{
     subscription: Subscription;
-    paymentResult: { transactionId: string; status: string; message: string } | null;
+    paymentResult: {
+      transactionId: string;
+      status: string;
+      message: string;
+    } | null;
   }> {
     const plan = await this.plansService.findById(dto.planId);
 
@@ -181,9 +179,7 @@ export class SubscriptionsService {
     }
 
     const price =
-      dto.cycle === BillingCycle.MONTHLY
-        ? plan.monthlyPrice
-        : plan.annualPrice;
+      dto.cycle === BillingCycle.MONTHLY ? plan.monthlyPrice : plan.annualPrice;
 
     const now = new Date();
     const endDate = this.calculateEndDate(now, dto.cycle);
@@ -222,9 +218,7 @@ export class SubscriptionsService {
 
     // Handle payment result
     if (paymentResult.status === 'FAILURE') {
-      throw new BadRequestException(
-        `Pago rechazado: ${paymentResult.message}`,
-      );
+      throw new BadRequestException(`Pago rechazado: ${paymentResult.message}`);
     }
 
     // Expire existing subscriptions
@@ -270,10 +264,7 @@ export class SubscriptionsService {
    * Marks as CANCELLED, sets cancelledAt, disables auto-renew.
    * Subscription remains active until endDate.
    */
-  async cancel(
-    userId: string,
-    reason?: string,
-  ): Promise<Subscription> {
+  async cancel(userId: string, reason?: string): Promise<Subscription> {
     const subscription = await this.getActiveSubscription(userId);
 
     if (!subscription) {
@@ -318,7 +309,11 @@ export class SubscriptionsService {
     dto: ChangePlanDto,
   ): Promise<{
     subscription: Subscription;
-    paymentResult: { transactionId: string; status: string; message: string } | null;
+    paymentResult: {
+      transactionId: string;
+      status: string;
+      message: string;
+    } | null;
   }> {
     const newPlan = await this.plansService.findById(dto.newPlanId);
 
@@ -351,7 +346,11 @@ export class SubscriptionsService {
         },
       });
 
-      await this.updateUserPlan(userId, newPlan.tier as SubscriptionPlan, endDate);
+      await this.updateUserPlan(
+        userId,
+        newPlan.tier as SubscriptionPlan,
+        endDate,
+      );
       return { subscription, paymentResult: null };
     }
 
@@ -365,9 +364,7 @@ export class SubscriptionsService {
     const paymentResult = this.processPsePayment(dto.psePaymentData);
 
     if (paymentResult.status === 'FAILURE') {
-      throw new BadRequestException(
-        `Pago rechazado: ${paymentResult.message}`,
-      );
+      throw new BadRequestException(`Pago rechazado: ${paymentResult.message}`);
     }
 
     const subscription = await this.prisma.subscription.create({
@@ -394,7 +391,11 @@ export class SubscriptionsService {
       },
     });
 
-    await this.updateUserPlan(userId, newPlan.tier as SubscriptionPlan, endDate);
+    await this.updateUserPlan(
+      userId,
+      newPlan.tier as SubscriptionPlan,
+      endDate,
+    );
 
     this.logger.log(
       `User ${userId} changed plan to ${newPlan.name} (${dto.cycle}), payment: ${paymentResult.status}`,
@@ -522,7 +523,11 @@ export class SubscriptionsService {
   async purchaseScoringView(
     userId: string,
     pseData: PseSubscriptionPaymentDto,
-  ): Promise<{ success: boolean; amountPaid: number; paymentResult: { transactionId: string; status: string; message: string } }> {
+  ): Promise<{
+    success: boolean;
+    amountPaid: number;
+    paymentResult: { transactionId: string; status: string; message: string };
+  }> {
     const planConfig = await this.getUserPlanConfig(userId);
     const price = planConfig.scoringViewPrice;
 
@@ -535,9 +540,7 @@ export class SubscriptionsService {
     const paymentResult = this.processPsePayment(pseData);
 
     if (paymentResult.status === 'FAILURE') {
-      throw new BadRequestException(
-        `Pago rechazado: ${paymentResult.message}`,
-      );
+      throw new BadRequestException(`Pago rechazado: ${paymentResult.message}`);
     }
 
     this.logger.log(
@@ -614,9 +617,13 @@ export class SubscriptionsService {
    * Process PSE mock payment using the PseMockService.
    * Adapts subscription PSE data to the PseMockService interface.
    */
-  private processPsePayment(
-    pseData: PseSubscriptionPaymentDto,
-  ): { transactionId: string; status: string; message: string; bankName: string; timestamp: Date } {
+  private processPsePayment(pseData: PseSubscriptionPaymentDto): {
+    transactionId: string;
+    status: string;
+    message: string;
+    bankName: string;
+    timestamp: Date;
+  } {
     // PseMockService.processPayment only uses documentNumber and bankCode
     // from the dto, so we can cast the subscription PSE data
     const result = this.pseMockService.processPayment({

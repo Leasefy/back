@@ -52,7 +52,7 @@ export class NotificationsService {
     const jobId = `notif-${data.templateCode}-${data.userId}-${Date.now()}`;
 
     await this.queue.add(
-      data.templateCode,  // Job name
+      data.templateCode, // Job name
       {
         userId: data.userId,
         templateCode: data.templateCode,
@@ -65,12 +65,14 @@ export class NotificationsService {
         attempts: 2,
         backoff: {
           type: 'exponential',
-          delay: 10000,  // 10s, then 20s
+          delay: 10000, // 10s, then 20s
         },
       },
     );
 
-    this.logger.log(`Queued notification ${jobId}: ${data.templateCode} for user ${data.userId}`);
+    this.logger.log(
+      `Queued notification ${jobId}: ${data.templateCode} for user ${data.userId}`,
+    );
 
     return jobId;
   }
@@ -100,7 +102,9 @@ export class NotificationsService {
       ),
     );
 
-    this.logger.log(`Queued ${jobIds.length} notifications for ${templateCode}`);
+    this.logger.log(
+      `Queued ${jobIds.length} notifications for ${templateCode}`,
+    );
     return jobIds;
   }
 }

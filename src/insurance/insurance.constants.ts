@@ -2,11 +2,11 @@ import { InsuranceTier } from '../common/enums/index.js';
 
 export interface InsurancePlanDefinition {
   tier: InsuranceTier;
-  name: string;                    // Display name in Spanish
-  monthlyPremium: number;          // COP per month
-  maxCoverage: number;             // Maximum coverage in COP
-  coverageItems: string[];         // List of covered events (Spanish)
-  description: string;             // Full description for contract (Spanish)
+  name: string; // Display name in Spanish
+  monthlyPremium: number; // COP per month
+  maxCoverage: number; // Maximum coverage in COP
+  coverageItems: string[]; // List of covered events (Spanish)
+  description: string; // Full description for contract (Spanish)
 }
 
 /**
@@ -26,8 +26,8 @@ export const INSURANCE_PLANS: Record<InsuranceTier, InsurancePlanDefinition> = {
   [InsuranceTier.BASIC]: {
     tier: InsuranceTier.BASIC,
     name: 'Seguro Basico',
-    monthlyPremium: 25000,       // $25,000 COP/month
-    maxCoverage: 5000000,        // $5,000,000 COP
+    monthlyPremium: 25000, // $25,000 COP/month
+    maxCoverage: 5000000, // $5,000,000 COP
     coverageItems: [
       'Danos accidentales al inmueble',
       'Danos a instalaciones electricas e hidraulicas',
@@ -43,8 +43,8 @@ export const INSURANCE_PLANS: Record<InsuranceTier, InsurancePlanDefinition> = {
   [InsuranceTier.PREMIUM]: {
     tier: InsuranceTier.PREMIUM,
     name: 'Seguro Premium',
-    monthlyPremium: 75000,       // $75,000 COP/month
-    maxCoverage: 20000000,       // $20,000,000 COP
+    monthlyPremium: 75000, // $75,000 COP/month
+    maxCoverage: 20000000, // $20,000,000 COP
     coverageItems: [
       'Danos accidentales al inmueble',
       'Danos a instalaciones electricas e hidraulicas',

@@ -1,7 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { NotificationsService } from '../services/notifications.service.js';
-import { ContractReadyEvent, ContractSignedEvent } from '../events/contract.events.js';
+import {
+  ContractReadyEvent,
+  ContractSignedEvent,
+} from '../events/contract.events.js';
 
 /**
  * Listener for contract-related events.

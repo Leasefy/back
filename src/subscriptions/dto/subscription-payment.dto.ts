@@ -22,18 +22,25 @@ export class PseSubscriptionPaymentDto {
   @IsString()
   documentType!: string;
 
-  @ApiProperty({ description: 'Document number (Colombian cedula, 6-15 digits)' })
+  @ApiProperty({
+    description: 'Document number (Colombian cedula, 6-15 digits)',
+  })
   @IsString()
   @Matches(/^\d{6,15}$/, {
     message: 'El numero de documento debe tener entre 6 y 15 digitos',
   })
   documentNumber!: string;
 
-  @ApiProperty({ enum: ColombianBank, description: 'Bank code for PSE payment' })
+  @ApiProperty({
+    enum: ColombianBank,
+    description: 'Bank code for PSE payment',
+  })
   @IsEnum(ColombianBank)
   bankCode!: ColombianBank;
 
-  @ApiProperty({ description: 'Full name of account holder (min 3 characters)' })
+  @ApiProperty({
+    description: 'Full name of account holder (min 3 characters)',
+  })
   @IsString()
   @MinLength(3)
   holderName!: string;

@@ -21,7 +21,9 @@ export class ApplicationNotificationListener {
    * Notify landlord of new application.
    */
   @OnEvent('application.submitted')
-  async handleApplicationSubmitted(event: ApplicationSubmittedEvent): Promise<void> {
+  async handleApplicationSubmitted(
+    event: ApplicationSubmittedEvent,
+  ): Promise<void> {
     this.logger.log(`Application submitted: ${event.applicationId}`);
 
     await this.notificationsService.send({
@@ -41,8 +43,12 @@ export class ApplicationNotificationListener {
    * Notify tenant of approval/rejection/info request.
    */
   @OnEvent('application.statusChanged')
-  async handleApplicationStatusChanged(event: ApplicationStatusChangedEvent): Promise<void> {
-    this.logger.log(`Application status changed: ${event.applicationId} -> ${event.newStatus}`);
+  async handleApplicationStatusChanged(
+    event: ApplicationStatusChangedEvent,
+  ): Promise<void> {
+    this.logger.log(
+      `Application status changed: ${event.applicationId} -> ${event.newStatus}`,
+    );
 
     let templateCode: string | null = null;
 

@@ -1,5 +1,11 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
-import { format, addDays, getDay, startOfDay, differenceInDays } from 'date-fns';
+import {
+  format,
+  addDays,
+  getDay,
+  startOfDay,
+  differenceInDays,
+} from 'date-fns';
 import { PrismaService } from '../../database/prisma.service.js';
 import { VisitStatus } from '../../common/enums/index.js';
 
@@ -73,13 +79,17 @@ export class SlotsService {
 
     // 3. Build set of booked slots for O(1) lookup
     const bookedSlots = new Set(
-      bookedVisits.map((v) => `${format(v.visitDate, 'yyyy-MM-dd')}_${v.startTime}`),
+      bookedVisits.map(
+        (v) => `${format(v.visitDate, 'yyyy-MM-dd')}_${v.startTime}`,
+      ),
     );
 
     // 4. Generate slots
     const slots: TimeSlot[] = [];
     const now = new Date();
-    const minBookingTime = new Date(now.getTime() + MIN_BOOKING_BUFFER_HOURS * 60 * 60 * 1000);
+    const minBookingTime = new Date(
+      now.getTime() + MIN_BOOKING_BUFFER_HOURS * 60 * 60 * 1000,
+    );
 
     let currentDate = startOfDay(startDate);
     const endDateStart = startOfDay(endDate);
@@ -89,16 +99,23 @@ export class SlotsService {
       const dateStr = format(currentDate, 'yyyy-MM-dd');
 
       // Find availability rules for this day
-      const dayAvailabilities = availabilities.filter((a) => a.dayOfWeek === dayOfWeek);
+      const dayAvailabilities = availabilities.filter(
+        (a) => a.dayOfWeek === dayOfWeek,
+      );
 
       for (const availability of dayAvailabilities) {
         // Generate slots within this availability window
         let slotStartMinutes = this.parseTime(availability.startTime);
         const windowEndMinutes = this.parseTime(availability.endTime);
 
-        while (slotStartMinutes + availability.slotDuration <= windowEndMinutes) {
+        while (
+          slotStartMinutes + availability.slotDuration <=
+          windowEndMinutes
+        ) {
           const slotStartStr = this.formatMinutes(slotStartMinutes);
-          const slotEndStr = this.formatMinutes(slotStartMinutes + availability.slotDuration);
+          const slotEndStr = this.formatMinutes(
+            slotStartMinutes + availability.slotDuration,
+          );
           const slotKey = `${dateStr}_${slotStartStr}`;
 
           // Check if slot is in the past or too soon
@@ -160,14 +177,21 @@ export class SlotsService {
     const windowStart = this.parseTime(availability.startTime);
     const windowEnd = this.parseTime(availability.endTime);
 
-    if (slotMinutes < windowStart || slotMinutes + availability.slotDuration > windowEnd) {
-      throw new BadRequestException('Selected time is outside availability window');
+    if (
+      slotMinutes < windowStart ||
+      slotMinutes + availability.slotDuration > windowEnd
+    ) {
+      throw new BadRequestException(
+        'Selected time is outside availability window',
+      );
     }
 
     // Verify slot aligns with duration increments
     const offsetFromStart = slotMinutes - windowStart;
     if (offsetFromStart % availability.slotDuration !== 0) {
-      throw new BadRequestException('Selected time does not align with slot boundaries');
+      throw new BadRequestException(
+        'Selected time does not align with slot boundaries',
+      );
     }
 
     // Check not already booked
@@ -186,11 +210,15 @@ export class SlotsService {
 
     // Check not in past
     const now = new Date();
-    const minBookingTime = new Date(now.getTime() + MIN_BOOKING_BUFFER_HOURS * 60 * 60 * 1000);
+    const minBookingTime = new Date(
+      now.getTime() + MIN_BOOKING_BUFFER_HOURS * 60 * 60 * 1000,
+    );
     const slotDateTime = new Date(`${dateStr}T${startTime}:00`);
 
     if (slotDateTime <= minBookingTime) {
-      throw new BadRequestException('Cannot book a slot in the past or within 2 hours');
+      throw new BadRequestException(
+        'Cannot book a slot in the past or within 2 hours',
+      );
     }
 
     return { slotDuration: availability.slotDuration };

@@ -56,42 +56,142 @@ export class NaturalSearchParserService {
 
   // Common Bogota neighborhoods (expanded)
   private readonly BOGOTA_NEIGHBORHOODS = new Set([
-    'chapinero', 'usaquen', 'usaquén', 'suba', 'engativa', 'engativá',
-    'kennedy', 'fontibon', 'fontibón', 'teusaquillo', 'barrios unidos',
-    'santa fe', 'candelaria', 'la candelaria', 'san cristobal', 'san cristóbal',
-    'rafael uribe', 'antonio narino', 'antonio nariño', 'puente aranda',
-    'martires', 'mártires', 'bosa', 'ciudad bolivar', 'ciudad bolívar',
-    'tunjuelito', 'usme', 'sumapaz', 'cedritos', 'chico', 'el chico',
-    'rosales', 'la cabrera', 'virrey', 'santa barbara', 'santa bárbara',
-    'country', 'polo', 'modelia', 'niza', 'colina', 'spring', 'mazuren',
-    'la soledad', 'galerias', 'galerías', 'parkway', 'la macarena',
-    'quinta camacho', 'nogal', 'el nogal', 'refugio', 'el refugio',
-    'chicó norte', 'chico norte', 'la carolina', 'santa ana', 'santa ana norte',
-    'bella suiza', 'contador', 'cedro', 'el cedro', 'caobos', 'los caobos',
-    'multicentro', 'la calleja', 'san patricio', 'sotileza', 'gratamira',
+    'chapinero',
+    'usaquen',
+    'usaquén',
+    'suba',
+    'engativa',
+    'engativá',
+    'kennedy',
+    'fontibon',
+    'fontibón',
+    'teusaquillo',
+    'barrios unidos',
+    'santa fe',
+    'candelaria',
+    'la candelaria',
+    'san cristobal',
+    'san cristóbal',
+    'rafael uribe',
+    'antonio narino',
+    'antonio nariño',
+    'puente aranda',
+    'martires',
+    'mártires',
+    'bosa',
+    'ciudad bolivar',
+    'ciudad bolívar',
+    'tunjuelito',
+    'usme',
+    'sumapaz',
+    'cedritos',
+    'chico',
+    'el chico',
+    'rosales',
+    'la cabrera',
+    'virrey',
+    'santa barbara',
+    'santa bárbara',
+    'country',
+    'polo',
+    'modelia',
+    'niza',
+    'colina',
+    'spring',
+    'mazuren',
+    'la soledad',
+    'galerias',
+    'galerías',
+    'parkway',
+    'la macarena',
+    'quinta camacho',
+    'nogal',
+    'el nogal',
+    'refugio',
+    'el refugio',
+    'chicó norte',
+    'chico norte',
+    'la carolina',
+    'santa ana',
+    'santa ana norte',
+    'bella suiza',
+    'contador',
+    'cedro',
+    'el cedro',
+    'caobos',
+    'los caobos',
+    'multicentro',
+    'la calleja',
+    'san patricio',
+    'sotileza',
+    'gratamira',
   ]);
 
   // Medellin neighborhoods
   private readonly MEDELLIN_NEIGHBORHOODS = new Set([
-    'poblado', 'el poblado', 'laureles', 'envigado', 'belen', 'belén',
-    'la america', 'la américa', 'estadio', 'florida nueva', 'conquistadores',
-    'san lucas', 'manila', 'astorga', 'los balsos', 'provenza',
-    'santa monica', 'santa mónica', 'san diego', 'patio bonito',
-    'castropol', 'las lomas', 'transversal', 'alejandria', 'alejandría',
+    'poblado',
+    'el poblado',
+    'laureles',
+    'envigado',
+    'belen',
+    'belén',
+    'la america',
+    'la américa',
+    'estadio',
+    'florida nueva',
+    'conquistadores',
+    'san lucas',
+    'manila',
+    'astorga',
+    'los balsos',
+    'provenza',
+    'santa monica',
+    'santa mónica',
+    'san diego',
+    'patio bonito',
+    'castropol',
+    'las lomas',
+    'transversal',
+    'alejandria',
+    'alejandría',
   ]);
 
   // Number words in Spanish
   private readonly NUMBER_WORDS: Record<string, number> = {
-    un: 1, uno: 1, una: 1, primer: 1, primero: 1, primera: 1,
-    dos: 2, segundo: 2, segunda: 2,
-    tres: 3, tercer: 3, tercero: 3, tercera: 3,
-    cuatro: 4, cuarto: 4, cuarta: 4,
-    cinco: 5, quinto: 5, quinta: 5,
-    seis: 6, sexto: 6, sexta: 6,
-    siete: 7, septimo: 7, septima: 7,
-    ocho: 8, octavo: 8, octava: 8,
-    nueve: 9, noveno: 9, novena: 9,
-    diez: 10, decimo: 10, decima: 10,
+    un: 1,
+    uno: 1,
+    una: 1,
+    primer: 1,
+    primero: 1,
+    primera: 1,
+    dos: 2,
+    segundo: 2,
+    segunda: 2,
+    tres: 3,
+    tercer: 3,
+    tercero: 3,
+    tercera: 3,
+    cuatro: 4,
+    cuarto: 4,
+    cuarta: 4,
+    cinco: 5,
+    quinto: 5,
+    quinta: 5,
+    seis: 6,
+    sexto: 6,
+    sexta: 6,
+    siete: 7,
+    septimo: 7,
+    septima: 7,
+    ocho: 8,
+    octavo: 8,
+    octava: 8,
+    nueve: 9,
+    noveno: 9,
+    novena: 9,
+    diez: 10,
+    decimo: 10,
+    decima: 10,
   };
 
   // Amenity keywords (aligned with frontend AMENITIES_OPTIONS)
@@ -233,7 +333,8 @@ export class NaturalSearchParserService {
     if (areaResult) {
       if (areaResult.minArea) filters.minArea = areaResult.minArea;
       if (areaResult.maxArea) filters.maxArea = areaResult.maxArea;
-      detected['área'] = `${areaResult.minArea || '?'}-${areaResult.maxArea || '?'} m²`;
+      detected['área'] =
+        `${areaResult.minArea || '?'}-${areaResult.maxArea || '?'} m²`;
       areaResult.words.forEach((w) => usedWords.add(w));
     }
 
@@ -266,7 +367,8 @@ export class NaturalSearchParserService {
     if (priceResult) {
       if (priceResult.minPrice) filters.minPrice = priceResult.minPrice;
       if (priceResult.maxPrice) filters.maxPrice = priceResult.maxPrice;
-      detected['precio'] = `$${(priceResult.minPrice || 0).toLocaleString()}-${(priceResult.maxPrice || '∞').toLocaleString()}`;
+      detected['precio'] =
+        `$${(priceResult.minPrice || 0).toLocaleString()}-${(priceResult.maxPrice || '∞').toLocaleString()}`;
       priceResult.words.forEach((w) => usedWords.add(w));
     }
 
@@ -482,10 +584,7 @@ export class NaturalSearchParserService {
   private extractStratum(
     text: string,
   ): { stratum: number; words: string[] } | null {
-    const patterns = [
-      /estrato\s*(\d)/i,
-      /stratum\s*(\d)/i,
-    ];
+    const patterns = [/estrato\s*(\d)/i, /stratum\s*(\d)/i];
 
     for (const pattern of patterns) {
       const match = text.match(pattern);
@@ -523,9 +622,10 @@ export class NaturalSearchParserService {
     return null;
   }
 
-  private extractAmenities(
-    text: string,
-  ): { amenities: string[]; words: string[] } {
+  private extractAmenities(text: string): {
+    amenities: string[];
+    words: string[];
+  } {
     const amenities: string[] = [];
     const words: string[] = [];
     const normalizedText = this.removeAccents(text);
@@ -558,7 +658,8 @@ export class NaturalSearchParserService {
     let maxPrice: number | undefined;
 
     // Range pattern: "1 a 2 millones", "entre 1 y 2 millones"
-    const rangePattern = /(\d+(?:[.,]\d+)?)\s*(?:a|y|-|hasta)\s*(\d+(?:[.,]\d+)?)\s*(millon|millones|mill|M|pesos)/gi;
+    const rangePattern =
+      /(\d+(?:[.,]\d+)?)\s*(?:a|y|-|hasta)\s*(\d+(?:[.,]\d+)?)\s*(millon|millones|mill|M|pesos)/gi;
     const rangeMatches = [...text.matchAll(rangePattern)];
     if (rangeMatches.length > 0) {
       const match = rangeMatches[0];
@@ -574,7 +675,8 @@ export class NaturalSearchParserService {
 
     // Single price pattern: "2 millones", "hasta 3M"
     if (!minPrice && !maxPrice) {
-      const singlePattern = /(?:hasta|menos de|maximo|máximo)?\s*(\d+(?:[.,]\d+)?)\s*(millon|millones|mill|M)/gi;
+      const singlePattern =
+        /(?:hasta|menos de|maximo|máximo)?\s*(\d+(?:[.,]\d+)?)\s*(millon|millones|mill|M)/gi;
       const singleMatches = [...text.matchAll(singlePattern)];
 
       if (singleMatches.length > 0) {
@@ -602,11 +704,18 @@ export class NaturalSearchParserService {
 
     // Price keywords
     const normalizedText = this.removeAccents(text);
-    if (normalizedText.includes('barato') || normalizedText.includes('economico')) {
+    if (
+      normalizedText.includes('barato') ||
+      normalizedText.includes('economico')
+    ) {
       maxPrice = maxPrice ?? 2000000;
       if (!words.includes('barato')) words.push('barato');
     }
-    if (normalizedText.includes('lujoso') || normalizedText.includes('premium') || normalizedText.includes('exclusivo')) {
+    if (
+      normalizedText.includes('lujoso') ||
+      normalizedText.includes('premium') ||
+      normalizedText.includes('exclusivo')
+    ) {
       minPrice = minPrice ?? 5000000;
       if (!words.includes('lujoso')) words.push('lujoso');
     }
@@ -620,16 +729,54 @@ export class NaturalSearchParserService {
 
   private buildRemainingText(text: string, usedWords: Set<string>): string {
     const stopwords = new Set([
-      'busco', 'necesito', 'quiero', 'en', 'con', 'y', 'de', 'la', 'el', 'los', 'las',
-      'un', 'una', 'unos', 'unas', 'para', 'por', 'que', 'se', 'al', 'del',
-      'arriendo', 'alquiler', 'renta', 'cerca', 'zona', 'sector', 'a', 'o',
-      'mi', 'me', 'te', 'su', 'sus', 'muy', 'mas', 'pero', 'como', 'donde',
+      'busco',
+      'necesito',
+      'quiero',
+      'en',
+      'con',
+      'y',
+      'de',
+      'la',
+      'el',
+      'los',
+      'las',
+      'un',
+      'una',
+      'unos',
+      'unas',
+      'para',
+      'por',
+      'que',
+      'se',
+      'al',
+      'del',
+      'arriendo',
+      'alquiler',
+      'renta',
+      'cerca',
+      'zona',
+      'sector',
+      'a',
+      'o',
+      'mi',
+      'me',
+      'te',
+      'su',
+      'sus',
+      'muy',
+      'mas',
+      'pero',
+      'como',
+      'donde',
     ]);
 
     let remaining = text;
 
     for (const word of usedWords) {
-      remaining = remaining.replace(new RegExp(this.escapeRegex(word), 'gi'), ' ');
+      remaining = remaining.replace(
+        new RegExp(this.escapeRegex(word), 'gi'),
+        ' ',
+      );
     }
 
     const resultWords = remaining

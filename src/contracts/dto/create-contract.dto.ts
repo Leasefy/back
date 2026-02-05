@@ -32,11 +32,17 @@ export class CreateContractDto {
   @IsUUID()
   applicationId!: string;
 
-  @ApiProperty({ example: '2026-03-01', description: 'Contract start date (YYYY-MM-DD)' })
+  @ApiProperty({
+    example: '2026-03-01',
+    description: 'Contract start date (YYYY-MM-DD)',
+  })
   @IsDateString()
   startDate!: string;
 
-  @ApiProperty({ example: '2027-02-28', description: 'Contract end date (YYYY-MM-DD)' })
+  @ApiProperty({
+    example: '2027-02-28',
+    description: 'Contract end date (YYYY-MM-DD)',
+  })
   @IsDateString()
   endDate!: string;
 
@@ -65,7 +71,10 @@ export class CreateContractDto {
   @IsOptional()
   insuranceTier?: InsuranceTier;
 
-  @ApiPropertyOptional({ type: [CustomClauseDto], description: 'Custom contract clauses' })
+  @ApiPropertyOptional({
+    type: [CustomClauseDto],
+    description: 'Custom contract clauses',
+  })
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CustomClauseDto)

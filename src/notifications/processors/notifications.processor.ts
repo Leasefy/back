@@ -2,7 +2,10 @@ import { Processor, WorkerHost, OnWorkerEvent } from '@nestjs/bullmq';
 import { Logger } from '@nestjs/common';
 import { Job } from 'bullmq';
 import { PrismaService } from '../../database/prisma.service.js';
-import { NotificationChannel, NotificationStatus } from '../../common/enums/index.js';
+import {
+  NotificationChannel,
+  NotificationStatus,
+} from '../../common/enums/index.js';
 import { EmailService } from '../services/email.service.js';
 import { PushService } from '../services/push.service.js';
 import { TemplateService } from '../services/template.service.js';
@@ -70,13 +73,17 @@ export class NotificationsProcessor extends WorkerHost {
     let rendered;
     try {
       rendered = await this.templateService.render(templateCode, {
-        userName: [user.firstName, user.lastName].filter(Boolean).join(' ') || 'Usuario',
+        userName:
+          [user.firstName, user.lastName].filter(Boolean).join(' ') ||
+          'Usuario',
         userEmail: user.email,
         ...variables,
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
-      this.logger.error(`Failed to render template ${templateCode}: ${message}`);
+      this.logger.error(
+        `Failed to render template ${templateCode}: ${message}`,
+      );
       // Log failed attempt for email
       await this.logNotification({
         userId,
@@ -101,7 +108,9 @@ export class NotificationsProcessor extends WorkerHost {
         userId,
         templateCode,
         channel: NotificationChannel.EMAIL,
-        status: emailResult.success ? NotificationStatus.SENT : NotificationStatus.FAILED,
+        status: emailResult.success
+          ? NotificationStatus.SENT
+          : NotificationStatus.FAILED,
         recipient: user.email,
         subject: rendered.emailSubject,
         errorMessage: emailResult.error,
@@ -127,7 +136,9 @@ export class NotificationsProcessor extends WorkerHost {
         userId,
         templateCode,
         channel: NotificationChannel.PUSH,
-        status: pushResult.success ? NotificationStatus.SENT : NotificationStatus.FAILED,
+        status: pushResult.success
+          ? NotificationStatus.SENT
+          : NotificationStatus.FAILED,
         recipient: user.fcmToken,
         errorMessage: pushResult.error,
         sentAt: pushResult.success ? new Date() : undefined,

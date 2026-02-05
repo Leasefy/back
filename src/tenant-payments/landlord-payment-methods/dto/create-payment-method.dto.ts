@@ -63,7 +63,8 @@ export class CreateLandlordPaymentMethodDto {
   holderDocumentNumber!: string;
 
   @ApiPropertyOptional({
-    description: 'Phone number for Nequi/Daviplata (Colombian mobile format: 3XXXXXXXXX)',
+    description:
+      'Phone number for Nequi/Daviplata (Colombian mobile format: 3XXXXXXXXX)',
     example: '3001234567',
     maxLength: 20,
   })

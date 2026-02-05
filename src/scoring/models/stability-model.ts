@@ -32,7 +32,10 @@ export class StabilityModel {
     score += this.scoreEmploymentType(features.employmentType, signals);
 
     // Employment tenure scoring (max 10 points)
-    score += this.scoreEmploymentTenure(features.employmentTenureMonths, signals);
+    score += this.scoreEmploymentTenure(
+      features.employmentTenureMonths,
+      signals,
+    );
 
     // Verifiable employer contact scoring (max 5 points)
     score += this.scoreEmployerContact(features.hasEmployerContact, signals);

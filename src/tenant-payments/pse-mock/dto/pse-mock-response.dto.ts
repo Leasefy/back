@@ -25,6 +25,8 @@ export class PseMockResponseDto {
   @ApiProperty({ description: 'Transaction timestamp' })
   timestamp!: Date;
 
-  @ApiPropertyOptional({ description: 'Payment request ID if created (SUCCESS only)' })
+  @ApiPropertyOptional({
+    description: 'Payment request ID if created (SUCCESS only)',
+  })
   paymentRequestId?: string;
 }

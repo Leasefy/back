@@ -8,7 +8,8 @@ import { IsArray, IsUUID, ArrayMinSize, ArrayMaxSize } from 'class-validator';
 export class ReorderImagesDto {
   @ApiProperty({
     example: ['uuid1', 'uuid2', 'uuid3'],
-    description: 'Array of image IDs in desired order. First becomes thumbnail.',
+    description:
+      'Array of image IDs in desired order. First becomes thumbnail.',
   })
   @IsArray()
   @IsUUID('4', { each: true })

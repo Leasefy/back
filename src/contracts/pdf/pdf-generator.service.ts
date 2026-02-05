@@ -1,4 +1,9 @@
-import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  OnModuleInit,
+  OnModuleDestroy,
+  Logger,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import puppeteer, { Browser } from 'puppeteer';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
@@ -142,7 +147,9 @@ export class PdfGeneratorService implements OnModuleInit, OnModuleDestroy {
    *
    * Requirements: CONT-09
    */
-  async getSignedPdfUrl(storagePath: string): Promise<{ url: string; expiresAt: Date }> {
+  async getSignedPdfUrl(
+    storagePath: string,
+  ): Promise<{ url: string; expiresAt: Date }> {
     const { data, error } = await this.supabase.storage
       .from('contracts')
       .createSignedUrl(storagePath, 3600); // 1 hour

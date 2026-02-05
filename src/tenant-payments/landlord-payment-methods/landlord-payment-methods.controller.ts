@@ -75,8 +75,7 @@ export class LandlordPaymentMethodsController {
   @Get()
   @ApiOperation({
     summary: 'List my payment methods',
-    description:
-      'Get all payment methods configured by the current landlord.',
+    description: 'Get all payment methods configured by the current landlord.',
   })
   @ApiResponse({
     status: 200,

@@ -24,7 +24,9 @@ export class NotificationTemplatesService {
     });
 
     if (existing) {
-      throw new ConflictException(`Template with code '${dto.code}' already exists`);
+      throw new ConflictException(
+        `Template with code '${dto.code}' already exists`,
+      );
     }
 
     const template = await this.prisma.notificationTemplate.create({
@@ -86,7 +88,10 @@ export class NotificationTemplatesService {
   /**
    * Update a template.
    */
-  async update(id: string, dto: UpdateTemplateDto): Promise<NotificationTemplate> {
+  async update(
+    id: string,
+    dto: UpdateTemplateDto,
+  ): Promise<NotificationTemplate> {
     // Verify template exists
     await this.findById(id);
 
@@ -100,7 +105,9 @@ export class NotificationTemplatesService {
       });
 
       if (existing) {
-        throw new ConflictException(`Template with code '${dto.code}' already exists`);
+        throw new ConflictException(
+          `Template with code '${dto.code}' already exists`,
+        );
       }
     }
 
@@ -146,7 +153,9 @@ export class NotificationTemplatesService {
       data: { isActive: !template.isActive },
     });
 
-    this.logger.log(`Template ${updated.code} is now ${updated.isActive ? 'active' : 'inactive'}`);
+    this.logger.log(
+      `Template ${updated.code} is now ${updated.isActive ? 'active' : 'inactive'}`,
+    );
     return updated;
   }
 }

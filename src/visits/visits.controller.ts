@@ -100,7 +100,12 @@ export class VisitsController {
     @Param('availabilityId', ParseUUIDPipe) availabilityId: string,
     @Body() dto: UpdateAvailabilityDto,
   ): Promise<PropertyAvailability> {
-    return this.availabilityService.update(landlordId, propertyId, availabilityId, dto);
+    return this.availabilityService.update(
+      landlordId,
+      propertyId,
+      availabilityId,
+      dto,
+    );
   }
 
   /**
@@ -117,7 +122,11 @@ export class VisitsController {
     @Param('propertyId', ParseUUIDPipe) propertyId: string,
     @Param('availabilityId', ParseUUIDPipe) availabilityId: string,
   ): Promise<void> {
-    return this.availabilityService.delete(landlordId, propertyId, availabilityId);
+    return this.availabilityService.delete(
+      landlordId,
+      propertyId,
+      availabilityId,
+    );
   }
 
   // ===========================================
@@ -137,7 +146,11 @@ export class VisitsController {
     @Param('propertyId', ParseUUIDPipe) propertyId: string,
     @Query() dto: GetSlotsQueryDto,
   ): Promise<SlotsResponse> {
-    return this.slotsService.getAvailableSlots(propertyId, dto.startDate, dto.endDate);
+    return this.slotsService.getAvailableSlots(
+      propertyId,
+      dto.startDate,
+      dto.endDate,
+    );
   }
 
   // ===========================================
@@ -169,7 +182,9 @@ export class VisitsController {
   @Roles(Role.TENANT)
   @ApiOperation({ summary: 'Get my scheduled visits' })
   @ApiOkResponse({ description: 'List of visits' })
-  async getMyVisits(@CurrentUser('id') tenantId: string): Promise<VisitWithDetails[]> {
+  async getMyVisits(
+    @CurrentUser('id') tenantId: string,
+  ): Promise<VisitWithDetails[]> {
     return this.visitsService.findByTenant(tenantId);
   }
 

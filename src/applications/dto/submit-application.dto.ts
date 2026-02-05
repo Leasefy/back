@@ -8,7 +8,8 @@ import { IsOptional, IsString, MaxLength } from 'class-validator';
 export class SubmitApplicationDto {
   @ApiPropertyOptional({
     description: 'Optional message to landlord',
-    example: 'I am very interested in this property and can move in immediately.',
+    example:
+      'I am very interested in this property and can move in immediately.',
     maxLength: 1000,
   })
   @IsOptional()

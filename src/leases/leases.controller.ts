@@ -60,7 +60,10 @@ export class LeasesController {
   @Get()
   @Roles(Role.LANDLORD)
   @ApiOperation({ summary: 'List all leases (landlord)' })
-  @ApiResponse({ status: 200, description: 'List of leases with payment counts' })
+  @ApiResponse({
+    status: 200,
+    description: 'List of leases with payment counts',
+  })
   async listLeases(@CurrentUser() user: User) {
     return this.leasesService.listForLandlord(user.id);
   }
@@ -95,8 +98,14 @@ export class LeasesController {
   @ApiOperation({ summary: 'Record payment received' })
   @ApiParam({ name: 'id', type: String, description: 'Lease ID' })
   @ApiResponse({ status: 201, description: 'Payment recorded' })
-  @ApiResponse({ status: 400, description: 'Duplicate payment or invalid data' })
-  @ApiResponse({ status: 403, description: 'Only landlord can record payments' })
+  @ApiResponse({
+    status: 400,
+    description: 'Duplicate payment or invalid data',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Only landlord can record payments',
+  })
   @ApiResponse({ status: 404, description: 'Lease not found' })
   async recordPayment(
     @Param('id', ParseUUIDPipe) leaseId: string,

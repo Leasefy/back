@@ -25,7 +25,9 @@ export class PseMockRequestDto {
   @IsUUID()
   leaseId!: string;
 
-  @ApiPropertyOptional({ description: 'Amount in COP (defaults to lease rent)' })
+  @ApiPropertyOptional({
+    description: 'Amount in COP (defaults to lease rent)',
+  })
   @IsOptional()
   @IsInt()
   @Min(1000)
@@ -48,7 +50,10 @@ export class PseMockRequestDto {
   @IsIn(['NATURAL', 'JURIDICA'])
   personType!: 'NATURAL' | 'JURIDICA';
 
-  @ApiProperty({ enum: ['CC', 'CE', 'NIT', 'PASAPORTE'], description: 'Document type' })
+  @ApiProperty({
+    enum: ['CC', 'CE', 'NIT', 'PASAPORTE'],
+    description: 'Document type',
+  })
   @IsIn(['CC', 'CE', 'NIT', 'PASAPORTE'])
   documentType!: 'CC' | 'CE' | 'NIT' | 'PASAPORTE';
 

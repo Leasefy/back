@@ -40,7 +40,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
         exceptionResponse !== null
       ) {
         const responseObj = exceptionResponse as Record<string, unknown>;
-        message = (responseObj.message as string | string[]) || 'An error occurred';
+        message =
+          (responseObj.message as string | string[]) || 'An error occurred';
       } else {
         message = 'An error occurred';
       }

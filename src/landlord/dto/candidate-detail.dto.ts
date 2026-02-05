@@ -1,5 +1,10 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { ApplicationStatus, RiskLevel, DocumentType, ApplicationEventType } from '../../common/enums/index.js';
+import {
+  ApplicationStatus,
+  RiskLevel,
+  DocumentType,
+  ApplicationEventType,
+} from '../../common/enums/index.js';
 
 /**
  * Full candidate detail for landlord review.
@@ -47,7 +52,8 @@ export class CandidateDetailDto {
   };
 
   @ApiProperty({
-    description: 'List of uploaded documents (without URLs - use separate endpoint)',
+    description:
+      'List of uploaded documents (without URLs - use separate endpoint)',
   })
   documents!: Array<{
     id: string;

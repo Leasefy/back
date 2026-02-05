@@ -257,7 +257,9 @@ export class NotificationsScheduler {
     }
 
     if (leases.length > 0) {
-      this.logger.log(`Sent expiring lease notifications for ${leases.length} leases`);
+      this.logger.log(
+        `Sent expiring lease notifications for ${leases.length} leases`,
+      );
     }
   }
 

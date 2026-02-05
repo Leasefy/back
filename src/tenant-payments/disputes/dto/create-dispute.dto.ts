@@ -16,7 +16,8 @@ import { ApiProperty } from '@nestjs/swagger';
 export class CreateDisputeDto {
   @ApiProperty({
     description: 'Reason for disputing the rejection',
-    example: 'El comprobante muestra claramente el pago realizado el dia correcto',
+    example:
+      'El comprobante muestra claramente el pago realizado el dia correcto',
     minLength: 20,
     maxLength: 2000,
   })

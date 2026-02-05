@@ -1,10 +1,4 @@
-import {
-  IsOptional,
-  IsInt,
-  Min,
-  IsBoolean,
-  IsString,
-} from 'class-validator';
+import { IsOptional, IsInt, Min, IsBoolean, IsString } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
 /**
@@ -24,18 +18,24 @@ export class UpdatePlanPricingDto {
   @Min(0)
   annualPrice?: number;
 
-  @ApiPropertyOptional({ description: 'Price per extra scoring view in COP (0 for none)' })
+  @ApiPropertyOptional({
+    description: 'Price per extra scoring view in COP (0 for none)',
+  })
   @IsOptional()
   @IsInt()
   @Min(0)
   scoringViewPrice?: number;
 
-  @ApiPropertyOptional({ description: 'Max properties allowed (-1 for unlimited)' })
+  @ApiPropertyOptional({
+    description: 'Max properties allowed (-1 for unlimited)',
+  })
   @IsOptional()
   @IsInt()
   maxProperties?: number;
 
-  @ApiPropertyOptional({ description: 'Max scoring views per month (-1 for unlimited)' })
+  @ApiPropertyOptional({
+    description: 'Max scoring views per month (-1 for unlimited)',
+  })
   @IsOptional()
   @IsInt()
   maxScoringViews?: number;

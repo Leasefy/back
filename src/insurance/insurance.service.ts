@@ -1,6 +1,9 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { InsuranceTier } from '../common/enums/index.js';
-import { INSURANCE_PLANS, InsurancePlanDefinition } from './insurance.constants.js';
+import {
+  INSURANCE_PLANS,
+  InsurancePlanDefinition,
+} from './insurance.constants.js';
 
 @Injectable()
 export class InsuranceService {

@@ -18,7 +18,10 @@ import {
   ColombianBank,
 } from '../common/enums/index.js';
 import { PaymentReceiptUploadedEvent } from '../notifications/events/payment.events.js';
-import type { TenantPaymentRequest, LandlordPaymentMethod } from '@prisma/client';
+import type {
+  TenantPaymentRequest,
+  LandlordPaymentMethod,
+} from '@prisma/client';
 
 /**
  * TenantPaymentsService
@@ -63,7 +66,9 @@ export class TenantPaymentsService {
       lease.status !== LeaseStatus.ACTIVE &&
       lease.status !== LeaseStatus.ENDING_SOON
     ) {
-      throw new BadRequestException('Can only submit payments for active leases');
+      throw new BadRequestException(
+        'Can only submit payments for active leases',
+      );
     }
 
     // Check for duplicates
@@ -189,7 +194,9 @@ export class TenantPaymentsService {
       lease.status !== LeaseStatus.ACTIVE &&
       lease.status !== LeaseStatus.ENDING_SOON
     ) {
-      throw new BadRequestException('Can only submit payments for active leases');
+      throw new BadRequestException(
+        'Can only submit payments for active leases',
+      );
     }
 
     // Check for duplicates
@@ -231,7 +238,8 @@ export class TenantPaymentsService {
         where: { id: tenantId },
       });
       const tenantName = tenant
-        ? [tenant.firstName, tenant.lastName].filter(Boolean).join(' ') || tenant.email
+        ? [tenant.firstName, tenant.lastName].filter(Boolean).join(' ') ||
+          tenant.email
         : 'El inquilino';
 
       this.eventEmitter.emit(
@@ -278,7 +286,9 @@ export class TenantPaymentsService {
   async findById(
     requestId: string,
     tenantId: string,
-  ): Promise<TenantPaymentRequest & { receiptUrl?: { url: string; expiresAt: Date } }> {
+  ): Promise<
+    TenantPaymentRequest & { receiptUrl?: { url: string; expiresAt: Date } }
+  > {
     const request = await this.prisma.tenantPaymentRequest.findUnique({
       where: { id: requestId },
     });
@@ -343,10 +353,7 @@ export class TenantPaymentsService {
   /**
    * Helper: Verify tenant has access to lease.
    */
-  private async verifyTenantAccess(
-    leaseId: string,
-    tenantId: string,
-  ) {
+  private async verifyTenantAccess(leaseId: string, tenantId: string) {
     const lease = await this.prisma.lease.findUnique({
       where: { id: leaseId },
     });

@@ -44,7 +44,11 @@ export class PropertyAccessController {
     @Param('propertyId', ParseUUIDPipe) propertyId: string,
     @Body() dto: AssignAgentDto,
   ): Promise<PropertyAccess> {
-    return this.propertyAccessService.assignAgent(landlordId, propertyId, dto.email);
+    return this.propertyAccessService.assignAgent(
+      landlordId,
+      propertyId,
+      dto.email,
+    );
   }
 
   /**
@@ -72,7 +76,11 @@ export class PropertyAccessController {
     @Param('propertyId', ParseUUIDPipe) propertyId: string,
     @Param('agentId', ParseUUIDPipe) agentId: string,
   ): Promise<{ message: string }> {
-    await this.propertyAccessService.removeAgent(landlordId, propertyId, agentId);
+    await this.propertyAccessService.removeAgent(
+      landlordId,
+      propertyId,
+      agentId,
+    );
     return { message: 'Agente removido exitosamente' };
   }
 }

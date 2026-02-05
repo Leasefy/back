@@ -31,7 +31,9 @@ import { CreateTemplateDto, UpdateTemplateDto } from './dto/index.js';
 @Controller('admin/notification-templates')
 @Roles(Role.ADMIN)
 export class NotificationTemplatesController {
-  constructor(private readonly templatesService: NotificationTemplatesService) {}
+  constructor(
+    private readonly templatesService: NotificationTemplatesService,
+  ) {}
 
   @Post()
   @ApiOperation({ summary: 'Create a notification template' })

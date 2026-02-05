@@ -26,36 +26,54 @@ export class EmploymentInfoDto {
   @IsEnum(EmploymentType)
   employmentType!: EmploymentType;
 
-  @ApiPropertyOptional({ description: 'Employer/Company name', example: 'Empresa ABC S.A.S.' })
+  @ApiPropertyOptional({
+    description: 'Employer/Company name',
+    example: 'Empresa ABC S.A.S.',
+  })
   @IsOptional()
   @IsString()
   @MinLength(2)
   @MaxLength(100)
   companyName?: string;
 
-  @ApiPropertyOptional({ description: 'Job title/position', example: 'Desarrollador Senior' })
+  @ApiPropertyOptional({
+    description: 'Job title/position',
+    example: 'Desarrollador Senior',
+  })
   @IsOptional()
   @IsString()
   @MaxLength(100)
   jobTitle?: string;
 
-  @ApiPropertyOptional({ description: 'Employment start date', example: '2020-03-01' })
+  @ApiPropertyOptional({
+    description: 'Employment start date',
+    example: '2020-03-01',
+  })
   @IsOptional()
   @IsDateString()
   startDate?: string;
 
-  @ApiPropertyOptional({ description: 'Work address', example: 'Carrera 7 #32-00, Bogota' })
+  @ApiPropertyOptional({
+    description: 'Work address',
+    example: 'Carrera 7 #32-00, Bogota',
+  })
   @IsOptional()
   @IsString()
   @MaxLength(200)
   workAddress?: string;
 
-  @ApiPropertyOptional({ description: 'HR contact phone', example: '+5713001234' })
+  @ApiPropertyOptional({
+    description: 'HR contact phone',
+    example: '+5713001234',
+  })
   @IsOptional()
   @IsString()
   hrContactPhone?: string;
 
-  @ApiPropertyOptional({ description: 'HR contact email', example: 'rrhh@empresa.com' })
+  @ApiPropertyOptional({
+    description: 'HR contact email',
+    example: 'rrhh@empresa.com',
+  })
   @IsOptional()
   @IsString()
   hrContactEmail?: string;

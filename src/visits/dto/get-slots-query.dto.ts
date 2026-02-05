@@ -6,7 +6,10 @@ import { IsDateString } from 'class-validator';
  * Date range is required - max 30 days recommended.
  */
 export class GetSlotsQueryDto {
-  @ApiProperty({ example: '2026-02-15', description: 'Start date (YYYY-MM-DD)' })
+  @ApiProperty({
+    example: '2026-02-15',
+    description: 'Start date (YYYY-MM-DD)',
+  })
   @IsDateString()
   startDate!: string;
 

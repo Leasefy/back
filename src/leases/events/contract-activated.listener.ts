@@ -53,9 +53,14 @@ export class ContractActivatedListener {
         });
       });
 
-      this.logger.log(`Lease created successfully for contract ${event.contractId}`);
+      this.logger.log(
+        `Lease created successfully for contract ${event.contractId}`,
+      );
     } catch (error) {
-      this.logger.error(`Failed to create lease for contract ${event.contractId}`, error);
+      this.logger.error(
+        `Failed to create lease for contract ${event.contractId}`,
+        error,
+      );
       throw error;
     }
   }

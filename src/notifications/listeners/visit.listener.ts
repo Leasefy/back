@@ -1,7 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { NotificationsService } from '../services/notifications.service.js';
-import { VisitRequestedEvent, VisitStatusChangedEvent } from '../../visits/events/index.js';
+import {
+  VisitRequestedEvent,
+  VisitStatusChangedEvent,
+} from '../../visits/events/index.js';
 import { VisitStatus } from '../../common/enums/index.js';
 
 /**
@@ -40,8 +43,12 @@ export class VisitNotificationListener {
    * Notify relevant party based on status change.
    */
   @OnEvent('visit.statusChanged')
-  async handleVisitStatusChanged(event: VisitStatusChangedEvent): Promise<void> {
-    this.logger.log(`Visit status changed: ${event.visitId} -> ${event.newStatus}`);
+  async handleVisitStatusChanged(
+    event: VisitStatusChangedEvent,
+  ): Promise<void> {
+    this.logger.log(
+      `Visit status changed: ${event.visitId} -> ${event.newStatus}`,
+    );
 
     let templateCode: string | null = null;
     let recipientId: string;
@@ -58,20 +65,25 @@ export class VisitNotificationListener {
       case VisitStatus.CANCELLED:
         templateCode = 'VISIT_CANCELLED';
         // Notify the other party (not the canceller)
-        recipientId = event.changedBy === 'TENANT' ? event.landlordId : event.tenantId;
+        recipientId =
+          event.changedBy === 'TENANT' ? event.landlordId : event.tenantId;
         break;
       case VisitStatus.RESCHEDULED:
         templateCode = 'VISIT_RESCHEDULED';
         // Notify the other party (not the rescheduler)
-        recipientId = event.changedBy === 'TENANT' ? event.landlordId : event.tenantId;
+        recipientId =
+          event.changedBy === 'TENANT' ? event.landlordId : event.tenantId;
         break;
       default:
-        this.logger.debug(`No notification for visit status: ${event.newStatus}`);
+        this.logger.debug(
+          `No notification for visit status: ${event.newStatus}`,
+        );
         return;
     }
 
     // Get actor name from changedBy role
-    const actorName = event.changedBy === 'LANDLORD' ? 'El propietario' : 'El inquilino';
+    const actorName =
+      event.changedBy === 'LANDLORD' ? 'El propietario' : 'El inquilino';
 
     await this.notificationsService.send({
       userId: recipientId,

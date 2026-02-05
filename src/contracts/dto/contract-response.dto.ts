@@ -24,7 +24,10 @@ export class ContractListItemDto {
   @ApiProperty({ description: 'Contract end date' })
   endDate!: Date;
 
-  @ApiProperty({ enum: ['LANDLORD', 'TENANT'], description: 'User role in this contract' })
+  @ApiProperty({
+    enum: ['LANDLORD', 'TENANT'],
+    description: 'User role in this contract',
+  })
   role!: 'LANDLORD' | 'TENANT';
 
   @ApiProperty({ description: 'Contract creation date' })
@@ -56,13 +59,21 @@ export class ContractDetailDto {
   @ApiProperty({ example: 5, description: 'Payment due day of month' })
   paymentDay!: number;
 
-  @ApiProperty({ enum: InsuranceTier, description: 'Insurance tier selected for contract' })
+  @ApiProperty({
+    enum: InsuranceTier,
+    description: 'Insurance tier selected for contract',
+  })
   insuranceTier!: string;
 
-  @ApiProperty({ example: 25000, description: 'Monthly insurance premium in COP' })
+  @ApiProperty({
+    example: 25000,
+    description: 'Monthly insurance premium in COP',
+  })
   insurancePremium!: number;
 
-  @ApiPropertyOptional({ description: 'Auto-generated insurance coverage details' })
+  @ApiPropertyOptional({
+    description: 'Auto-generated insurance coverage details',
+  })
   insuranceDetails?: string | null;
 
   @ApiPropertyOptional({ description: 'Custom contract clauses' })
@@ -119,7 +130,10 @@ export class ContractCreatedDto {
   @ApiProperty({ description: 'Contract ID' })
   id!: string;
 
-  @ApiProperty({ enum: ContractStatus, description: 'Initial contract status (DRAFT)' })
+  @ApiProperty({
+    enum: ContractStatus,
+    description: 'Initial contract status (DRAFT)',
+  })
   status!: ContractStatus;
 
   @ApiProperty({ description: 'Contract creation date' })

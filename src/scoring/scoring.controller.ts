@@ -6,7 +6,12 @@ import {
   ForbiddenException,
   ParseUUIDPipe,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { ScoringService } from './scoring.service.js';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import { Roles } from '../auth/decorators/roles.decorator.js';
@@ -15,7 +20,10 @@ import type { User } from '@prisma/client';
 import { PrismaService } from '../database/prisma.service.js';
 import { PaymentHistoryService } from './services/payment-history.service.js';
 import { PaymentHistoryModel } from './models/payment-history-model.js';
-import { PaymentReputationDto, ReputationTier } from './dto/payment-reputation.dto.js';
+import {
+  PaymentReputationDto,
+  ReputationTier,
+} from './dto/payment-reputation.dto.js';
 import { PlanEnforcementService } from '../subscriptions/services/plan-enforcement.service.js';
 import { SubscriptionsService } from '../subscriptions/services/subscriptions.service.js';
 
@@ -46,22 +54,30 @@ export class ScoringController {
   @Roles(Role.TENANT)
   @ApiOperation({
     summary: 'Get my payment reputation',
-    description: 'Returns payment history score and metrics for the authenticated tenant',
+    description:
+      'Returns payment history score and metrics for the authenticated tenant',
   })
   @ApiResponse({
     status: 200,
     description: 'Payment reputation data',
     type: PaymentReputationDto,
   })
-  async getMyReputation(@CurrentUser() user: User): Promise<PaymentReputationDto> {
+  async getMyReputation(
+    @CurrentUser() user: User,
+  ): Promise<PaymentReputationDto> {
     // Get metrics for current user
-    const metrics = await this.paymentHistoryService.getMetricsForTenant(user.id);
+    const metrics = await this.paymentHistoryService.getMetricsForTenant(
+      user.id,
+    );
 
     // Calculate score
     const result = this.paymentHistoryModel.calculate(metrics);
 
     // Calculate tier
-    const tier = this.calculateTier(result.score, metrics.totalMonthsOnPlatform);
+    const tier = this.calculateTier(
+      result.score,
+      metrics.totalMonthsOnPlatform,
+    );
 
     return {
       score: result.score,
@@ -84,7 +100,10 @@ export class ScoringController {
   /**
    * Calculate reputation tier from score and tenure.
    */
-  private calculateTier(score: number, monthsOnPlatform: number): ReputationTier {
+  private calculateTier(
+    score: number,
+    monthsOnPlatform: number,
+  ): ReputationTier {
     // Not enough history to have meaningful tier
     if (monthsOnPlatform < 3) return 'NEW';
 
@@ -102,8 +121,14 @@ export class ScoringController {
   @Get(':applicationId')
   @ApiOperation({ summary: 'Get risk score result for an application' })
   @ApiResponse({ status: 200, description: 'Score result found' })
-  @ApiResponse({ status: 403, description: 'Not authorized to view this score' })
-  @ApiResponse({ status: 404, description: 'Score not found (scoring may still be in progress)' })
+  @ApiResponse({
+    status: 403,
+    description: 'Not authorized to view this score',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Score not found (scoring may still be in progress)',
+  })
   async getScore(
     @CurrentUser() user: User,
     @Param('applicationId', ParseUUIDPipe) applicationId: string,
@@ -156,7 +181,9 @@ export class ScoringController {
     await this.planEnforcement.recordScoringView(user.id);
 
     // Get user's plan config to determine premium access
-    const planConfig = await this.subscriptionsService.getUserPlanConfig(user.id);
+    const planConfig = await this.subscriptionsService.getUserPlanConfig(
+      user.id,
+    );
 
     // Basic scoring: only totalScore and level
     // Premium scoring: full details including drivers, flags, conditions

@@ -69,7 +69,9 @@ export class DisputesService {
     });
 
     if (existingDispute) {
-      throw new BadRequestException('Dispute already exists for this payment request');
+      throw new BadRequestException(
+        'Dispute already exists for this payment request',
+      );
     }
 
     // 3. Upload additional evidence if provided
@@ -104,7 +106,8 @@ export class DisputesService {
       where: { id: tenantId },
     });
     const tenantName = tenant
-      ? [tenant.firstName, tenant.lastName].filter(Boolean).join(' ') || tenant.email
+      ? [tenant.firstName, tenant.lastName].filter(Boolean).join(' ') ||
+        tenant.email
       : 'El inquilino';
 
     this.eventEmitter.emit(
@@ -196,7 +199,9 @@ export class DisputesService {
     const dispute = await this.findById(disputeId, tenantId);
 
     if (!dispute.additionalEvidencePath) {
-      throw new NotFoundException('No additional evidence attached to this dispute');
+      throw new NotFoundException(
+        'No additional evidence attached to this dispute',
+      );
     }
 
     return this.receiptStorage.getSignedUrl(dispute.additionalEvidencePath);

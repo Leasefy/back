@@ -33,7 +33,8 @@ export class CreatePaymentDto {
 
   @ApiProperty({
     example: 'CUS123456789012',
-    description: 'Payment reference number (PSE CUS, bank reference, receipt #)',
+    description:
+      'Payment reference number (PSE CUS, bank reference, receipt #)',
     maxLength: 100,
   })
   @IsString()

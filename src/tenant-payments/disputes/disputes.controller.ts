@@ -85,7 +85,8 @@ export class DisputesController {
       evidenceFile,
     );
     return {
-      message: 'Dispute opened successfully. Our support team will review your case.',
+      message:
+        'Dispute opened successfully. Our support team will review your case.',
       dispute,
     };
   }

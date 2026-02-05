@@ -27,22 +27,34 @@ export class ReputationSignalDto {
  * Payment reputation response for tenant dashboard.
  */
 export class PaymentReputationDto {
-  @ApiProperty({ example: 12, description: 'Payment history bonus score (0-15)' })
+  @ApiProperty({
+    example: 12,
+    description: 'Payment history bonus score (0-15)',
+  })
   score!: number;
 
   @ApiProperty({ example: 15, description: 'Maximum possible bonus score' })
   maxScore!: number;
 
-  @ApiProperty({ example: 0.95, description: 'Percentage of on-time payments (0-1)' })
+  @ApiProperty({
+    example: 0.95,
+    description: 'Percentage of on-time payments (0-1)',
+  })
   onTimePercentage!: number;
 
-  @ApiProperty({ example: 18, description: 'Total payments recorded on platform' })
+  @ApiProperty({
+    example: 18,
+    description: 'Total payments recorded on platform',
+  })
   totalPayments!: number;
 
   @ApiProperty({ example: 1, description: 'Number of late payments' })
   latePaymentCount!: number;
 
-  @ApiProperty({ example: 24, description: 'Total months as tenant on platform' })
+  @ApiProperty({
+    example: 24,
+    description: 'Total months as tenant on platform',
+  })
   totalMonthsOnPlatform!: number;
 
   @ApiProperty({ example: 45000000, description: 'Total COP paid on platform' })
@@ -58,6 +70,9 @@ export class PaymentReputationDto {
   })
   tier!: ReputationTier;
 
-  @ApiProperty({ type: [ReputationSignalDto], description: 'Score factor signals' })
+  @ApiProperty({
+    type: [ReputationSignalDto],
+    description: 'Score factor signals',
+  })
   signals!: ReputationSignalDto[];
 }

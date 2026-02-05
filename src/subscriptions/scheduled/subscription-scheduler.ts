@@ -91,9 +91,7 @@ export class SubscriptionScheduler {
           triggeredBy: `scheduler:trial-expired:${sub.id}`,
         });
       } catch (error) {
-        this.logger.error(
-          `Failed to expire trial ${sub.id}: ${error}`,
-        );
+        this.logger.error(`Failed to expire trial ${sub.id}: ${error}`);
       }
     }
 
@@ -110,8 +108,7 @@ export class SubscriptionScheduler {
   async checkSubscriptionExpiry(): Promise<void> {
     this.logger.debug('Checking for subscription expiry...');
 
-    const count =
-      await this.subscriptionsService.handleExpiredSubscriptions();
+    const count = await this.subscriptionsService.handleExpiredSubscriptions();
 
     if (count > 0) {
       this.logger.log(`Processed ${count} expired subscriptions`);

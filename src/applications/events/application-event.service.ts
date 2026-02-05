@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import type { ApplicationEvent, Prisma } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service.js';
-import { ApplicationEventType, ApplicationStatus } from '../../common/enums/index.js';
+import {
+  ApplicationEventType,
+  ApplicationStatus,
+} from '../../common/enums/index.js';
 
 /**
  * Service for logging application events.
@@ -33,7 +36,10 @@ export class ApplicationEventService {
   /**
    * Log application creation event.
    */
-  async logCreated(applicationId: string, tenantId: string): Promise<ApplicationEvent> {
+  async logCreated(
+    applicationId: string,
+    tenantId: string,
+  ): Promise<ApplicationEvent> {
     return this.logEvent(applicationId, ApplicationEventType.CREATED, tenantId);
   }
 
@@ -45,14 +51,26 @@ export class ApplicationEventService {
     actorId: string,
     step: number,
   ): Promise<ApplicationEvent> {
-    return this.logEvent(applicationId, ApplicationEventType.STEP_COMPLETED, actorId, { step });
+    return this.logEvent(
+      applicationId,
+      ApplicationEventType.STEP_COMPLETED,
+      actorId,
+      { step },
+    );
   }
 
   /**
    * Log application submission.
    */
-  async logSubmitted(applicationId: string, tenantId: string): Promise<ApplicationEvent> {
-    return this.logEvent(applicationId, ApplicationEventType.SUBMITTED, tenantId);
+  async logSubmitted(
+    applicationId: string,
+    tenantId: string,
+  ): Promise<ApplicationEvent> {
+    return this.logEvent(
+      applicationId,
+      ApplicationEventType.SUBMITTED,
+      tenantId,
+    );
   }
 
   /**
@@ -65,11 +83,16 @@ export class ApplicationEventService {
     toStatus: ApplicationStatus,
     reason?: string,
   ): Promise<ApplicationEvent> {
-    return this.logEvent(applicationId, ApplicationEventType.STATUS_CHANGED, actorId, {
-      from: fromStatus,
-      to: toStatus,
-      reason,
-    });
+    return this.logEvent(
+      applicationId,
+      ApplicationEventType.STATUS_CHANGED,
+      actorId,
+      {
+        from: fromStatus,
+        to: toStatus,
+        reason,
+      },
+    );
   }
 
   /**
@@ -80,9 +103,14 @@ export class ApplicationEventService {
     landlordId: string,
     message: string,
   ): Promise<ApplicationEvent> {
-    return this.logEvent(applicationId, ApplicationEventType.INFO_REQUESTED, landlordId, {
-      message,
-    });
+    return this.logEvent(
+      applicationId,
+      ApplicationEventType.INFO_REQUESTED,
+      landlordId,
+      {
+        message,
+      },
+    );
   }
 
   /**
@@ -93,9 +121,14 @@ export class ApplicationEventService {
     tenantId: string,
     message?: string,
   ): Promise<ApplicationEvent> {
-    return this.logEvent(applicationId, ApplicationEventType.INFO_PROVIDED, tenantId, {
-      message,
-    });
+    return this.logEvent(
+      applicationId,
+      ApplicationEventType.INFO_PROVIDED,
+      tenantId,
+      {
+        message,
+      },
+    );
   }
 
   /**
@@ -107,10 +140,15 @@ export class ApplicationEventService {
     documentType: string,
     documentId: string,
   ): Promise<ApplicationEvent> {
-    return this.logEvent(applicationId, ApplicationEventType.DOCUMENT_UPLOADED, tenantId, {
-      documentType,
-      documentId,
-    });
+    return this.logEvent(
+      applicationId,
+      ApplicationEventType.DOCUMENT_UPLOADED,
+      tenantId,
+      {
+        documentType,
+        documentId,
+      },
+    );
   }
 
   /**
@@ -121,9 +159,14 @@ export class ApplicationEventService {
     actorId: string,
     documentId: string,
   ): Promise<ApplicationEvent> {
-    return this.logEvent(applicationId, ApplicationEventType.DOCUMENT_DELETED, actorId, {
-      documentId,
-    });
+    return this.logEvent(
+      applicationId,
+      ApplicationEventType.DOCUMENT_DELETED,
+      actorId,
+      {
+        documentId,
+      },
+    );
   }
 
   /**
@@ -134,7 +177,12 @@ export class ApplicationEventService {
     tenantId: string,
     reason?: string,
   ): Promise<ApplicationEvent> {
-    return this.logEvent(applicationId, ApplicationEventType.WITHDRAWN, tenantId, { reason });
+    return this.logEvent(
+      applicationId,
+      ApplicationEventType.WITHDRAWN,
+      tenantId,
+      { reason },
+    );
   }
 
   /**

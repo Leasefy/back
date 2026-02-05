@@ -1,9 +1,4 @@
-import {
-  IsUUID,
-  IsEnum,
-  IsOptional,
-  ValidateNested,
-} from 'class-validator';
+import { IsUUID, IsEnum, IsOptional, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { BillingCycle } from '../../common/enums/index.js';
@@ -19,7 +14,10 @@ export class CreateSubscriptionDto {
   @IsUUID()
   planId!: string;
 
-  @ApiProperty({ enum: BillingCycle, description: 'Billing cycle: MONTHLY or ANNUAL' })
+  @ApiProperty({
+    enum: BillingCycle,
+    description: 'Billing cycle: MONTHLY or ANNUAL',
+  })
   @IsEnum(BillingCycle)
   cycle!: BillingCycle;
 

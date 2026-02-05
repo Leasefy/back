@@ -1,4 +1,11 @@
-import { IsString, IsNotEmpty, MaxLength, IsOptional, IsBoolean, Matches } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  MaxLength,
+  IsOptional,
+  IsBoolean,
+  Matches,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 /**
@@ -13,7 +20,8 @@ export class CreateTemplateDto {
   @IsNotEmpty()
   @MaxLength(50)
   @Matches(/^[A-Z][A-Z0-9_]*$/, {
-    message: 'Code must be uppercase with underscores (e.g., APPLICATION_RECEIVED)',
+    message:
+      'Code must be uppercase with underscores (e.g., APPLICATION_RECEIVED)',
   })
   code!: string;
 
@@ -46,7 +54,8 @@ export class CreateTemplateDto {
 
   @ApiProperty({
     description: 'Email body in Markdown (supports {{variables}})',
-    example: '# Nueva Aplicacion\n\n**{{otherPartyName}}** ha aplicado a tu propiedad.',
+    example:
+      '# Nueva Aplicacion\n\n**{{otherPartyName}}** ha aplicado a tu propiedad.',
   })
   @IsString()
   @IsNotEmpty()

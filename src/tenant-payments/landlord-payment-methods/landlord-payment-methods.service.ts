@@ -54,7 +54,9 @@ export class LandlordPaymentMethodsService {
    * @param landlordId - The ID of the landlord
    * @returns List of payment methods ordered by createdAt desc
    */
-  async findAllForLandlord(landlordId: string): Promise<LandlordPaymentMethod[]> {
+  async findAllForLandlord(
+    landlordId: string,
+  ): Promise<LandlordPaymentMethod[]> {
     return this.prisma.landlordPaymentMethod.findMany({
       where: { landlordId },
       orderBy: { createdAt: 'desc' },
@@ -114,12 +116,18 @@ export class LandlordPaymentMethodsService {
       data: {
         ...(dto.bankName !== undefined && { bankName: dto.bankName }),
         ...(dto.accountType !== undefined && { accountType: dto.accountType }),
-        ...(dto.accountNumber !== undefined && { accountNumber: dto.accountNumber }),
+        ...(dto.accountNumber !== undefined && {
+          accountNumber: dto.accountNumber,
+        }),
         ...(dto.holderName !== undefined && { holderName: dto.holderName }),
-        ...(dto.holderDocumentNumber !== undefined && { holderDocumentNumber: dto.holderDocumentNumber }),
+        ...(dto.holderDocumentNumber !== undefined && {
+          holderDocumentNumber: dto.holderDocumentNumber,
+        }),
         ...(dto.phoneNumber !== undefined && { phoneNumber: dto.phoneNumber }),
         ...(dto.methodType !== undefined && { methodType: dto.methodType }),
-        ...(dto.instructions !== undefined && { instructions: dto.instructions }),
+        ...(dto.instructions !== undefined && {
+          instructions: dto.instructions,
+        }),
         ...(dto.isActive !== undefined && { isActive: dto.isActive }),
       },
     });

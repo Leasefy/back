@@ -44,6 +44,10 @@ import { LeasesModule } from '../leases/leases.module.js';
     PaymentValidationService,
     DisputesService,
   ],
-  exports: [LandlordPaymentMethodsService, TenantPaymentsService, PseMockService],
+  exports: [
+    LandlordPaymentMethodsService,
+    TenantPaymentsService,
+    PseMockService,
+  ],
 })
 export class TenantPaymentsModule {}

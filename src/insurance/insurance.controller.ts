@@ -60,7 +60,7 @@ export class InsuranceController {
     // Validate tier is a valid enum value, try uppercase for case-insensitive convenience
     const normalizedTier = tier.toUpperCase();
     if (this.insuranceService.isValidTier(normalizedTier)) {
-      return this.insuranceService.getTierDetails(normalizedTier as InsuranceTier);
+      return this.insuranceService.getTierDetails(normalizedTier);
     }
     // Will throw BadRequestException for invalid tier
     return this.insuranceService.getTierDetails(tier as InsuranceTier);

@@ -8,7 +8,8 @@ import { IsOptional, IsString, MaxLength } from 'class-validator';
 export class ApproveCandidateDto {
   @ApiPropertyOptional({
     description: 'Optional message to tenant',
-    example: 'Congratulations! Your application has been approved. We will send the contract shortly.',
+    example:
+      'Congratulations! Your application has been approved. We will send the contract shortly.',
     maxLength: 1000,
   })
   @IsOptional()

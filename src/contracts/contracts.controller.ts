@@ -8,7 +8,13 @@ import {
   Req,
 } from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+} from '@nestjs/swagger';
 import { ContractsService } from './contracts.service.js';
 import { CreateContractDto, SignContractDto } from './dto/index.js';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
@@ -45,12 +51,12 @@ export class ContractsController {
   @Roles(Role.LANDLORD)
   @ApiOperation({ summary: 'Create contract for approved application' })
   @ApiResponse({ status: 201, description: 'Contract created' })
-  @ApiResponse({ status: 400, description: 'Invalid application state or dates' })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid application state or dates',
+  })
   @ApiResponse({ status: 403, description: 'Not property owner' })
-  async create(
-    @CurrentUser() user: User,
-    @Body() dto: CreateContractDto,
-  ) {
+  async create(@CurrentUser() user: User, @Body() dto: CreateContractDto) {
     return this.contractsService.create(user.id, dto);
   }
 
@@ -128,9 +134,18 @@ export class ContractsController {
     @Body() dto: SignContractDto,
     @Req() req: Request,
   ) {
-    const ip = (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress || 'unknown';
+    const ip =
+      (req.headers['x-forwarded-for'] as string) ||
+      req.socket.remoteAddress ||
+      'unknown';
     const userAgent = req.headers['user-agent'] || 'unknown';
-    return this.contractsService.signAsLandlord(id, user.id, dto, ip, userAgent);
+    return this.contractsService.signAsLandlord(
+      id,
+      user.id,
+      dto,
+      ip,
+      userAgent,
+    );
   }
 
   /**
@@ -143,7 +158,10 @@ export class ContractsController {
   @Post(':id/sign/tenant')
   @Roles(Role.TENANT)
   @ApiOperation({ summary: 'Tenant signs contract' })
-  @ApiResponse({ status: 200, description: 'Contract signed by tenant, PDF generated' })
+  @ApiResponse({
+    status: 200,
+    description: 'Contract signed by tenant, PDF generated',
+  })
   @ApiResponse({ status: 400, description: 'Invalid state or missing consent' })
   async signAsTenant(
     @CurrentUser() user: User,
@@ -151,7 +169,10 @@ export class ContractsController {
     @Body() dto: SignContractDto,
     @Req() req: Request,
   ) {
-    const ip = (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress || 'unknown';
+    const ip =
+      (req.headers['x-forwarded-for'] as string) ||
+      req.socket.remoteAddress ||
+      'unknown';
     const userAgent = req.headers['user-agent'] || 'unknown';
     return this.contractsService.signAsTenant(id, user.id, dto, ip, userAgent);
   }
@@ -167,7 +188,10 @@ export class ContractsController {
   @Roles(Role.LANDLORD)
   @ApiOperation({ summary: 'Activate a signed contract (creates lease)' })
   @ApiParam({ name: 'id', type: String, description: 'Contract ID' })
-  @ApiResponse({ status: 200, description: 'Contract activated, lease created' })
+  @ApiResponse({
+    status: 200,
+    description: 'Contract activated, lease created',
+  })
   @ApiResponse({ status: 400, description: 'Invalid state transition' })
   @ApiResponse({ status: 403, description: 'Only landlord can activate' })
   @ApiResponse({ status: 404, description: 'Contract not found' })

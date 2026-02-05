@@ -14,7 +14,8 @@ import { RiskScoreResult } from '@prisma/client';
 @Injectable()
 export class ScoringService {
   constructor(
-    @InjectQueue('scoring') private readonly scoringQueue: Queue<ScoringJobData>,
+    @InjectQueue('scoring')
+    private readonly scoringQueue: Queue<ScoringJobData>,
     private readonly prisma: PrismaService,
   ) {}
 
@@ -25,7 +26,10 @@ export class ScoringService {
    * @param applicationId - ID of the application to score
    * @param triggeredBy - User ID who triggered the scoring
    */
-  async addScoringJob(applicationId: string, triggeredBy: string): Promise<void> {
+  async addScoringJob(
+    applicationId: string,
+    triggeredBy: string,
+  ): Promise<void> {
     await this.scoringQueue.add(
       'score-application',
       {

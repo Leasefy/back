@@ -6,13 +6,19 @@ import { IsInt, IsString, Min, Max, Matches, IsIn } from 'class-validator';
  * Supports 15, 30, 45, or 60 minute slot durations.
  */
 export class CreateAvailabilityDto {
-  @ApiProperty({ example: 1, description: 'Day of week (0=Sunday, 6=Saturday)' })
+  @ApiProperty({
+    example: 1,
+    description: 'Day of week (0=Sunday, 6=Saturday)',
+  })
   @IsInt()
   @Min(0)
   @Max(6)
   dayOfWeek!: number;
 
-  @ApiProperty({ example: '09:00', description: 'Start time (HH:mm 24h format)' })
+  @ApiProperty({
+    example: '09:00',
+    description: 'Start time (HH:mm 24h format)',
+  })
   @IsString()
   @Matches(/^([01]\d|2[0-3]):([0-5]\d)$/, {
     message: 'startTime must be in HH:mm format (24h)',
@@ -32,6 +38,8 @@ export class CreateAvailabilityDto {
     enum: [15, 30, 45, 60],
   })
   @IsInt()
-  @IsIn([15, 30, 45, 60], { message: 'slotDuration must be 15, 30, 45, or 60 minutes' })
+  @IsIn([15, 30, 45, 60], {
+    message: 'slotDuration must be 15, 30, 45, or 60 minutes',
+  })
   slotDuration!: number;
 }

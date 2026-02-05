@@ -1,9 +1,4 @@
-import {
-  Controller,
-  Get,
-  Param,
-  ParseUUIDPipe,
-} from '@nestjs/common';
+import { Controller, Get, Param, ParseUUIDPipe } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -33,7 +28,9 @@ export class AgentsController {
   @Get('properties')
   @ApiOperation({ summary: 'Get properties assigned to current agent' })
   @ApiOkResponse({ description: 'List of assigned properties' })
-  async getMyProperties(@CurrentUser('id') agentId: string): Promise<Property[]> {
+  async getMyProperties(
+    @CurrentUser('id') agentId: string,
+  ): Promise<Property[]> {
     return this.propertyAccessService.getAccessibleProperties(agentId);
   }
 
@@ -47,6 +44,9 @@ export class AgentsController {
     @CurrentUser('id') agentId: string,
     @Param('propertyId', ParseUUIDPipe) propertyId: string,
   ): Promise<User> {
-    return this.propertyAccessService.getLandlordForManagedProperty(agentId, propertyId);
+    return this.propertyAccessService.getLandlordForManagedProperty(
+      agentId,
+      propertyId,
+    );
   }
 }

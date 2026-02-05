@@ -11,8 +11,8 @@ export interface TemplateVariables {
   userEmail?: string;
   propertyTitle?: string;
   propertyAddress?: string;
-  amount?: string;        // Formatted currency string
-  date?: string;          // Formatted date string
+  amount?: string; // Formatted currency string
+  date?: string; // Formatted date string
   otherPartyName?: string;
   // Additional context-specific variables
   [key: string]: string | undefined;
@@ -52,8 +52,8 @@ export class TemplateService {
   constructor(private readonly prisma: PrismaService) {
     // Configure marked for safe HTML output
     marked.setOptions({
-      gfm: true,       // GitHub Flavored Markdown
-      breaks: true,    // Convert \n to <br>
+      gfm: true, // GitHub Flavored Markdown
+      breaks: true, // Convert \n to <br>
     });
   }
 
@@ -65,7 +65,10 @@ export class TemplateService {
    * @returns Rendered template with HTML email body
    * @throws NotFoundException if template not found or inactive
    */
-  async render(code: string, variables: TemplateVariables): Promise<RenderedTemplate> {
+  async render(
+    code: string,
+    variables: TemplateVariables,
+  ): Promise<RenderedTemplate> {
     // Load template from database
     const template = await this.prisma.notificationTemplate.findUnique({
       where: { code },
@@ -80,15 +83,23 @@ export class TemplateService {
     }
 
     // Substitute variables in all template fields
-    const emailSubject = this.substituteVariables(template.emailSubject, variables);
-    const emailMarkdown = this.substituteVariables(template.emailBody, variables);
+    const emailSubject = this.substituteVariables(
+      template.emailSubject,
+      variables,
+    );
+    const emailMarkdown = this.substituteVariables(
+      template.emailBody,
+      variables,
+    );
     const pushTitle = this.substituteVariables(template.pushTitle, variables);
     const pushBody = this.substituteVariables(template.pushBody, variables);
 
     // Convert Markdown to HTML for email
     const emailHtml = this.wrapInEmailLayout(await marked.parse(emailMarkdown));
 
-    this.logger.debug(`Rendered template ${code} for ${variables.userName || 'user'}`);
+    this.logger.debug(
+      `Rendered template ${code} for ${variables.userName || 'user'}`,
+    );
 
     return {
       emailSubject,
@@ -102,7 +113,10 @@ export class TemplateService {
    * Substitute {{variable}} placeholders with values.
    * Missing variables are replaced with empty string.
    */
-  private substituteVariables(text: string, variables: TemplateVariables): string {
+  private substituteVariables(
+    text: string,
+    variables: TemplateVariables,
+  ): string {
     return text.replace(/\{\{(\w+)\}\}/g, (match, key) => {
       const value = variables[key];
       if (value === undefined) {

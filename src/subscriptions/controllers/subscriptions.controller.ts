@@ -1,10 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Req,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Req } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
@@ -32,7 +26,10 @@ export class SubscriptionsController {
 
   @Get('me')
   @ApiOperation({ summary: 'Obtener mi suscripcion actual' })
-  @ApiResponse({ status: 200, description: 'Estado de suscripcion, uso y plan' })
+  @ApiResponse({
+    status: 200,
+    description: 'Estado de suscripcion, uso y plan',
+  })
   @ApiResponse({ status: 401, description: 'No autorizado' })
   async getMySubscription(@Req() req: Request & { user: User }) {
     const userId = req.user.id;
@@ -70,7 +67,10 @@ export class SubscriptionsController {
   @Post('subscribe')
   @ApiOperation({ summary: 'Suscribirse a un plan' })
   @ApiResponse({ status: 201, description: 'Suscripcion creada' })
-  @ApiResponse({ status: 400, description: 'Error de validacion o pago rechazado' })
+  @ApiResponse({
+    status: 400,
+    description: 'Error de validacion o pago rechazado',
+  })
   @ApiResponse({ status: 401, description: 'No autorizado' })
   @ApiResponse({ status: 404, description: 'Plan no encontrado' })
   async subscribe(
@@ -96,7 +96,10 @@ export class SubscriptionsController {
   @Post('change-plan')
   @ApiOperation({ summary: 'Cambiar de plan' })
   @ApiResponse({ status: 201, description: 'Plan cambiado exitosamente' })
-  @ApiResponse({ status: 400, description: 'Error de validacion o pago rechazado' })
+  @ApiResponse({
+    status: 400,
+    description: 'Error de validacion o pago rechazado',
+  })
   @ApiResponse({ status: 401, description: 'No autorizado' })
   @ApiResponse({ status: 404, description: 'Plan no encontrado' })
   async changePlan(
@@ -109,7 +112,10 @@ export class SubscriptionsController {
   @Post('micropayment/scoring-view')
   @ApiOperation({ summary: 'Comprar vista adicional de scoring (micropago)' })
   @ApiResponse({ status: 201, description: 'Vista de scoring comprada' })
-  @ApiResponse({ status: 400, description: 'Pago rechazado o plan ya incluye vistas ilimitadas' })
+  @ApiResponse({
+    status: 400,
+    description: 'Pago rechazado o plan ya incluye vistas ilimitadas',
+  })
   @ApiResponse({ status: 401, description: 'No autorizado' })
   async purchaseScoringView(
     @Req() req: Request & { user: User },

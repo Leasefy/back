@@ -24,7 +24,11 @@ import { DocumentsService } from './documents.service.js';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import { Roles } from '../auth/decorators/roles.decorator.js';
 import type { User } from '@prisma/client';
-import { UploadDocumentDto, DocumentResponseDto, SignedUrlResponseDto } from './dto/index.js';
+import {
+  UploadDocumentDto,
+  DocumentResponseDto,
+  SignedUrlResponseDto,
+} from './dto/index.js';
 import { DocumentType, Role } from '../common/enums/index.js';
 
 @ApiTags('Documents')
@@ -57,8 +61,15 @@ export class DocumentsController {
       },
     },
   })
-  @ApiResponse({ status: 201, description: 'Document uploaded', type: DocumentResponseDto })
-  @ApiResponse({ status: 400, description: 'Invalid file or application not in draft' })
+  @ApiResponse({
+    status: 201,
+    description: 'Document uploaded',
+    type: DocumentResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid file or application not in draft',
+  })
   @ApiResponse({ status: 403, description: 'Not application owner' })
   @ApiResponse({ status: 404, description: 'Application not found' })
   async upload(
@@ -76,10 +87,12 @@ export class DocumentsController {
   @Get()
   @ApiOperation({ summary: 'List all documents for an application' })
   @ApiParam({ name: 'applicationId', description: 'Application ID' })
-  @ApiResponse({ status: 200, description: 'List of documents', type: [DocumentResponseDto] })
-  async list(
-    @Param('applicationId', ParseUUIDPipe) applicationId: string,
-  ) {
+  @ApiResponse({
+    status: 200,
+    description: 'List of documents',
+    type: [DocumentResponseDto],
+  })
+  async list(@Param('applicationId', ParseUUIDPipe) applicationId: string) {
     return this.documentsService.findByApplication(applicationId);
   }
 
@@ -87,7 +100,11 @@ export class DocumentsController {
   @ApiOperation({ summary: 'Get signed URL for document access' })
   @ApiParam({ name: 'applicationId', description: 'Application ID' })
   @ApiParam({ name: 'documentId', description: 'Document ID' })
-  @ApiResponse({ status: 200, description: 'Signed URL', type: SignedUrlResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Signed URL',
+    type: SignedUrlResponseDto,
+  })
   @ApiResponse({ status: 403, description: 'Not authorized to access' })
   @ApiResponse({ status: 404, description: 'Document not found' })
   async getSignedUrl(
@@ -95,7 +112,11 @@ export class DocumentsController {
     @Param('applicationId', ParseUUIDPipe) applicationId: string,
     @Param('documentId', ParseUUIDPipe) documentId: string,
   ) {
-    return this.documentsService.getSignedUrl(applicationId, documentId, user.id);
+    return this.documentsService.getSignedUrl(
+      applicationId,
+      documentId,
+      user.id,
+    );
   }
 
   @Delete(':documentId')

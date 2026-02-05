@@ -56,7 +56,9 @@ export class DocumentsService {
     });
 
     if (!application) {
-      throw new NotFoundException(`Application with ID ${applicationId} not found`);
+      throw new NotFoundException(
+        `Application with ID ${applicationId} not found`,
+      );
     }
 
     if (application.tenantId !== tenantId) {
@@ -64,7 +66,10 @@ export class DocumentsService {
     }
 
     // Allow upload in DRAFT (initial wizard) or NEEDS_INFO (landlord requested more docs)
-    const allowedStatuses: string[] = [ApplicationStatus.DRAFT, ApplicationStatus.NEEDS_INFO];
+    const allowedStatuses: string[] = [
+      ApplicationStatus.DRAFT,
+      ApplicationStatus.NEEDS_INFO,
+    ];
     if (!allowedStatuses.includes(application.status)) {
       throw new BadRequestException(
         'Can only upload documents to draft or needs-info applications',
@@ -73,7 +78,9 @@ export class DocumentsService {
 
     // Validate file size
     if (file.size > this.MAX_FILE_SIZE) {
-      throw new BadRequestException(`File must be less than ${this.MAX_FILE_SIZE / 1024 / 1024}MB`);
+      throw new BadRequestException(
+        `File must be less than ${this.MAX_FILE_SIZE / 1024 / 1024}MB`,
+      );
     }
 
     // Validate file type using magic numbers (not extension)
@@ -97,7 +104,9 @@ export class DocumentsService {
       });
 
     if (uploadError) {
-      throw new BadRequestException(`Failed to upload document: ${uploadError.message}`);
+      throw new BadRequestException(
+        `Failed to upload document: ${uploadError.message}`,
+      );
     }
 
     // Create database record
@@ -121,7 +130,12 @@ export class DocumentsService {
     }
 
     // Log event
-    await this.eventService.logDocumentUploaded(applicationId, tenantId, type, document.id);
+    await this.eventService.logDocumentUploaded(
+      applicationId,
+      tenantId,
+      type,
+      document.id,
+    );
 
     return document;
   }
@@ -139,7 +153,9 @@ export class DocumentsService {
     });
 
     if (!application) {
-      throw new NotFoundException(`Application with ID ${applicationId} not found`);
+      throw new NotFoundException(
+        `Application with ID ${applicationId} not found`,
+      );
     }
 
     if (application.tenantId !== tenantId) {
@@ -147,7 +163,9 @@ export class DocumentsService {
     }
 
     if (application.status !== ApplicationStatus.DRAFT) {
-      throw new BadRequestException('Can only delete documents from draft applications');
+      throw new BadRequestException(
+        'Can only delete documents from draft applications',
+      );
     }
 
     const document = await this.prisma.applicationDocument.findUnique({
@@ -174,7 +192,11 @@ export class DocumentsService {
     });
 
     // Log event
-    await this.eventService.logDocumentDeleted(applicationId, tenantId, documentId);
+    await this.eventService.logDocumentDeleted(
+      applicationId,
+      tenantId,
+      documentId,
+    );
   }
 
   /**
@@ -196,7 +218,9 @@ export class DocumentsService {
     });
 
     if (!application) {
-      throw new NotFoundException(`Application with ID ${applicationId} not found`);
+      throw new NotFoundException(
+        `Application with ID ${applicationId} not found`,
+      );
     }
 
     // Only tenant or landlord can access documents
@@ -221,7 +245,9 @@ export class DocumentsService {
       .createSignedUrl(document.storagePath, this.URL_EXPIRY_SECONDS);
 
     if (error || !data) {
-      throw new BadRequestException(`Failed to generate document URL: ${error?.message}`);
+      throw new BadRequestException(
+        `Failed to generate document URL: ${error?.message}`,
+      );
     }
 
     const expiresAt = new Date(Date.now() + this.URL_EXPIRY_SECONDS * 1000);
@@ -235,7 +261,9 @@ export class DocumentsService {
   /**
    * Get all documents for an application.
    */
-  async findByApplication(applicationId: string): Promise<ApplicationDocument[]> {
+  async findByApplication(
+    applicationId: string,
+  ): Promise<ApplicationDocument[]> {
     return this.prisma.applicationDocument.findMany({
       where: { applicationId },
       orderBy: { createdAt: 'asc' },

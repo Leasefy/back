@@ -1,5 +1,11 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsBoolean, IsString, IsOptional, MaxLength, Equals } from 'class-validator';
+import {
+  IsBoolean,
+  IsString,
+  IsOptional,
+  MaxLength,
+  Equals,
+} from 'class-validator';
 
 /**
  * SignContractDto
@@ -20,7 +26,8 @@ export class SignContractDto {
 
   @ApiProperty({
     description: 'Consent text shown to and accepted by user',
-    example: 'Acepto los terminos y condiciones de este contrato de arrendamiento y confirmo que la informacion proporcionada es veridica.',
+    example:
+      'Acepto los terminos y condiciones de este contrato de arrendamiento y confirmo que la informacion proporcionada es veridica.',
   })
   @IsString()
   @MaxLength(500)

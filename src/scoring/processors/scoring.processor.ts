@@ -66,10 +66,14 @@ export class ScoringProcessor extends WorkerHost {
     const paymentMetrics = await this.paymentHistoryService.getMetricsForTenant(
       application.tenantId,
     );
-    const paymentHistoryResult = this.paymentHistoryModel.calculate(paymentMetrics);
+    const paymentHistoryResult =
+      this.paymentHistoryModel.calculate(paymentMetrics);
 
     // 3. Extract features from application data
-    const features = this.featureBuilder.build(application, application.property);
+    const features = this.featureBuilder.build(
+      application,
+      application.property,
+    );
 
     // 4. Run all scoring models
     const financialResult = this.financialModel.calculate(features);

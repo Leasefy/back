@@ -34,7 +34,7 @@ async function bootstrap() {
     .setTitle('Arriendo Facil API')
     .setDescription(
       'Backend API for Arriendo Facil rental marketplace. ' +
-      'Provides property listings, tenant applications, risk scoring with AI document analysis.',
+        'Provides property listings, tenant applications, risk scoring with AI document analysis.',
     )
     .setVersion('1.0')
     .addBearerAuth()
@@ -49,9 +49,10 @@ async function bootstrap() {
 
   // CORS for frontend
   app.enableCors({
-    origin: nodeEnv === 'production'
-      ? ['https://arriendofacil.com', 'https://www.arriendofacil.com']
-      : true,
+    origin:
+      nodeEnv === 'production'
+        ? ['https://arriendofacil.com', 'https://www.arriendofacil.com']
+        : true,
     credentials: true,
   });
 

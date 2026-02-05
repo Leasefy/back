@@ -10,12 +10,15 @@ import { IsString, MinLength, MaxLength } from 'class-validator';
 export class RejectPaymentDto {
   @ApiProperty({
     description: 'Reason for rejection',
-    example: 'El comprobante no coincide con el monto reportado. Por favor verifique y reenvie.',
+    example:
+      'El comprobante no coincide con el monto reportado. Por favor verifique y reenvie.',
     minLength: 10,
     maxLength: 500,
   })
   @IsString()
   @MinLength(10, { message: 'Rejection reason must be at least 10 characters' })
-  @MaxLength(500, { message: 'Rejection reason must not exceed 500 characters' })
+  @MaxLength(500, {
+    message: 'Rejection reason must not exceed 500 characters',
+  })
   reason!: string;
 }

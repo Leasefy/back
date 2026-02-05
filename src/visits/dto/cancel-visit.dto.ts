@@ -13,7 +13,9 @@ export class CancelVisitDto {
     maxLength: 500,
   })
   @IsString()
-  @MinLength(10, { message: 'Cancellation reason must be at least 10 characters' })
+  @MinLength(10, {
+    message: 'Cancellation reason must be at least 10 characters',
+  })
   @MaxLength(500)
   reason!: string;
 }

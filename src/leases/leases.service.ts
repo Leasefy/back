@@ -54,17 +54,19 @@ export class LeasesService {
    *
    * Requirements: LEAS-08
    */
-  async listForLandlord(landlordId: string): Promise<Array<{
-    id: string;
-    status: LeaseStatus;
-    propertyAddress: string;
-    propertyCity: string;
-    tenantName: string;
-    monthlyRent: number;
-    startDate: Date;
-    endDate: Date;
-    paymentCount: number;
-  }>> {
+  async listForLandlord(landlordId: string): Promise<
+    Array<{
+      id: string;
+      status: LeaseStatus;
+      propertyAddress: string;
+      propertyCity: string;
+      tenantName: string;
+      monthlyRent: number;
+      startDate: Date;
+      endDate: Date;
+      paymentCount: number;
+    }>
+  > {
     const leases = await this.prisma.lease.findMany({
       where: { landlordId },
       include: {
@@ -160,7 +162,10 @@ export class LeasesService {
   /**
    * Verify user is landlord of lease (for payment recording).
    */
-  async verifyLandlordAccess(leaseId: string, landlordId: string): Promise<Lease> {
+  async verifyLandlordAccess(
+    leaseId: string,
+    landlordId: string,
+  ): Promise<Lease> {
     const lease = await this.prisma.lease.findUnique({
       where: { id: leaseId },
     });

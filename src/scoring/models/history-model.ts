@@ -28,7 +28,10 @@ export class HistoryModel {
     const signals: Signal[] = [];
 
     // Landlord reference scoring (max 6 points)
-    score += this.scoreLandlordReference(features.hasLandlordReference, signals);
+    score += this.scoreLandlordReference(
+      features.hasLandlordReference,
+      signals,
+    );
 
     // Employment reference scoring (max 5 points)
     score += this.scoreEmploymentReference(
@@ -71,7 +74,8 @@ export class HistoryModel {
       code: 'NO_LANDLORD_REF',
       positive: false,
       weight: 0,
-      message: 'Sin referencia de arrendador anterior (primer arriendo o no proporcionada)',
+      message:
+        'Sin referencia de arrendador anterior (primer arriendo o no proporcionada)',
     });
     return 0;
   }

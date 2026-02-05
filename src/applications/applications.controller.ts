@@ -43,10 +43,7 @@ export class ApplicationsController {
   @ApiResponse({ status: 400, description: 'Property not available' })
   @ApiResponse({ status: 404, description: 'Property not found' })
   @ApiResponse({ status: 409, description: 'Already have active application' })
-  async create(
-    @CurrentUser() user: User,
-    @Body() dto: CreateApplicationDto,
-  ) {
+  async create(@CurrentUser() user: User, @Body() dto: CreateApplicationDto) {
     return this.applicationsService.create(user.id, dto);
   }
 
@@ -143,7 +140,10 @@ export class ApplicationsController {
   @Roles(Role.TENANT)
   @ApiOperation({ summary: 'Get information requests from landlord' })
   @ApiParam({ name: 'id', description: 'Application ID' })
-  @ApiResponse({ status: 200, description: 'List of information requests with messages' })
+  @ApiResponse({
+    status: 200,
+    description: 'List of information requests with messages',
+  })
   @ApiResponse({ status: 403, description: 'Not application owner' })
   @ApiResponse({ status: 404, description: 'Application not found' })
   async getInfoRequests(
@@ -158,7 +158,10 @@ export class ApplicationsController {
   @ApiOperation({ summary: 'Submit a completed application' })
   @ApiParam({ name: 'id', description: 'Application ID' })
   @ApiResponse({ status: 200, description: 'Application submitted' })
-  @ApiResponse({ status: 400, description: 'Incomplete application or invalid transition' })
+  @ApiResponse({
+    status: 400,
+    description: 'Incomplete application or invalid transition',
+  })
   @ApiResponse({ status: 403, description: 'Not application owner' })
   @ApiResponse({ status: 404, description: 'Application not found' })
   async submit(
@@ -174,7 +177,10 @@ export class ApplicationsController {
   @ApiOperation({ summary: 'Withdraw an application' })
   @ApiParam({ name: 'id', description: 'Application ID' })
   @ApiResponse({ status: 200, description: 'Application withdrawn' })
-  @ApiResponse({ status: 400, description: 'Invalid transition (terminal state)' })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid transition (terminal state)',
+  })
   @ApiResponse({ status: 403, description: 'Not application owner' })
   @ApiResponse({ status: 404, description: 'Application not found' })
   async withdraw(
@@ -189,11 +195,20 @@ export class ApplicationsController {
   @Roles(Role.TENANT)
   @ApiOperation({ summary: 'Reactivate a withdrawn application' })
   @ApiParam({ name: 'id', description: 'Application ID' })
-  @ApiResponse({ status: 200, description: 'Application reactivated to DRAFT status' })
-  @ApiResponse({ status: 400, description: 'Application not in WITHDRAWN status or property unavailable' })
+  @ApiResponse({
+    status: 200,
+    description: 'Application reactivated to DRAFT status',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Application not in WITHDRAWN status or property unavailable',
+  })
   @ApiResponse({ status: 403, description: 'Not application owner' })
   @ApiResponse({ status: 404, description: 'Application not found' })
-  @ApiResponse({ status: 409, description: 'Another active application exists for this property' })
+  @ApiResponse({
+    status: 409,
+    description: 'Another active application exists for this property',
+  })
   async reactivate(
     @CurrentUser() user: User,
     @Param('id', ParseUUIDPipe) applicationId: string,
@@ -206,7 +221,10 @@ export class ApplicationsController {
   @ApiOperation({ summary: 'Respond to landlord info request' })
   @ApiParam({ name: 'id', description: 'Application ID' })
   @ApiResponse({ status: 200, description: 'Response recorded' })
-  @ApiResponse({ status: 400, description: 'Application not in NEEDS_INFO status' })
+  @ApiResponse({
+    status: 400,
+    description: 'Application not in NEEDS_INFO status',
+  })
   @ApiResponse({ status: 403, description: 'Not application owner' })
   @ApiResponse({ status: 404, description: 'Application not found' })
   async respondToInfoRequest(
@@ -214,6 +232,10 @@ export class ApplicationsController {
     @Param('id', ParseUUIDPipe) applicationId: string,
     @Body() dto: RespondInfoRequestDto,
   ) {
-    return this.applicationsService.respondToInfoRequest(applicationId, user.id, dto);
+    return this.applicationsService.respondToInfoRequest(
+      applicationId,
+      user.id,
+      dto,
+    );
   }
 }

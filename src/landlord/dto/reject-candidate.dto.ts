@@ -8,7 +8,8 @@ import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
 export class RejectCandidateDto {
   @ApiProperty({
     description: 'Reason for rejection (required)',
-    example: 'We found a candidate whose profile better matches our requirements.',
+    example:
+      'We found a candidate whose profile better matches our requirements.',
     maxLength: 1000,
   })
   @IsNotEmpty()

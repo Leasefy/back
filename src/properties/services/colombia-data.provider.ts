@@ -20,11 +20,31 @@ export class ColombiaDataProvider implements OnModuleInit {
 
   // Major cities that should be prioritized in search
   private readonly MAJOR_CITIES = new Set([
-    'bogota', 'medellin', 'cali', 'barranquilla', 'cartagena',
-    'bucaramanga', 'pereira', 'manizales', 'cucuta', 'ibague',
-    'santa marta', 'villavicencio', 'pasto', 'monteria', 'neiva',
-    'armenia', 'popayan', 'valledupar', 'tunja', 'florencia',
-    'sincelejo', 'riohacha', 'quibdo', 'yopal', 'mocoa',
+    'bogota',
+    'medellin',
+    'cali',
+    'barranquilla',
+    'cartagena',
+    'bucaramanga',
+    'pereira',
+    'manizales',
+    'cucuta',
+    'ibague',
+    'santa marta',
+    'villavicencio',
+    'pasto',
+    'monteria',
+    'neiva',
+    'armenia',
+    'popayan',
+    'valledupar',
+    'tunja',
+    'florencia',
+    'sincelejo',
+    'riohacha',
+    'quibdo',
+    'yopal',
+    'mocoa',
   ]);
 
   onModuleInit() {
@@ -49,9 +69,13 @@ export class ColombiaDataProvider implements OnModuleInit {
         }
       }
 
-      console.log(`[ColombiaDataProvider] Loaded ${this.departments.size} departments, ${this.allMunicipalities.size} municipalities`);
+      console.log(
+        `[ColombiaDataProvider] Loaded ${this.departments.size} departments, ${this.allMunicipalities.size} municipalities`,
+      );
     } catch (error) {
-      console.warn('[ColombiaDataProvider] Failed to load municipalities, using fallback');
+      console.warn(
+        '[ColombiaDataProvider] Failed to load municipalities, using fallback',
+      );
       this.loadFallbackData();
     }
   }
@@ -59,17 +83,60 @@ export class ColombiaDataProvider implements OnModuleInit {
   private loadFallbackData() {
     // Fallback with major cities if JSON fails to load
     const fallbackCities = [
-      'Bogotá', 'Medellín', 'Cali', 'Barranquilla', 'Cartagena',
-      'Bucaramanga', 'Pereira', 'Manizales', 'Cúcuta', 'Ibagué',
-      'Santa Marta', 'Villavicencio', 'Pasto', 'Montería', 'Neiva',
-      'Armenia', 'Popayán', 'Valledupar', 'Tunja', 'Florencia',
-      'Sincelejo', 'Riohacha', 'Quibdó', 'Yopal', 'Mocoa',
-      'Leticia', 'Arauca', 'Inírida', 'San José del Guaviare',
-      'Mitú', 'Puerto Carreño', 'Sogamoso', 'Duitama', 'Chiquinquirá',
-      'Zipaquirá', 'Facatativá', 'Girardot', 'Fusagasugá', 'Soacha',
-      'Envigado', 'Itagüí', 'Bello', 'Rionegro', 'Apartadó',
-      'Palmira', 'Buenaventura', 'Tuluá', 'Buga', 'Cartago',
-      'Soledad', 'Malambo', 'Maicao', 'Riohacha', 'Valledupar',
+      'Bogotá',
+      'Medellín',
+      'Cali',
+      'Barranquilla',
+      'Cartagena',
+      'Bucaramanga',
+      'Pereira',
+      'Manizales',
+      'Cúcuta',
+      'Ibagué',
+      'Santa Marta',
+      'Villavicencio',
+      'Pasto',
+      'Montería',
+      'Neiva',
+      'Armenia',
+      'Popayán',
+      'Valledupar',
+      'Tunja',
+      'Florencia',
+      'Sincelejo',
+      'Riohacha',
+      'Quibdó',
+      'Yopal',
+      'Mocoa',
+      'Leticia',
+      'Arauca',
+      'Inírida',
+      'San José del Guaviare',
+      'Mitú',
+      'Puerto Carreño',
+      'Sogamoso',
+      'Duitama',
+      'Chiquinquirá',
+      'Zipaquirá',
+      'Facatativá',
+      'Girardot',
+      'Fusagasugá',
+      'Soacha',
+      'Envigado',
+      'Itagüí',
+      'Bello',
+      'Rionegro',
+      'Apartadó',
+      'Palmira',
+      'Buenaventura',
+      'Tuluá',
+      'Buga',
+      'Cartago',
+      'Soledad',
+      'Malambo',
+      'Maicao',
+      'Riohacha',
+      'Valledupar',
     ];
 
     for (const city of fallbackCities) {
@@ -118,7 +185,9 @@ export class ColombiaDataProvider implements OnModuleInit {
    * Find municipality in a text string.
    * Checks for multi-word cities like "Santa Marta".
    */
-  findMunicipalityInText(text: string): { municipality: string; matchedText: string } | null {
+  findMunicipalityInText(
+    text: string,
+  ): { municipality: string; matchedText: string } | null {
     const normalizedText = this.normalize(text);
 
     // First check major cities (common case, fast path)

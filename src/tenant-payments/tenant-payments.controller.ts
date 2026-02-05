@@ -21,11 +21,18 @@ import {
   ApiParam,
 } from '@nestjs/swagger';
 import { TenantPaymentsService } from './tenant-payments.service.js';
-import { CreatePaymentRequestDto, PaymentInfoResponseDto } from './dto/index.js';
+import {
+  CreatePaymentRequestDto,
+  PaymentInfoResponseDto,
+} from './dto/index.js';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import { Roles } from '../auth/decorators/roles.decorator.js';
 import { Role, PaymentMethod } from '../common/enums/index.js';
-import type { User, TenantPaymentRequest, LandlordPaymentMethod } from '@prisma/client';
+import type {
+  User,
+  TenantPaymentRequest,
+  LandlordPaymentMethod,
+} from '@prisma/client';
 
 /**
  * TenantPaymentsController
@@ -71,7 +78,11 @@ export class TenantPaymentsController {
   @Roles(Role.TENANT)
   @ApiOperation({ summary: 'Get payment info with auto-filled amount' })
   @ApiParam({ name: 'leaseId', type: String, description: 'Lease ID' })
-  @ApiResponse({ status: 200, description: 'Payment info with amount and methods', type: PaymentInfoResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Payment info with amount and methods',
+    type: PaymentInfoResponseDto,
+  })
   @ApiResponse({ status: 403, description: 'Not tenant of this lease' })
   @ApiResponse({ status: 404, description: 'Lease not found' })
   async getPaymentInfo(
@@ -96,7 +107,13 @@ export class TenantPaymentsController {
   @ApiBody({
     schema: {
       type: 'object',
-      required: ['receipt', 'paymentMethod', 'periodMonth', 'periodYear', 'paymentDate'],
+      required: [
+        'receipt',
+        'paymentMethod',
+        'periodMonth',
+        'periodYear',
+        'paymentDate',
+      ],
       properties: {
         receipt: {
           type: 'string',
@@ -142,7 +159,10 @@ export class TenantPaymentsController {
   @ApiResponse({ status: 400, description: 'Invalid data or lease not active' })
   @ApiResponse({ status: 403, description: 'Not tenant of this lease' })
   @ApiResponse({ status: 404, description: 'Lease not found' })
-  @ApiResponse({ status: 409, description: 'Duplicate request or payment exists' })
+  @ApiResponse({
+    status: 409,
+    description: 'Duplicate request or payment exists',
+  })
   async createPaymentRequest(
     @Param('leaseId', ParseUUIDPipe) leaseId: string,
     @Body() dto: CreatePaymentRequestDto,
@@ -181,8 +201,15 @@ export class TenantPaymentsController {
   @Roles(Role.TENANT)
   @ApiOperation({ summary: 'Get payment request details' })
   @ApiParam({ name: 'leaseId', type: String, description: 'Lease ID' })
-  @ApiParam({ name: 'requestId', type: String, description: 'Payment request ID' })
-  @ApiResponse({ status: 200, description: 'Payment request details with receipt URL' })
+  @ApiParam({
+    name: 'requestId',
+    type: String,
+    description: 'Payment request ID',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Payment request details with receipt URL',
+  })
   @ApiResponse({ status: 403, description: 'Not owner of this request' })
   @ApiResponse({ status: 404, description: 'Payment request not found' })
   async getPaymentRequest(
@@ -201,9 +228,16 @@ export class TenantPaymentsController {
   @Roles(Role.TENANT)
   @ApiOperation({ summary: 'Cancel pending payment request' })
   @ApiParam({ name: 'leaseId', type: String, description: 'Lease ID' })
-  @ApiParam({ name: 'requestId', type: String, description: 'Payment request ID' })
+  @ApiParam({
+    name: 'requestId',
+    type: String,
+    description: 'Payment request ID',
+  })
   @ApiResponse({ status: 200, description: 'Payment request cancelled' })
-  @ApiResponse({ status: 400, description: 'Only pending requests can be cancelled' })
+  @ApiResponse({
+    status: 400,
+    description: 'Only pending requests can be cancelled',
+  })
   @ApiResponse({ status: 403, description: 'Not owner of this request' })
   @ApiResponse({ status: 404, description: 'Payment request not found' })
   async cancelPaymentRequest(

@@ -34,9 +34,7 @@ import { RejectPaymentDto } from './dto/index.js';
 @Controller()
 @Roles(Role.LANDLORD)
 export class PaymentValidationController {
-  constructor(
-    private readonly validationService: PaymentValidationService,
-  ) {}
+  constructor(private readonly validationService: PaymentValidationService) {}
 
   /**
    * Get all pending payment requests for the landlord's properties.
@@ -76,7 +74,10 @@ export class PaymentValidationController {
     description: 'Payment request details',
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'Forbidden - not the landlord of this lease' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - not the landlord of this lease',
+  })
   @ApiResponse({ status: 404, description: 'Payment request not found' })
   async getPaymentRequest(
     @Param('id', ParseUUIDPipe) requestId: string,
@@ -103,7 +104,10 @@ export class PaymentValidationController {
   })
   @ApiResponse({ status: 400, description: 'Request is not pending' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'Forbidden - not the landlord of this lease' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - not the landlord of this lease',
+  })
   @ApiResponse({ status: 404, description: 'Payment request not found' })
   async approvePayment(
     @Param('id', ParseUUIDPipe) requestId: string,
@@ -132,9 +136,15 @@ export class PaymentValidationController {
     status: 200,
     description: 'Payment rejected',
   })
-  @ApiResponse({ status: 400, description: 'Request is not pending or invalid reason' })
+  @ApiResponse({
+    status: 400,
+    description: 'Request is not pending or invalid reason',
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'Forbidden - not the landlord of this lease' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - not the landlord of this lease',
+  })
   @ApiResponse({ status: 404, description: 'Payment request not found' })
   async rejectPayment(
     @Param('id', ParseUUIDPipe) requestId: string,
@@ -168,8 +178,14 @@ export class PaymentValidationController {
     description: 'Signed URL for receipt',
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'Forbidden - not the landlord of this lease' })
-  @ApiResponse({ status: 404, description: 'Payment request or receipt not found' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - not the landlord of this lease',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Payment request or receipt not found',
+  })
   async getReceiptUrl(
     @Param('id', ParseUUIDPipe) requestId: string,
     @CurrentUser() user: User,

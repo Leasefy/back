@@ -9,14 +9,8 @@ import { PlanEnforcementService } from './services/plan-enforcement.service.js';
 import { SubscriptionScheduler } from './scheduled/subscription-scheduler.js';
 
 @Module({
-  imports: [
-    TenantPaymentsModule,
-    NotificationsModule,
-  ],
-  controllers: [
-    SubscriptionPlansController,
-    SubscriptionsController,
-  ],
+  imports: [TenantPaymentsModule, NotificationsModule],
+  controllers: [SubscriptionPlansController, SubscriptionsController],
   providers: [
     SubscriptionPlansService,
     SubscriptionsService,

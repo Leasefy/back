@@ -195,7 +195,8 @@ export class IntegrityEngine {
         code: 'COMPLETE_APPLICATION',
         positive: true,
         weight: 0,
-        message: 'Solicitud completa: direccion, contacto empleador y referencia de arrendador proporcionados',
+        message:
+          'Solicitud completa: direccion, contacto empleador y referencia de arrendador proporcionados',
       });
     }
   }
