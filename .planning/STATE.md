@@ -2,12 +2,12 @@
 
 ## Current Status
 
-**Phase:** 13 of 16 (Insurance)
-**Plan:** 2 of 2
-**Status:** Phase complete
-**Last activity:** 2026-02-04 - Completed 13-02-PLAN.md
+**Phase:** 2.1 (User Roles & Property Agents)
+**Plan:** 1 of 4
+**Status:** In progress
+**Last activity:** 2026-02-05 - Completed 2.1-01-PLAN.md
 
-**Progress:** [###############################] 88% (53/~60 plans estimated)
+**Progress:** [###############################] 89% (54/~61 plans estimated)
 
 ## Project Reference
 
@@ -15,7 +15,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 **Core value:** Ejecutar el Risk Score con analisis inteligente de documentos para que propietarios tomen decisiones informadas en minutos, con explicabilidad total.
 
-**Current focus:** Phase 13 complete. Both insurance plans executed. Next: Phase 14 (AI Document Analysis).
+**Current focus:** Phase 2.1 in progress. Schema updated with AGENT role and chat models. Next: 2.1-02 (PropertyAccess service).
 
 ## Quick Context
 
@@ -43,6 +43,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 11. Notifications | COMPLETE | All 5 plans - data models, services, sending, templates, event integration |
 | 12. Subscriptions & Plans | COMPLETE | All 4 plans - models, services, controllers, enforcement, cron |
 | 13. Insurance | COMPLETE | All 2 plans - enum, service, controller, contract integration |
+| 2.1 User Roles & Agents | IN PROGRESS | 1/4 plans - schema changes complete |
 | 14. AI Document Analysis (IA) | Pending | PRO+ tier - Claude integration |
 | 15. Explainability (IA) | Pending | PRO+ tier - AI explanations |
 | 16. ML Persistence (IA) | Pending | Data for ML training |
@@ -56,6 +57,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 2026-01-30 | Moved AI features to phases 10-11 | PRO+ tier only, after core flow complete |
 | 2026-01-30 | Added tier system | FREE (1-9) vs PRO+ (10-11) |
 | 2026-02-02 | Added Phase 3.1: Property Visits Scheduling | Tenant can schedule visits, landlord manages availability |
+| 2026-02-05 | Added Phase 2.1: User Roles & Property Agents | Agents can manage landlord properties, chat for applications |
 
 ## Accumulated Decisions
 
@@ -248,11 +250,17 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 2026-02-04 | 13-02 | includesInsurance kept as computed boolean in template data | Backward compat with Handlebars {{#if}} conditional |
 | 2026-02-04 | 13-02 | Case-insensitive tier parameter in controller | Better DX - accepts both 'basic' and 'BASIC' |
 | 2026-02-04 | 13-02 | InsuranceModule after ContractsModule in AppModule | Logical grouping: contracts first, then insurance extension |
+| 2026-02-05 | 2.1-01 | AGENT role replaces BOTH | Clearer semantics - agents manage assigned properties, not "do both roles" |
+| 2026-02-05 | 2.1-01 | RolesGuard grants AGENT access to LANDLORD routes | Simplifies decorator usage - no need to add AGENT everywhere |
+| 2026-02-05 | 2.1-01 | Deprecated role switch endpoint | Backward compatibility for existing clients |
+| 2026-02-05 | 2.1-01 | Manual SQL migration for enum changes | PostgreSQL enum values cannot be easily removed with dependent columns |
+| 2026-02-05 | 2.1-01 | PropertyAccess model with unique [propertyId, agentId] | One agent assignment per property |
+| 2026-02-05 | 2.1-01 | ApplicationConversation 1:1 with Application | Auto-created on submit, cascade delete on reject/withdraw |
 
 ## Session Continuity
 
-**Last session:** 2026-02-04
-**Stopped at:** Completed 13-02-PLAN.md (Phase 13 complete)
+**Last session:** 2026-02-05
+**Stopped at:** Completed 2.1-01-PLAN.md
 **Resume file:** None
 
 ## Pending User Actions
@@ -306,14 +314,20 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 1. Run: `npx prisma db push`
 2. Verify InsuranceTier enum and updated Contract fields in database
 
+**Phase 2.1 Role/Agent schema migration:**
+1. Go to Supabase Dashboard > SQL Editor
+2. Paste contents of `supabase/migrations/00003_role_agent_chat.sql`
+3. Execute in order (script handles dependencies)
+4. This drops active_role column, adds AGENT to Role enum, creates PropertyAccess and chat tables
+
 ## Next Action
 
-Phase 13 (Insurance) complete. Next:
-- Plan Phase 14 (AI Document Analysis) - PRO+ tier Claude integration
-- Execute 14-XX-PLAN.md plans
+Phase 2.1 in progress. Next:
+- Execute 2.1-02-PLAN.md (PropertyAccess service)
+- Run SQL migration for Role enum changes
 
 ```
-/gsd:plan-phase 14
+/gsd:execute-plan 2.1-02
 ```
 
 ## Session History
@@ -378,6 +392,7 @@ Phase 13 (Insurance) complete. Next:
 | 2026-02-04 | Executed 12-04-PLAN.md | Enforcement wired, micropayment, cron, notifications, Phase 12 complete |
 | 2026-02-04 | Executed 13-01-PLAN.md | InsuranceTier enum, Contract model update, InsuranceService, InsuranceModule |
 | 2026-02-04 | Executed 13-02-PLAN.md | InsuranceController, contract integration, template updates, Phase 13 complete |
+| 2026-02-05 | Executed 2.1-01-PLAN.md | AGENT role, PropertyAccess/Chat models, Role.BOTH removed from codebase |
 
 ---
-*Last updated: 2026-02-04*
+*Last updated: 2026-02-05*
