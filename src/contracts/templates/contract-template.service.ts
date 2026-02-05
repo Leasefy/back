@@ -28,8 +28,13 @@ export interface ContractTemplateData {
 
   // Optional
   customClauses: Array<{ title: string; content: string }>;
-  includesInsurance: boolean;
-  insuranceDetails?: string;
+
+  // Insurance
+  insuranceTier: string;             // 'NONE', 'BASIC', 'PREMIUM'
+  includesInsurance: boolean;        // Computed: tier !== NONE, for template {{#if}}
+  insuranceDetails?: string;         // Auto-generated coverage text
+  insurancePremium: number;          // Monthly premium in COP
+  insurancePremiumFormatted: string; // Formatted: "$25.000 COP"
 
   // Signatures (for signed version)
   signatures?: {

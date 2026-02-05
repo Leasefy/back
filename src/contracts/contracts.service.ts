@@ -10,7 +10,8 @@ import { ContractTemplateService, ContractTemplateData } from './templates/contr
 import { SignatureService } from './signature/signature.service.js';
 import { PdfGeneratorService } from './pdf/pdf-generator.service.js';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { ApplicationStatus, ContractStatus } from '../common/enums/index.js';
+import { InsuranceService } from '../insurance/insurance.service.js';
+import { ApplicationStatus, ContractStatus, InsuranceTier } from '../common/enums/index.js';
 import { CreateContractDto } from './dto/create-contract.dto.js';
 import { SignContractDto } from './dto/sign-contract.dto.js';
 import { ContractActivatedEvent } from '../leases/events/contract-activated.event.js';
@@ -34,6 +35,7 @@ export class ContractsService {
     private readonly signatureService: SignatureService,
     private readonly pdfGenerator: PdfGeneratorService,
     private readonly eventEmitter: EventEmitter2,
+    private readonly insuranceService: InsuranceService,
   ) {}
 
   /**
@@ -114,8 +116,9 @@ export class ContractsService {
         monthlyRent: dto.monthlyRent,
         deposit: dto.deposit,
         paymentDay: dto.paymentDay,
-        includesInsurance: dto.includesInsurance ?? false,
-        insuranceDetails: dto.insuranceDetails,
+        insuranceTier: dto.insuranceTier ?? InsuranceTier.NONE,
+        insurancePremium: this.insuranceService.calculatePremium(dto.insuranceTier ?? InsuranceTier.NONE),
+        insuranceDetails: this.insuranceService.buildInsuranceDetails(dto.insuranceTier ?? InsuranceTier.NONE),
         customClauses: JSON.parse(JSON.stringify(dto.customClauses ?? [])) as Prisma.InputJsonValue,
         contractHtml,
       },
@@ -597,8 +600,13 @@ export class ContractsService {
       deposit: new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(dto.deposit),
       paymentDay: dto.paymentDay,
       customClauses: dto.customClauses ?? [],
-      includesInsurance: dto.includesInsurance ?? false,
-      insuranceDetails: dto.insuranceDetails,
+      insuranceTier: dto.insuranceTier ?? InsuranceTier.NONE,
+      includesInsurance: (dto.insuranceTier ?? InsuranceTier.NONE) !== InsuranceTier.NONE,
+      insuranceDetails: this.insuranceService.buildInsuranceDetails(dto.insuranceTier ?? InsuranceTier.NONE),
+      insurancePremium: this.insuranceService.calculatePremium(dto.insuranceTier ?? InsuranceTier.NONE),
+      insurancePremiumFormatted: new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(
+        this.insuranceService.calculatePremium(dto.insuranceTier ?? InsuranceTier.NONE),
+      ),
       contractNumber: '', // Set after creation
       generatedAt: new Date().toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' }),
     };

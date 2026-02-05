@@ -5,7 +5,7 @@ import {
   IsInt,
   Min,
   Max,
-  IsBoolean,
+  IsEnum,
   IsOptional,
   IsArray,
   ValidateNested,
@@ -13,6 +13,7 @@ import {
   MaxLength,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { InsuranceTier } from '../../common/enums/index.js';
 
 class CustomClauseDto {
   @ApiProperty({ example: 'SEXTA. MASCOTAS' })
@@ -55,16 +56,14 @@ export class CreateContractDto {
   @Max(28)
   paymentDay!: number;
 
-  @ApiPropertyOptional({ default: false, description: 'Include insurance in contract' })
-  @IsBoolean()
+  @ApiPropertyOptional({
+    enum: InsuranceTier,
+    default: InsuranceTier.NONE,
+    description: 'Insurance tier: NONE, BASIC, or PREMIUM',
+  })
+  @IsEnum(InsuranceTier)
   @IsOptional()
-  includesInsurance?: boolean;
-
-  @ApiPropertyOptional({ example: 'Poliza No. 12345 con Seguros ABC', description: 'Insurance details if included' })
-  @IsString()
-  @IsOptional()
-  @MaxLength(500)
-  insuranceDetails?: string;
+  insuranceTier?: InsuranceTier;
 
   @ApiPropertyOptional({ type: [CustomClauseDto], description: 'Custom contract clauses' })
   @IsArray()

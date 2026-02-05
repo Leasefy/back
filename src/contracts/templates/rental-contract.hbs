@@ -104,6 +104,11 @@
   <p class="clause">
     {{insuranceDetails}}
   </p>
+  <p class="clause">
+    El costo de la prima mensual del seguro es de <strong>{{insurancePremiumFormatted}}</strong>,
+    el cual sera adicionado al canon de arrendamiento mensual.
+    Tipo de seguro: <strong>{{insuranceTier}}</strong>.
+  </p>
   {{/if}}
 
   {{#each customClauses}}

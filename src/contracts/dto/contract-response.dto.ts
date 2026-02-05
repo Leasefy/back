@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { ContractStatus } from '../../common/enums/index.js';
+import { ContractStatus, InsuranceTier } from '../../common/enums/index.js';
 
 /**
  * Contract list item for displaying in a list view.
@@ -56,10 +56,13 @@ export class ContractDetailDto {
   @ApiProperty({ example: 5, description: 'Payment due day of month' })
   paymentDay!: number;
 
-  @ApiProperty({ description: 'Whether contract includes insurance' })
-  includesInsurance!: boolean;
+  @ApiProperty({ enum: InsuranceTier, description: 'Insurance tier selected for contract' })
+  insuranceTier!: string;
 
-  @ApiPropertyOptional({ description: 'Insurance details if included' })
+  @ApiProperty({ example: 25000, description: 'Monthly insurance premium in COP' })
+  insurancePremium!: number;
+
+  @ApiPropertyOptional({ description: 'Auto-generated insurance coverage details' })
   insuranceDetails?: string | null;
 
   @ApiPropertyOptional({ description: 'Custom contract clauses' })
