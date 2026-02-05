@@ -3,11 +3,11 @@
 ## Current Status
 
 **Phase:** 2.1 (User Roles & Property Agents)
-**Plan:** 3 of 4
-**Status:** In progress
-**Last activity:** 2026-02-05 - Completed 2.1-03-PLAN.md
+**Plan:** 4 of 4
+**Status:** COMPLETE
+**Last activity:** 2026-02-05 - Completed 2.1-04-PLAN.md
 
-**Progress:** [################################] 92% (56/~61 plans estimated)
+**Progress:** [################################] 93% (57/~61 plans estimated)
 
 ## Project Reference
 
@@ -15,7 +15,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 **Core value:** Ejecutar el Risk Score con analisis inteligente de documentos para que propietarios tomen decisiones informadas en minutos, con explicabilidad total.
 
-**Current focus:** Phase 2.1 in progress. PropertyAccess service complete, agents can manage assigned properties. Next: 2.1-04 (Chat functionality).
+**Current focus:** Phase 2.1 COMPLETE. Chat system for tenant-landlord/agent communication ready. All core FREE tier phases complete.
 
 ## Quick Context
 
@@ -43,7 +43,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 11. Notifications | COMPLETE | All 5 plans - data models, services, sending, templates, event integration |
 | 12. Subscriptions & Plans | COMPLETE | All 4 plans - models, services, controllers, enforcement, cron |
 | 13. Insurance | COMPLETE | All 2 plans - enum, service, controller, contract integration |
-| 2.1 User Roles & Agents | IN PROGRESS | 3/4 plans - PropertyAccess service complete |
+| 2.1 User Roles & Agents | COMPLETE | All 4 plans - AGENT role, PropertyAccess, Chat |
 | 14. AI Document Analysis (IA) | Pending | PRO+ tier - Claude integration |
 | 15. Explainability (IA) | Pending | PRO+ tier - AI explanations |
 | 16. ML Persistence (IA) | Pending | Data for ML training |
@@ -261,11 +261,14 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 2026-02-05 | 2.1-03 | PropertyAccessService.ensurePropertyAccess replaces direct landlordId checks | Single point of authorization check for landlord/agent access |
 | 2026-02-05 | 2.1-03 | Agents act with LANDLORD role for state machines | State machines expect TENANT or LANDLORD, agent acts on behalf |
 | 2026-02-05 | 2.1-03 | Contracts store actual property landlordId | Legal records must reflect actual owner, not the agent |
+| 2026-02-05 | 2.1-04 | Chat lifecycle hooks | Create conversation on submit, delete on withdraw/reject |
+| 2026-02-05 | 2.1-04 | Supabase Realtime for chat | Backend writes to DB, Supabase broadcasts via WebSocket |
+| 2026-02-05 | 2.1-04 | Mark messages from OTHER users as read | User shouldn't mark their own messages as read |
 
 ## Session Continuity
 
 **Last session:** 2026-02-05
-**Stopped at:** Completed 2.1-03-PLAN.md
+**Stopped at:** Completed 2.1-04-PLAN.md (Phase 2.1 COMPLETE)
 **Resume file:** None
 
 ## Pending User Actions
@@ -327,12 +330,10 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 ## Next Action
 
-Phase 2.1 in progress. Next:
-- Execute 2.1-04-PLAN.md (Chat functionality)
-
-```
-/gsd:execute-plan 2.1-04
-```
+Phase 2.1 COMPLETE. Continue with PRO+ tier phases:
+- Phase 14: AI Document Analysis (Claude integration)
+- Phase 15: Explainability (AI explanations)
+- Phase 16: ML Persistence (Data for ML training)
 
 ## Session History
 
@@ -399,6 +400,7 @@ Phase 2.1 in progress. Next:
 | 2026-02-05 | Executed 2.1-01-PLAN.md | AGENT role, PropertyAccess/Chat models, Role.BOTH removed from codebase |
 | 2026-02-05 | Executed 2.1-02-PLAN.md | Removed switch-role endpoint, added AGENT to onboarding DTO |
 | 2026-02-05 | Executed 2.1-03-PLAN.md | PropertyAccessService, controllers, 6 services updated for agent authorization |
+| 2026-02-05 | Executed 2.1-04-PLAN.md | ChatModule, lifecycle hooks, Phase 2.1 complete |
 
 ---
 *Last updated: 2026-02-05*
