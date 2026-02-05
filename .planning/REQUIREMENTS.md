@@ -51,6 +51,25 @@ Requirements for MVP release. Each maps to roadmap phases.
 - [x] **PROP-15**: Property model includes listingPlan (free/pro/business)
 - [x] **PROP-16**: Full-text search on title, description, address, neighborhood
 
+### User Roles & Agents (ROLE/AGENT/CHAT)
+
+- [x] **ROLE-01**: Role enum has AGENT instead of BOTH
+- [x] **ROLE-02**: User model has no activeRole field (no context switching)
+- [x] **ROLE-03**: Onboarding allows selection of TENANT, LANDLORD, or AGENT
+- [x] **ROLE-04**: AGENT role users can access landlord endpoints for assigned properties
+- [x] **ROLE-05**: Switch-role endpoint removed from codebase
+- [x] **AGENT-01**: Landlord can assign agent to property by email
+- [x] **AGENT-02**: Landlord can remove agent from property
+- [x] **AGENT-03**: Agent can view assigned properties
+- [x] **AGENT-04**: Agent can view landlord info for managed properties
+- [x] **AGENT-05**: Services use PropertyAccessService for authorization checks
+- [x] **AGENT-06**: PropertyAccess model tracks agent-property assignments
+- [x] **CHAT-01**: Chat conversation created when application submitted
+- [x] **CHAT-02**: Tenant can send and receive messages in application chat
+- [x] **CHAT-03**: Landlord or Agent can send and receive messages
+- [x] **CHAT-04**: Messages have read receipts (markAsRead)
+- [x] **CHAT-05**: Conversation deleted when application withdrawn or rejected
+
 ### Property Visits (VISIT)
 
 - [x] **VISIT-01**: Landlord can configure availability (weekly schedule with day/hours)
@@ -434,12 +453,28 @@ Which phases cover which requirements. Updated by roadmap creation.
 | VISIT-10 | Phase 3.1 | Complete |
 | VISIT-11 | Phase 3.1 | Complete |
 | VISIT-12 | Phase 3.1 | Complete |
+| ROLE-01 | Phase 2.1 | Complete |
+| ROLE-02 | Phase 2.1 | Complete |
+| ROLE-03 | Phase 2.1 | Complete |
+| ROLE-04 | Phase 2.1 | Complete |
+| ROLE-05 | Phase 2.1 | Complete |
+| AGENT-01 | Phase 2.1 | Complete |
+| AGENT-02 | Phase 2.1 | Complete |
+| AGENT-03 | Phase 2.1 | Complete |
+| AGENT-04 | Phase 2.1 | Complete |
+| AGENT-05 | Phase 2.1 | Complete |
+| AGENT-06 | Phase 2.1 | Complete |
+| CHAT-01 | Phase 2.1 | Complete |
+| CHAT-02 | Phase 2.1 | Complete |
+| CHAT-03 | Phase 2.1 | Complete |
+| CHAT-04 | Phase 2.1 | Complete |
+| CHAT-05 | Phase 2.1 | Complete |
 
 **Coverage:**
-- v1 requirements: 146 total (was 134, added 12 new: VISIT-01 to VISIT-12)
-- Mapped to phases: 124
+- v1 requirements: 162 total (was 146, added 16 new: ROLE-01 to ROLE-05, AGENT-01 to AGENT-06, CHAT-01 to CHAT-05)
+- Mapped to phases: 140
 - Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-01-24*
-*Last updated: 2026-02-03 - Completed VISIT-01 to VISIT-12 for Phase 3.1 (Property Visits)*
+*Last updated: 2026-02-05 - Completed ROLE-01 to CHAT-05 for Phase 2.1 (User Roles & Property Agents)*

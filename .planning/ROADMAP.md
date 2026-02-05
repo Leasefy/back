@@ -23,7 +23,7 @@ Backend API en NestJS para el marketplace de arriendos "Arriendo Facil". Provee 
 
 - [x] **Phase 1: Foundation** - Project scaffold, Prisma, Supabase config
 - [x] **Phase 2: Auth & Users** - Supabase Auth, guards, user management
-- [ ] **Phase 2.1: User Roles & Property Agents** - AGENT role, property delegation, application chat (INSERTED)
+- [x] **Phase 2.1: User Roles & Property Agents** - AGENT role, property delegation, application chat (INSERTED)
 - [x] **Phase 3: Properties** - CRUD, filtering, image upload, plans
 - [x] **Phase 3.1: Property Visits Scheduling** - Visit requests, availability, accept/reject (INSERTED)
 - [x] **Phase 3.2: Natural Language Search** - Smart property search with keyword parsing (INSERTED)
@@ -98,10 +98,10 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 2.1-01-PLAN.md - Database changes (Role enum, remove activeRole, PropertyAccess model, chat models)
-- [ ] 2.1-02-PLAN.md - Remove BOTH role from codebase, update guards and decorators
-- [ ] 2.1-03-PLAN.md - PropertyAccessService, agent endpoints, update authorization in 9 services
-- [ ] 2.1-04-PLAN.md - ChatService, chat endpoints, integration with application lifecycle
+- [x] 2.1-01-PLAN.md - Database changes (Role enum, remove activeRole, PropertyAccess model, chat models)
+- [x] 2.1-02-PLAN.md - Remove BOTH role from codebase, update guards and decorators
+- [x] 2.1-03-PLAN.md - PropertyAccessService, agent endpoints, update authorization in 9 services
+- [x] 2.1-04-PLAN.md - ChatService, chat endpoints, integration with application lifecycle
 
 **Wave Structure:**
 - Wave 1: 2.1-01 (database foundation)
@@ -540,7 +540,7 @@ Phases execute in numeric order: 1 -> 2 -> **2.1** -> 3 -> 3.1 -> 3.2 -> 4 -> 5 
 |-------|----------------|--------|-----------|
 | 1. Foundation | 3/3 | Complete | 2026-01-25 |
 | 2. Auth & Users | 3/3 | Complete | 2026-01-26 |
-| **2.1. User Roles & Agents** | 0/4 | Planned | - |
+| **2.1. User Roles & Agents** | 4/4 | Complete | 2026-02-05 |
 | 3. Properties | 4/4 | Complete | 2026-01-29 |
 | 3.1. Property Visits | 4/4 | Complete | 2026-02-03 |
 | 3.2. Natural Search | 1/1 | Complete | 2026-02-03 |
@@ -641,4 +641,4 @@ Phases execute in numeric order: 1 -> 2 -> **2.1** -> 3 -> 3.1 -> 3.2 -> 4 -> 5 
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-02-05 - Phase 2.1 User Roles & Property Agents planned (4 plans, 3 waves)*
+*Last updated: 2026-02-05 - Phase 2.1 User Roles & Property Agents complete (4 plans executed)*
