@@ -38,7 +38,7 @@ Backend API en NestJS para el marketplace de arriendos "Arriendo Facil". Provee 
 - [x] **Phase 11: Notifications** - Email service, templates, queue (REORDERED)
 - [x] **Phase 12: Subscriptions & Plans** - Pricing plans, billing, plan enforcement (REORDERED)
 - [x] **Phase 13: Insurance** - Optional insurance tiers (REORDERED)
-- [ ] **Phase 14: Wishlist & Favorites** - Save/remove favorite properties per tenant (FRONTEND PARITY)
+- [x] **Phase 14: Wishlist & Favorites** - Save/remove favorite properties per tenant (FRONTEND PARITY)
 - [ ] **Phase 15: Tenant Documents Vault** - Extend documents to leases and personal vault (FRONTEND PARITY)
 - [ ] **Phase 16: Tenant Preferences & Profile** - Persist tenant search preferences and profile data (FRONTEND PARITY)
 - [ ] **Phase 17: Coupons & Discounts** - Coupon codes for subscription discounts (FRONTEND PARITY)
@@ -506,7 +506,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 14-01-PLAN.md -- Prisma WishlistItem model, WishlistsModule (service + controller + DTO), AppModule registration
+- [x] 14-01-PLAN.md -- Prisma WishlistItem model, WishlistsModule (service + controller + DTO), AppModule registration
 
 **Frontend Reference:**
 - `src/lib/stores/wishlist.tsx` - Wishlist context with toggle/add/remove
@@ -916,7 +916,7 @@ Phases execute in numeric order: 1 -> 2 -> **2.1** -> 3 -> 3.1 -> 3.2 -> 4 -> 5 
 | 11. Notifications | 5/5 | Complete | 2026-02-03 |
 | 12. Subscriptions & Plans | 4/4 | Complete | 2026-02-04 |
 | **13. Insurance** | 2/2 | Complete | 2026-02-04 |
-| 14. Wishlist & Favorites | 0/1 | Planned | - |
+| **14. Wishlist & Favorites** | 1/1 | Complete | 2026-02-07 |
 | 15. Tenant Documents Vault | 0/0 | Not started | - |
 | 16. Tenant Preferences & Profile | 0/0 | Not started | - |
 | 17. Coupons & Discounts | 0/0 | Not started | - |
@@ -1010,4 +1010,4 @@ Phases execute in numeric order: 1 -> 2 -> **2.1** -> 3 -> 3.1 -> 3.2 -> 4 -> 5 
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-02-07 - Phase 14 planned (1 plan, 1 wave)*
+*Last updated: 2026-02-07 - Phase 14 complete (Wishlist & Favorites)*
