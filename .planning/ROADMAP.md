@@ -6,7 +6,7 @@ Backend API en NestJS para el marketplace de arriendos "Arriendo Facil". Provee 
 
 ## Milestones
 
-- **v1.0 Backend MVP** - Phases 1-16 (in progress)
+- **v1.0 Backend MVP** - Phases 1-22 (in progress)
 
 ## Phases
 
@@ -19,7 +19,8 @@ Backend API en NestJS para el marketplace de arriendos "Arriendo Facil". Provee 
 - Phase 9: Payment History Scoring (enhances FREE scoring with real data)
 - Phase 10: Tenant Payment Simulation (simulated payment flow)
 - Phases 11-13: Supporting features (no IA)
-- Phases 14-16: AI-powered features (PRO/BUSINESS subscription only) - AL FINAL
+- Phases 14-19: Frontend parity features (backend APIs for frontend features) (FREE tier)
+- Phases 20-22: AI-powered features (PRO/BUSINESS subscription only) - AL FINAL
 
 - [x] **Phase 1: Foundation** - Project scaffold, Prisma, Supabase config
 - [x] **Phase 2: Auth & Users** - Supabase Auth, guards, user management
@@ -37,9 +38,15 @@ Backend API en NestJS para el marketplace de arriendos "Arriendo Facil". Provee 
 - [x] **Phase 11: Notifications** - Email service, templates, queue (REORDERED)
 - [x] **Phase 12: Subscriptions & Plans** - Pricing plans, billing, plan enforcement (REORDERED)
 - [x] **Phase 13: Insurance** - Optional insurance tiers (REORDERED)
-- [ ] **Phase 14: AI Document Analysis** - Claude integration, document analyzers (PRO+) (REORDERED)
-- [ ] **Phase 15: Explainability** - Drivers, flags, AI explanation (PRO+) (REORDERED)
-- [ ] **Phase 16: ML Persistence** - Feature logging, outcome tracking (REORDERED)
+- [ ] **Phase 14: Wishlist & Favorites** - Save/remove favorite properties per tenant (FRONTEND PARITY)
+- [ ] **Phase 15: Tenant Documents Vault** - Extend documents to leases and personal vault (FRONTEND PARITY)
+- [ ] **Phase 16: Tenant Preferences & Profile** - Persist tenant search preferences and profile data (FRONTEND PARITY)
+- [ ] **Phase 17: Coupons & Discounts** - Coupon codes for subscription discounts (FRONTEND PARITY)
+- [ ] **Phase 18: Dashboard & Activity Log** - Aggregated dashboard endpoints and activity feed (FRONTEND PARITY)
+- [ ] **Phase 19: Property Recommendations** - Personalized property matching and recommendations (FRONTEND PARITY)
+- [ ] **Phase 20: AI Document Analysis** - Claude integration, document analyzers (PRO+) (REORDERED)
+- [ ] **Phase 21: Explainability** - Drivers, flags, AI explanation (PRO+) (REORDERED)
+- [ ] **Phase 22: ML Persistence** - Feature logging, outcome tracking (REORDERED)
 
 ## Phase Details
 
@@ -422,7 +429,7 @@ Plans:
 ### Phase 12: Subscriptions & Plans (REORDERED - era Phase 15)
 **Goal**: Pricing plans for landlords and tenants with mock payment processing, plan enforcement, and admin-managed pricing
 **Depends on**: Phase 10 (PSE mock), Phase 11 (Notifications, ADMIN role)
-**Requirements**: SUBS-01 through SUBS-05, SUBS-08 (SUBS-06, SUBS-07 cupones DEFERRED)
+**Requirements**: SUBS-01 through SUBS-05, SUBS-08 (SUBS-06, SUBS-07 cupones moved to Phase 17)
 **Context**: Complete (12-CONTEXT.md)
 **Success Criteria** (what must be TRUE):
   1. Five plan configs defined: Tenant Free/Pro, Landlord Free/Pro/Business
@@ -457,8 +464,6 @@ Plans:
 - Landlord Pro: 10 properties, premium scoring ($149,900/month)
 - Landlord Business: Unlimited, API access, premium scoring ($499,900/month)
 
-**Deferred:** Coupon system (SUBS-06, SUBS-07) for future phase.
-
 ### Phase 13: Insurance (REORDERED - era Phase 16)
 **Goal**: Optional insurance tiers for contracts with structured pricing and coverage
 **Depends on**: Phase 7 (insurance attached to contracts)
@@ -484,10 +489,367 @@ Plans:
 - PREMIUM: Accidental + natural disaster + theft up to $20,000,000 COP, $75,000 COP/month
 
 ---
+## FASES DE PARIDAD CON FRONTEND
+---
+
+### Phase 14: Wishlist & Favorites (REORDERED - era Phase 17)
+**Goal**: Tenants can save and manage favorite properties with server-side persistence
+**Depends on**: Phase 3 (Properties), Phase 2 (Auth)
+**Requirements**: WISH-01 through WISH-04
+**Tier**: FREE
+**Success Criteria** (what must be TRUE):
+  1. Tenant can add a property to favorites
+  2. Tenant can remove a property from favorites
+  3. Tenant can list all favorite properties with full property data
+  4. Duplicate add is idempotent (no error, no duplicate)
+  5. Favorites persist across devices (server-side, not localStorage)
+**Plans**: 1 plan
+
+Plans:
+- [ ] 14-01-PLAN.md -- Prisma WishlistItem model, WishlistsModule (service + controller + DTO), AppModule registration
+
+**Frontend Reference:**
+- `src/lib/stores/wishlist.tsx` - Wishlist context with toggle/add/remove
+- `src/app/inquilino/guardados/page.tsx` - Saved properties page
+- Data: Array of property IDs stored in localStorage
+
+**Expected Endpoints:**
+```
+POST   /wishlists/items              // Add property to wishlist
+DELETE /wishlists/items/{propertyId} // Remove from wishlist
+GET    /wishlists                     // Get all wishlist items with property data
+```
+
+**Model:**
+```prisma
+model WishlistItem {
+  id         String   @id @default(cuid())
+  userId     String
+  propertyId String
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  @@unique([userId, propertyId])
+}
+```
+
+**Implementation Notes:**
+- Simplest new phase, no dependencies on other new phases
+- Reuse existing Property includes for response shape
+- Quick win: ~2 plans estimated (model + endpoints)
+
+### Phase 15: Tenant Documents Vault (REORDERED - era Phase 21)
+**Goal**: Extend document management beyond applications to include lease documents and personal document vault
+**Depends on**: Phase 4 (Documents), Phase 8 (Leases)
+**Requirements**: TVAULT-01 through TVAULT-05
+**Tier**: FREE
+**Success Criteria** (what must be TRUE):
+  1. Tenant can upload documents associated with a lease (receipts, inventory, annexes)
+  2. Tenant can view all their documents across leases and applications
+  3. Landlord can upload lease-related documents (delivery inventory, addendums)
+  4. Documents categorized by type (contract, receipt, inventory, annex, personal)
+  5. Signed URLs for secure document access (reuse existing pattern)
+**Plans**: 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 15 to break down)
+
+**Frontend Reference:**
+- `src/app/inquilino/documentos/page.tsx` - Document vault page
+- Shows: contracts, payment receipts, inventory documents, handover photos
+- Categorized by: contract-related, payment-related, inventory-related
+
+**Expected Endpoints:**
+```
+POST   /leases/:leaseId/documents          // Upload lease document
+GET    /leases/:leaseId/documents          // List lease documents
+GET    /leases/:leaseId/documents/:id/url  // Get signed URL
+DELETE /leases/:leaseId/documents/:id      // Delete document
+GET    /tenants/me/documents               // Get ALL tenant documents (applications + leases)
+```
+
+**Model:**
+```prisma
+model LeaseDocument {
+  id         String           @id @default(cuid())
+  leaseId    String
+  uploadedBy String
+  type       LeaseDocumentType
+  fileName   String
+  filePath   String
+  fileSize   Int
+  mimeType   String
+  createdAt  DateTime         @default(now())
+  lease      Lease            @relation(fields: [leaseId], references: [id], onDelete: Cascade)
+  uploader   User             @relation(fields: [uploadedBy], references: [id])
+}
+
+enum LeaseDocumentType {
+  CONTRACT_SIGNED
+  PAYMENT_RECEIPT
+  DELIVERY_INVENTORY
+  RETURN_INVENTORY
+  ADDENDUM
+  PHOTO
+  OTHER
+}
+```
+
+**Implementation Notes:**
+- Extends existing DocumentsModule pattern (upload, signed URLs, validation)
+- Reuses Supabase Storage infrastructure from Phase 4
+- ~2-3 plans estimated (model + lease endpoints + vault aggregation)
+
+### Phase 16: Tenant Preferences & Profile (REORDERED - era Phase 18)
+**Goal**: Persist tenant search preferences and profile summary for cross-device and recommendations use
+**Depends on**: Phase 2 (Auth), Phase 4 (Applications)
+**Requirements**: TPREF-01 through TPREF-05
+**Tier**: FREE
+**Success Criteria** (what must be TRUE):
+  1. Tenant can save property preferences (preferred cities, bedrooms, property types, budget range)
+  2. Tenant can update preferences at any time
+  3. Preferences retrievable via GET endpoint
+  4. Tenant profile includes computed data from applications (income, employment, risk level)
+  5. Profile endpoint returns unified view of tenant data
+**Plans**: 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 16 to break down)
+
+**Frontend Reference:**
+- `src/lib/context/TenantProfileContext.tsx` - Profile with preferences
+- `src/lib/context/UserProfileContext.tsx` - User profile management
+- Data: preferredCities[], preferredBedrooms, preferredPropertyTypes[], budget range
+
+**Expected Endpoints:**
+```
+PATCH  /tenants/me/preferences    // Save/update property preferences
+GET    /tenants/me/preferences    // Get preferences
+GET    /tenants/me/profile        // Get full tenant profile (preferences + application data + risk)
+```
+
+**Model:**
+```prisma
+model TenantPreference {
+  id                     String   @id @default(cuid())
+  userId                 String   @unique
+  preferredCities        String[] @default([])
+  preferredBedrooms      Int?
+  preferredPropertyTypes String[] @default([])
+  minBudget              Int?
+  maxBudget              Int?
+  petFriendly            Boolean  @default(false)
+  moveInDate             DateTime?
+  updatedAt              DateTime @updatedAt
+  user                   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+```
+
+**Implementation Notes:**
+- MUST be implemented before Phase 19 (Recommendations depends on this)
+- Profile endpoint aggregates: User + TenantPreference + latest Application data + RiskScore
+- ~2 plans estimated (model + preferences + profile endpoint)
+
+### Phase 17: Coupons & Discounts (REORDERED - era Phase 19)
+**Goal**: Coupon code system for subscription discounts (previously deferred as SUBS-06, SUBS-07)
+**Depends on**: Phase 12 (Subscriptions)
+**Requirements**: SUBS-06, SUBS-07 (previously deferred)
+**Tier**: FREE
+**Success Criteria** (what must be TRUE):
+  1. Admin can create coupon codes with type (PERCENTAGE, FIXED_AMOUNT, FREE_MONTHS, FULL_ACCESS)
+  2. Admin can set validity dates, max uses, and applicable plans
+  3. Tenant/landlord can validate a coupon code before applying
+  4. Coupon applied during subscription creation/change reduces price
+  5. Coupon usage tracked per user (prevent reuse)
+  6. Expired/maxed coupons rejected with clear message
+**Plans**: 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 17 to break down)
+
+**Frontend Reference:**
+- `src/lib/data/mock-coupons.ts` - 11 coupon codes with types/validity
+- `src/lib/utils/coupon-validation.ts` - Validation logic
+- `src/app/panel/checkout/page.tsx` - Checkout with coupon input
+
+**Expected Endpoints:**
+```
+POST   /admin/coupons              // Create coupon (ADMIN)
+GET    /admin/coupons              // List coupons (ADMIN)
+PATCH  /admin/coupons/:id          // Update coupon (ADMIN)
+DELETE /admin/coupons/:id          // Delete coupon (ADMIN)
+GET    /coupons/validate/:code     // Validate coupon code (authenticated)
+POST   /subscriptions/apply-coupon // Apply coupon to subscription
+```
+
+**Coupon Types (from frontend):**
+- PERCENTAGE: Discount % off monthly price
+- FIXED_AMOUNT: Fixed COP discount
+- FREE_MONTHS: N months free
+- FULL_ACCESS: Full access for N days
+
+**Model:**
+```prisma
+model Coupon {
+  id              String    @id @default(cuid())
+  code            String    @unique
+  type            CouponType
+  value           Float
+  validFrom       DateTime
+  validUntil      DateTime
+  maxUses         Int?
+  currentUses     Int       @default(0)
+  applicablePlans String[]  @default([])
+  minimumPurchase Int?
+  description     String
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+}
+
+model CouponRedemption {
+  id         String   @id @default(cuid())
+  couponId   String
+  userId     String
+  appliedAt  DateTime @default(now())
+  coupon     Coupon   @relation(fields: [couponId], references: [id])
+  user       User     @relation(fields: [userId], references: [id])
+  @@unique([couponId, userId])
+}
+```
+
+**Implementation Notes:**
+- Independent of other new phases
+- Integrates with existing SubscriptionsService
+- ~3 plans estimated (models + admin CRUD + validation + subscription integration)
+
+### Phase 18: Dashboard & Activity Log (REORDERED - era Phase 20)
+**Goal**: Aggregated dashboard endpoints for landlord/tenant and persistent activity feed
+**Depends on**: Phase 6 (Landlord), Phase 8 (Leases), Phase 10 (Payments), Phase 3.1 (Visits)
+**Requirements**: DASH-01 through DASH-06
+**Tier**: FREE
+**Success Criteria** (what must be TRUE):
+  1. Landlord dashboard returns aggregated financial stats (monthly income, collection rate, pending/late payments)
+  2. Landlord dashboard returns urgent actions count (pending signatures, reviews, visits, ending leases)
+  3. Landlord dashboard returns risk distribution of current candidates
+  4. Tenant dashboard returns lease summary, payment status, upcoming events
+  5. Activity log persisted to database (application events, payment events, visit events, contract events)
+  6. Activity feed endpoint returns paginated chronological activity for user
+**Plans**: 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 18 to break down)
+
+**Frontend Reference:**
+- `src/lib/data/mock-dashboard.ts` - Financial stats, urgent actions, risk distribution
+- `src/lib/data/mock-activity.ts` - Activity feed with types: application, status_change, message, document
+- `src/app/panel/page.tsx` - Landlord dashboard
+- `src/app/inquilino/page.tsx` - Tenant dashboard
+
+**Expected Endpoints:**
+```
+GET /landlord/dashboard           // Aggregated landlord stats
+GET /tenants/me/dashboard         // Aggregated tenant stats
+GET /activities                   // Paginated activity feed (authenticated)
+GET /activities?propertyId=X      // Activity filtered by property
+```
+
+**Model:**
+```prisma
+model Activity {
+  id            String       @id @default(cuid())
+  type          ActivityType
+  title         String
+  description   String
+  userId        String
+  propertyId    String?
+  applicationId String?
+  leaseId       String?
+  metadata      Json?
+  createdAt     DateTime     @default(now())
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum ActivityType {
+  APPLICATION_SUBMITTED
+  APPLICATION_STATUS_CHANGED
+  PAYMENT_RECEIVED
+  PAYMENT_APPROVED
+  PAYMENT_REJECTED
+  VISIT_REQUESTED
+  VISIT_STATUS_CHANGED
+  CONTRACT_CREATED
+  CONTRACT_SIGNED
+  LEASE_CREATED
+  MESSAGE_RECEIVED
+  DOCUMENT_UPLOADED
+}
+```
+
+**Implementation Notes:**
+- Benefits from having most features already complete (aggregates from many modules)
+- Dashboard endpoints are read-only aggregation queries (no new models needed for dashboard itself)
+- Activity model + event listeners are the main new work
+- ~3-4 plans estimated (Activity model + event integration + landlord dashboard + tenant dashboard)
+
+### Phase 19: Property Recommendations (REORDERED - era Phase 22)
+**Goal**: Server-side personalized property matching and recommendation engine for tenants
+**Depends on**: Phase 16 (Tenant Preferences), Phase 3 (Properties), Phase 5 (Scoring)
+**Requirements**: RECOM-01 through RECOM-05
+**Tier**: FREE
+**Success Criteria** (what must be TRUE):
+  1. Recommendation engine scores available properties against tenant profile/preferences
+  2. Match score (0-100) computed per property with factor breakdown
+  3. Acceptance probability calculated (alta/media/baja) based on tenant risk + property requirements
+  4. Endpoint returns paginated recommended properties sorted by match score
+  5. Recommendations update when preferences or properties change
+**Plans**: 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 19 to break down)
+
+**Frontend Reference:**
+- `src/lib/scoring/propertyMatching.ts` - Full matching algorithm
+- `src/app/inquilino/para-ti/page.tsx` - Recommendations page
+- Algorithm weights: 40% Affordability, 30% Risk Fit, 15% Profile Strength, 15% Preferences
+- Filters to properties with >=40% match score
+- Acceptance probability: alta (>=70%), media (50-69%), baja (<50%)
+
+**Expected Endpoints:**
+```
+GET /recommendations              // Get personalized recommendations (authenticated tenant)
+    ?sort=match|price_asc|price_desc|probability
+    &probability=alta|media|baja
+    &page=1&limit=9
+GET /recommendations/top          // Get best single recommendation
+GET /properties/:id/match-score   // Get match score for specific property
+```
+
+**Matching Factors:**
+```typescript
+{
+  matchScore: number,      // 0-100
+  acceptanceProbability: 'alta' | 'media' | 'baja',
+  matchFactors: {
+    affordability: { score: number, label: string },   // 40% weight
+    riskFit: { score: number, label: string },          // 30% weight
+    profileStrength: { score: number, label: string },  // 15% weight
+    preferences: { score: number, label: string }       // 15% weight
+  },
+  recommendation: string  // Human-readable explanation in Spanish
+}
+```
+
+**Implementation Notes:**
+- Most complex non-AI feature
+- Depends on Phase 16 (Preferences) for tenant profile data
+- Port algorithm from frontend `propertyMatching.ts` to backend
+- ~2-3 plans estimated (matching service + recommendation controller + caching)
+
+---
 ## FASES DE IA (AL FINAL)
 ---
 
-### Phase 14: AI Document Analysis (REORDERED - era Phase 11)
+### Phase 20: AI Document Analysis (REORDERED - era Phase 14)
 **Goal**: Claude API analyzes documents and extracts structured data
 **Depends on**: Phase 5 (scoring infrastructure), Phase 10 (complete payment flow)
 **Requirements**: AIDOC-01 through AIDOC-08
@@ -504,9 +866,9 @@ Plans:
 **Research**: Completed (see AI_DOCUMENT_ANALYSIS.md)
 **Plans**: TBD
 
-### Phase 15: Explainability (REORDERED - era Phase 12)
+### Phase 21: Explainability (REORDERED - era Phase 15)
 **Goal**: Full scoring explanation with drivers, flags, and suggestions
-**Depends on**: Phase 14 (AI Document Analysis)
+**Depends on**: Phase 20 (AI Document Analysis)
 **Requirements**: EXPL-01 through EXPL-05
 **Tier**: PRO/BUSINESS subscription only
 **Success Criteria** (what must be TRUE):
@@ -519,7 +881,7 @@ Plans:
 **Research topics**: LLM prompts for explanations
 **Plans**: TBD
 
-### Phase 16: ML Persistence (REORDERED - era Phase 14)
+### Phase 22: ML Persistence (REORDERED - era Phase 16)
 **Goal**: Data infrastructure for future ML model training
 **Depends on**: Phase 9 (needs payment history for outcomes), Phase 10 (complete payment flow)
 **Requirements**: MLPR-01 through MLPR-04
@@ -534,7 +896,7 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> **2.1** -> 3 -> 3.1 -> 3.2 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10 -> 11 -> 12 -> 13 -> **14 -> 15 -> 16 (IA al final)**
+Phases execute in numeric order: 1 -> 2 -> **2.1** -> 3 -> 3.1 -> 3.2 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10 -> 11 -> 12 -> 13 -> **14 -> 15 -> 16 -> 17 -> 18 -> 19 (frontend parity)** -> **20 -> 21 -> 22 (IA al final)**
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -554,21 +916,28 @@ Phases execute in numeric order: 1 -> 2 -> **2.1** -> 3 -> 3.1 -> 3.2 -> 4 -> 5 
 | 11. Notifications | 5/5 | Complete | 2026-02-03 |
 | 12. Subscriptions & Plans | 4/4 | Complete | 2026-02-04 |
 | **13. Insurance** | 2/2 | Complete | 2026-02-04 |
-| 14. AI Document Analysis (IA) | 0/0 | Not started | - |
-| 15. Explainability (IA) | 0/0 | Not started | - |
-| 16. ML Persistence (IA) | 0/0 | Not started | - |
+| 14. Wishlist & Favorites | 0/1 | Planned | - |
+| 15. Tenant Documents Vault | 0/0 | Not started | - |
+| 16. Tenant Preferences & Profile | 0/0 | Not started | - |
+| 17. Coupons & Discounts | 0/0 | Not started | - |
+| 18. Dashboard & Activity Log | 0/0 | Not started | - |
+| 19. Property Recommendations | 0/0 | Not started | - |
+| 20. AI Document Analysis (IA) | 0/0 | Not started | - |
+| 21. Explainability (IA) | 0/0 | Not started | - |
+| 22. ML Persistence (IA) | 0/0 | Not started | - |
 
 ## Notes
 
 ### Tier System
 
-**FREE Tier (Phases 1-10):**
+**FREE Tier (Phases 1-13, 14-19):**
 - Basic rule-based scoring from application data
 - Payment history scoring for returning tenants
 - Simulated payment flow with receipt upload
+- Wishlist, preferences, coupons, dashboard, documents vault, recommendations
 - No external API costs
 
-**PRO/BUSINESS Tier (Phases 14-15):**
+**PRO/BUSINESS Tier (Phases 20-22):**
 - AI document analysis via Claude (~$0.05-0.10/app)
 - AI-generated explanations
 - Cross-document validation
@@ -641,4 +1010,4 @@ Phases execute in numeric order: 1 -> 2 -> **2.1** -> 3 -> 3.1 -> 3.2 -> 4 -> 5 
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-02-05 - Phase 2.1 User Roles & Property Agents complete (4 plans executed)*
+*Last updated: 2026-02-07 - Phase 14 planned (1 plan, 1 wave)*
