@@ -275,6 +275,9 @@ model User {
   // Chat relations
   chatMessages           ChatMessage[] @relation("ChatMessages")
 
+  // Wishlist relations
+  wishlistItems          WishlistItem[]
+
   @@map("users")
 }
 
@@ -324,6 +327,7 @@ model Property {
   availabilities PropertyAvailability[]
   visits         PropertyVisit[]
   propertyAccess PropertyAccess[]
+  wishlistItems  WishlistItem[]
 
   @@index([landlordId])
   @@index([city])
@@ -1007,4 +1011,21 @@ model ScoringUsage {
   @@unique([userId, month, year])
   @@index([userId])
   @@map("scoring_usage")
+}
+
+/// Tenant's saved/favorite properties
+/// Stores wishlist items with compound unique for idempotent add
+model WishlistItem {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
+  propertyId String   @map("property_id") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, propertyId])
+  @@index([userId])
+  @@index([propertyId])
+  @@map("wishlist_items")
 }
