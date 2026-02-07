@@ -2,12 +2,12 @@
 
 ## Current Status
 
-**Phase:** 2.1 (User Roles & Property Agents)
-**Plan:** 4 of 4
-**Status:** VERIFIED ✓
-**Last activity:** 2026-02-05 - Phase 2.1 verified (16/16 must-haves)
+**Phase:** 14 (Wishlist & Favorites)
+**Plan:** 1 of 1
+**Status:** COMPLETE
+**Last activity:** 2026-02-07 - Completed 14-01-PLAN.md (Phase 14 complete)
 
-**Progress:** [################################] 93% (57/~61 plans estimated)
+**Progress:** [#################################] 95% (58/~61 plans estimated)
 
 ## Project Reference
 
@@ -15,15 +15,15 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 **Core value:** Ejecutar el Risk Score con analisis inteligente de documentos para que propietarios tomen decisiones informadas en minutos, con explicabilidad total.
 
-**Current focus:** Phase 2.1 VERIFIED. Agent delegation and application chat ready. All core FREE tier phases complete. Ready for PRO+ AI phases.
+**Current focus:** Phase 14 COMPLETE. All core phases (1-13) + Phase 14 done. Phases 15-19 = remaining frontend parity, Phases 20-22 = IA al final. Next: Phase 15 (Tenant Documents Vault).
 
 ## Quick Context
 
 - Backend NestJS para marketplace de arriendos
 - Supabase: PostgreSQL + Auth + Storage
 - Risk Score con AI (Claude) para analisis de documentos (PRO+ tier)
-- 16 fases, ~128 requirements
-- Tier system: FREE (Phases 1-10), PRO+ (Phases 11-12)
+- 22 fases, ~148 requirements
+- Tier system: FREE (Phases 1-19), PRO+ (Phases 20-22)
 
 ## Phase Progress
 
@@ -44,9 +44,15 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 12. Subscriptions & Plans | COMPLETE | All 4 plans - models, services, controllers, enforcement, cron |
 | 13. Insurance | COMPLETE | All 2 plans - enum, service, controller, contract integration |
 | 2.1 User Roles & Agents | COMPLETE | All 4 plans - AGENT role, PropertyAccess, Chat |
-| 14. AI Document Analysis (IA) | Pending | PRO+ tier - Claude integration |
-| 15. Explainability (IA) | Pending | PRO+ tier - AI explanations |
-| 16. ML Persistence (IA) | Pending | Data for ML training |
+| 14. Wishlist & Favorites | COMPLETE | 1 plan - WishlistItem model, service, controller, 3 endpoints |
+| 15. Tenant Documents Vault | Pending | Frontend parity - extends existing document pattern |
+| 16. Tenant Preferences & Profile | Pending | Frontend parity - needed before Recommendations |
+| 17. Coupons & Discounts | Pending | Frontend parity - coupon codes (was SUBS-06/07) |
+| 18. Dashboard & Activity Log | Pending | Frontend parity - aggregated stats + activity feed |
+| 19. Property Recommendations | Pending | Frontend parity - depends on Phase 16 |
+| 20. AI Document Analysis (IA) | Pending | PRO+ tier - Claude integration |
+| 21. Explainability (IA) | Pending | PRO+ tier - AI explanations |
+| 22. ML Persistence (IA) | Pending | Data for ML training |
 
 ## Roadmap Evolution
 
@@ -58,6 +64,8 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 2026-01-30 | Added tier system | FREE (1-9) vs PRO+ (10-11) |
 | 2026-02-02 | Added Phase 3.1: Property Visits Scheduling | Tenant can schedule visits, landlord manages availability |
 | 2026-02-05 | Added Phase 2.1: User Roles & Property Agents | Agents can manage landlord properties, chat for applications |
+| 2026-02-07 | Added Phases 14-19: Frontend Parity | Backend must support all frontend features (Wishlist, Documents Vault, Preferences, Coupons, Dashboard, Recommendations) |
+| 2026-02-07 | Reordered: IA phases moved to 20-22 | Frontend parity first (14-19), then IA al final (20-22) |
 
 ## Accumulated Decisions
 
@@ -264,11 +272,15 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 2026-02-05 | 2.1-04 | Chat lifecycle hooks | Create conversation on submit, delete on withdraw/reject |
 | 2026-02-05 | 2.1-04 | Supabase Realtime for chat | Backend writes to DB, Supabase broadcasts via WebSocket |
 | 2026-02-05 | 2.1-04 | Mark messages from OTHER users as read | User shouldn't mark their own messages as read |
+| 2026-02-07 | 14-01 | Upsert for idempotent add | No error on duplicate - frontend can call add without checking first |
+| 2026-02-07 | 14-01 | deleteMany for idempotent remove | No error if item doesn't exist - simplifies frontend logic |
+| 2026-02-07 | 14-01 | DRAFT property exclusion from wishlist | DRAFT properties are private to landlord, not visible publicly |
+| 2026-02-07 | 14-01 | TENANT-only role restriction | Wishlist is a tenant feature - landlords list properties, tenants favorite them |
 
 ## Session Continuity
 
-**Last session:** 2026-02-05
-**Stopped at:** Phase 2.1 verified and complete
+**Last session:** 2026-02-07
+**Stopped at:** Completed 14-01-PLAN.md (Phase 14 complete)
 **Resume file:** None
 
 ## Pending User Actions
@@ -322,6 +334,10 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 1. Run: `npx prisma db push`
 2. Verify InsuranceTier enum and updated Contract fields in database
 
+**Sync WishlistItem model to database:**
+1. Run: `npx prisma db push`
+2. Verify wishlist_items table created in database
+
 **Phase 2.1 Role/Agent schema migration:** ✓ COMPLETED
 - Executed via `node scripts/run-migration-2.1.mjs` on 2026-02-05
 - Dropped active_role column, added AGENT to Role enum
@@ -329,10 +345,20 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 ## Next Action
 
-Phase 2.1 VERIFIED ✓. Continue with PRO+ tier phases:
-- Phase 14: AI Document Analysis (Claude integration)
-- Phase 15: Explainability (AI explanations)
-- Phase 16: ML Persistence (Data for ML training)
+Phase 14 COMPLETE. Continue frontend parity phases in order:
+
+**Frontend Parity (Phases 14-19):**
+- Phase 14: Wishlist & Favorites - COMPLETE
+- Phase 15: Tenant Documents Vault (extends existing pattern) - NEXT
+- Phase 16: Tenant Preferences & Profile (needed before 19)
+- Phase 17: Coupons & Discounts (independent)
+- Phase 18: Dashboard & Activity Log (aggregates many features)
+- Phase 19: Property Recommendations (most complex, depends on 16)
+
+**PRO+ AI (Phases 20-22) - AL FINAL:**
+- Phase 20: AI Document Analysis (Claude integration)
+- Phase 21: Explainability (AI explanations)
+- Phase 22: ML Persistence (Data for ML training)
 
 ## Session History
 
@@ -400,6 +426,7 @@ Phase 2.1 VERIFIED ✓. Continue with PRO+ tier phases:
 | 2026-02-05 | Executed 2.1-02-PLAN.md | Removed switch-role endpoint, added AGENT to onboarding DTO |
 | 2026-02-05 | Executed 2.1-03-PLAN.md | PropertyAccessService, controllers, 6 services updated for agent authorization |
 | 2026-02-05 | Executed 2.1-04-PLAN.md | ChatModule, lifecycle hooks, Phase 2.1 complete |
+| 2026-02-07 | Executed 14-01-PLAN.md | WishlistItem model, WishlistsModule, 3 REST endpoints, Phase 14 complete |
 
 ---
-*Last updated: 2026-02-05*
+*Last updated: 2026-02-07*
