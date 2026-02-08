@@ -12,6 +12,7 @@ import { Roles } from '../auth/decorators/roles.decorator.js';
 import { Role } from '../common/enums/index.js';
 import { UpdateProfileDto } from './dto/update-profile.dto.js';
 import { CompleteOnboardingDto } from './dto/complete-onboarding.dto.js';
+import { UpdatePreferencesDto } from './dto/update-preferences.dto.js';
 import { UsersService } from './users.service.js';
 
 /**
@@ -80,6 +81,33 @@ export class UsersController {
   })
   async getAllDocuments(@CurrentUser('id') userId: string) {
     return this.usersService.getTenantDocuments(userId);
+  }
+
+  /**
+   * Save/update tenant search preferences.
+   * Creates preferences on first call, updates on subsequent calls (upsert).
+   */
+  @Patch('me/preferences')
+  @Roles(Role.TENANT)
+  @ApiOperation({ summary: 'Save/update tenant search preferences' })
+  @ApiOkResponse({ description: 'Preferences saved successfully' })
+  async updatePreferences(
+    @CurrentUser('id') userId: string,
+    @Body() dto: UpdatePreferencesDto,
+  ) {
+    return this.usersService.updatePreferences(userId, dto);
+  }
+
+  /**
+   * Get tenant search preferences.
+   * Returns null if preferences haven't been set yet.
+   */
+  @Get('me/preferences')
+  @Roles(Role.TENANT)
+  @ApiOperation({ summary: 'Get tenant search preferences' })
+  @ApiOkResponse({ description: 'Tenant preferences retrieved (null if not set)' })
+  async getPreferences(@CurrentUser('id') userId: string) {
+    return this.usersService.getPreferences(userId);
   }
 
   /**

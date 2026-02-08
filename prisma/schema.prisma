@@ -292,6 +292,9 @@ model User {
   // Lease document relations
   uploadedLeaseDocuments LeaseDocument[] @relation("UploadedLeaseDocuments")
 
+  // Tenant preferences relation
+  tenantPreference       TenantPreference?
+
   @@map("users")
 }
 
@@ -1064,4 +1067,23 @@ model WishlistItem {
   @@index([userId])
   @@index([propertyId])
   @@map("wishlist_items")
+}
+
+/// Tenant search preferences for cross-device sync and recommendations
+/// 1:1 with User via @unique userId - use upsert for idempotent updates
+model TenantPreference {
+  id                     String    @id @default(uuid()) @db.Uuid
+  userId                 String    @unique @map("user_id") @db.Uuid
+  preferredCities        String[]  @default([])
+  preferredBedrooms      Int?      @map("preferred_bedrooms")
+  preferredPropertyTypes String[]  @default([]) @map("preferred_property_types")
+  minBudget              Int?      @map("min_budget")
+  maxBudget              Int?      @map("max_budget")
+  petFriendly            Boolean   @default(false) @map("pet_friendly")
+  moveInDate             DateTime? @map("move_in_date") @db.Date
+  updatedAt              DateTime  @updatedAt @map("updated_at")
+
+  user                   User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("tenant_preferences")
 }

@@ -6,6 +6,7 @@ import { Role } from '../common/enums/role.enum.js';
 import { LeaseDocumentType } from '../common/enums/index.js';
 import type { UpdateProfileDto } from './dto/update-profile.dto.js';
 import type { CompleteOnboardingDto } from './dto/complete-onboarding.dto.js';
+import type { UpdatePreferencesDto } from './dto/update-preferences.dto.js';
 
 /**
  * Unified document structure for tenant vault.
@@ -121,6 +122,48 @@ export class UsersService {
   async isOnboardingComplete(userId: string): Promise<boolean> {
     const user = await this.findById(userId);
     return user.firstName !== null && user.firstName.trim() !== '';
+  }
+
+  /**
+   * Update or create tenant search preferences.
+   * Uses upsert for idempotent behavior - first call creates, subsequent calls update.
+   *
+   * @param userId - Tenant user ID
+   * @param dto - Preferences data
+   * @returns Updated preferences
+   */
+  async updatePreferences(userId: string, dto: UpdatePreferencesDto) {
+    const data = {
+      preferredCities: dto.preferredCities ?? [],
+      preferredBedrooms: dto.preferredBedrooms ?? null,
+      preferredPropertyTypes: dto.preferredPropertyTypes ?? [],
+      minBudget: dto.minBudget ?? null,
+      maxBudget: dto.maxBudget ?? null,
+      petFriendly: dto.petFriendly ?? false,
+      moveInDate: dto.moveInDate ? new Date(dto.moveInDate) : null,
+    };
+
+    return this.prisma.tenantPreference.upsert({
+      where: { userId },
+      create: {
+        userId,
+        ...data,
+      },
+      update: data,
+    });
+  }
+
+  /**
+   * Get tenant search preferences.
+   * Returns null if preferences haven't been set yet.
+   *
+   * @param userId - Tenant user ID
+   * @returns Preferences or null
+   */
+  async getPreferences(userId: string) {
+    return this.prisma.tenantPreference.findUnique({
+      where: { userId },
+    });
   }
 
   /**
