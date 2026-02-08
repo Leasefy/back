@@ -8,12 +8,16 @@ import { PrismaService } from '../../database/prisma.service.js';
 import { SubscriptionPlansService } from './subscription-plans.service.js';
 import { PseMockService } from '../../tenant-payments/pse-mock/pse-mock.service.js';
 import { NotificationsService } from '../../notifications/services/notifications.service.js';
+import { CouponValidationService } from '../../coupons/coupon-validation.service.js';
+import { CouponApplicationService } from '../../coupons/coupon-application.service.js';
+import { CouponsService } from '../../coupons/coupons.service.js';
 import type { Subscription, SubscriptionPlanConfig } from '@prisma/client';
 import {
   SubscriptionPlan,
   SubscriptionStatus,
   BillingCycle,
   PlanType,
+  CouponType,
 } from '../../common/enums/index.js';
 import type { CreateSubscriptionDto } from '../dto/create-subscription.dto.js';
 import type { ChangePlanDto } from '../dto/change-plan.dto.js';
@@ -38,6 +42,9 @@ export class SubscriptionsService {
     private readonly plansService: SubscriptionPlansService,
     private readonly pseMockService: PseMockService,
     private readonly notificationsService: NotificationsService,
+    private readonly couponValidationService: CouponValidationService,
+    private readonly couponApplicationService: CouponApplicationService,
+    private readonly couponsService: CouponsService,
   ) {}
 
   /**
@@ -181,11 +188,44 @@ export class SubscriptionsService {
     const price =
       dto.cycle === BillingCycle.MONTHLY ? plan.monthlyPrice : plan.annualPrice;
 
+    let finalPrice = price;
+    let appliedCouponId: string | null = null;
+
+    // Apply coupon if provided
+    if (dto.couponCode) {
+      const validation = await this.couponValidationService.validateCoupon(
+        dto.couponCode,
+        userId,
+        dto.planId,
+      );
+
+      if (!validation.valid) {
+        throw new BadRequestException(validation.message);
+      }
+
+      const coupon = validation.coupon!;
+      appliedCouponId = coupon.id;
+      const discount = this.couponApplicationService.applyDiscount(
+        finalPrice,
+        {
+          type: coupon.type as CouponType,
+          percentageOff: coupon.percentageOff,
+          amountOff: coupon.amountOff,
+          freeMonths: coupon.freeMonths,
+        },
+      );
+      finalPrice = discount.finalPrice;
+
+      this.logger.log(
+        `Coupon ${coupon.code} applied: original $${price} -> final $${finalPrice} COP`,
+      );
+    }
+
     const now = new Date();
     const endDate = this.calculateEndDate(now, dto.cycle);
 
-    // If FREE plan, no payment needed
-    if ((plan.tier as string) === SubscriptionPlan.FREE || price === 0) {
+    // If FREE plan or finalPrice is 0 (from coupon), no payment needed
+    if ((plan.tier as string) === SubscriptionPlan.FREE || finalPrice === 0) {
       // Expire existing subscriptions
       await this.expireExistingSubscriptions(userId);
 
@@ -202,6 +242,15 @@ export class SubscriptionsService {
       });
 
       await this.updateUserPlan(userId, plan.tier as SubscriptionPlan, endDate);
+
+      // Record coupon usage if applied
+      if (appliedCouponId) {
+        await this.couponsService.recordUsage(
+          appliedCouponId,
+          userId,
+          subscription.id,
+        );
+      }
 
       return { subscription, paymentResult: null };
     }
@@ -241,7 +290,7 @@ export class SubscriptionsService {
     await this.prisma.subscriptionPayment.create({
       data: {
         subscriptionId: subscription.id,
-        amount: price,
+        amount: finalPrice,
         cycle: dto.cycle,
         pseTransactionId: paymentResult.transactionId,
         status: paymentResult.status === 'SUCCESS' ? 'SUCCESS' : 'PENDING',
@@ -251,6 +300,15 @@ export class SubscriptionsService {
     });
 
     await this.updateUserPlan(userId, plan.tier as SubscriptionPlan, endDate);
+
+    // Record coupon usage if applied
+    if (appliedCouponId) {
+      await this.couponsService.recordUsage(
+        appliedCouponId,
+        userId,
+        subscription.id,
+      );
+    }
 
     this.logger.log(
       `User ${userId} subscribed to ${plan.name} (${dto.cycle}), payment: ${paymentResult.status}`,
@@ -329,11 +387,44 @@ export class SubscriptionsService {
         ? newPlan.monthlyPrice
         : newPlan.annualPrice;
 
+    let finalPrice = price;
+    let appliedCouponId: string | null = null;
+
+    // Apply coupon if provided
+    if (dto.couponCode) {
+      const validation = await this.couponValidationService.validateCoupon(
+        dto.couponCode,
+        userId,
+        dto.newPlanId,
+      );
+
+      if (!validation.valid) {
+        throw new BadRequestException(validation.message);
+      }
+
+      const coupon = validation.coupon!;
+      appliedCouponId = coupon.id;
+      const discount = this.couponApplicationService.applyDiscount(
+        finalPrice,
+        {
+          type: coupon.type as CouponType,
+          percentageOff: coupon.percentageOff,
+          amountOff: coupon.amountOff,
+          freeMonths: coupon.freeMonths,
+        },
+      );
+      finalPrice = discount.finalPrice;
+
+      this.logger.log(
+        `Coupon ${coupon.code} applied to plan change: original $${price} -> final $${finalPrice} COP`,
+      );
+    }
+
     const now = new Date();
     const endDate = this.calculateEndDate(now, dto.cycle);
 
-    // If new plan is FREE or price is 0
-    if ((newPlan.tier as string) === SubscriptionPlan.FREE || price === 0) {
+    // If new plan is FREE or finalPrice is 0 (from coupon)
+    if ((newPlan.tier as string) === SubscriptionPlan.FREE || finalPrice === 0) {
       const subscription = await this.prisma.subscription.create({
         data: {
           userId,
@@ -351,6 +442,16 @@ export class SubscriptionsService {
         newPlan.tier as SubscriptionPlan,
         endDate,
       );
+
+      // Record coupon usage if applied
+      if (appliedCouponId) {
+        await this.couponsService.recordUsage(
+          appliedCouponId,
+          userId,
+          subscription.id,
+        );
+      }
+
       return { subscription, paymentResult: null };
     }
 
@@ -382,7 +483,7 @@ export class SubscriptionsService {
     await this.prisma.subscriptionPayment.create({
       data: {
         subscriptionId: subscription.id,
-        amount: price,
+        amount: finalPrice,
         cycle: dto.cycle,
         pseTransactionId: paymentResult.transactionId,
         status: paymentResult.status === 'SUCCESS' ? 'SUCCESS' : 'PENDING',
@@ -396,6 +497,15 @@ export class SubscriptionsService {
       newPlan.tier as SubscriptionPlan,
       endDate,
     );
+
+    // Record coupon usage if applied
+    if (appliedCouponId) {
+      await this.couponsService.recordUsage(
+        appliedCouponId,
+        userId,
+        subscription.id,
+      );
+    }
 
     this.logger.log(
       `User ${userId} changed plan to ${newPlan.name} (${dto.cycle}), payment: ${paymentResult.status}`,
