@@ -2,12 +2,12 @@
 
 ## Current Status
 
-**Phase:** 15 (Tenant Documents Vault)
+**Phase:** 16 (Tenant Preferences & Profile)
 **Plan:** 2 of 2
 **Status:** VERIFIED ✓
-**Last activity:** 2026-02-07 - Phase 15 verified (5/5 must-haves)
+**Last activity:** 2026-02-07 - Phase 16 verified (10/10 must-haves)
 
-**Progress:** [###################################] 96% (60/~62 plans estimated)
+**Progress:** [####################################] 97% (62/~64 plans estimated)
 
 ## Project Reference
 
@@ -15,7 +15,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 **Core value:** Ejecutar el Risk Score con analisis inteligente de documentos para que propietarios tomen decisiones informadas en minutos, con explicabilidad total.
 
-**Current focus:** Phase 15 COMPLETE. All core phases (1-13) + Phases 14-15 done. Phases 16-19 = remaining frontend parity, Phases 20-22 = IA al final. Next: Phase 16 (Tenant Preferences & Profile).
+**Current focus:** Phase 16 COMPLETE. All core phases (1-13) + Phases 14-16 done. Phases 17-19 = remaining frontend parity, Phases 20-22 = IA al final. Next: Phase 17 (Coupons & Discounts).
 
 ## Quick Context
 
@@ -46,7 +46,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 2.1 User Roles & Agents | COMPLETE | All 4 plans - AGENT role, PropertyAccess, Chat |
 | 14. Wishlist & Favorites | COMPLETE | 1 plan - WishlistItem model, service, controller, 3 endpoints |
 | 15. Tenant Documents Vault | COMPLETE | All 2 plans - LeaseDocument model/service, REST endpoints, tenant vault aggregation |
-| 16. Tenant Preferences & Profile | Pending | Frontend parity - needed before Recommendations |
+| 16. Tenant Preferences & Profile | COMPLETE | All 2 plans - TenantPreference model, preferences endpoints, profile aggregation |
 | 17. Coupons & Discounts | Pending | Frontend parity - coupon codes (was SUBS-06/07) |
 | 18. Dashboard & Activity Log | Pending | Frontend parity - aggregated stats + activity feed |
 | 19. Property Recommendations | Pending | Frontend parity - depends on Phase 16 |
@@ -280,11 +280,16 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 2026-02-08 | 15-01 | 24-hour deletion window for lease documents | Prevent accidental/malicious removal after handoff, allow quick correction |
 | 2026-02-08 | 15-01 | Uploader-only deletion | Prevents either party from deleting the other's evidence |
 | 2026-02-08 | 15-01 | Both tenant and landlord can upload | Shared responsibility model, collaborative document vault |
+| 2026-02-07 | 16-01 | Upsert for idempotent preferences | First PATCH creates, subsequent calls update - no separate create endpoint needed |
+| 2026-02-07 | 16-01 | Full replacement semantics | All fields overwritten on each PATCH - simpler than partial updates |
+| 2026-02-07 | 16-01 | getPreferences returns null not 404 | New tenants haven't set preferences yet - null is expected, not error |
+| 2026-02-07 | 16-02 | Two queries for profile aggregation | User+Preference (1 query with include), Application+RiskScore (1 query) |
+| 2026-02-07 | 16-02 | Non-DRAFT/WITHDRAWN/REJECTED filter | Only active applications contribute to profile data |
 
 ## Session Continuity
 
 **Last session:** 2026-02-07
-**Stopped at:** Phase 15 complete (verified 5/5 must-haves)
+**Stopped at:** Phase 16 complete (verified 10/10 must-haves)
 **Resume file:** None
 
 ## Pending User Actions
@@ -346,6 +351,10 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 1. Run: `npx prisma db push`
 2. Verify lease_documents table and LeaseDocumentType enum created in database
 
+**Sync TenantPreference model to database:**
+1. Run: `npx prisma db push`
+2. Verify tenant_preferences table created in database
+
 **Phase 2.1 Role/Agent schema migration:** ✓ COMPLETED
 - Executed via `node scripts/run-migration-2.1.mjs` on 2026-02-05
 - Dropped active_role column, added AGENT to Role enum
@@ -353,15 +362,15 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 ## Next Action
 
-Phase 15 COMPLETE. Continue frontend parity phases in order:
+Phase 16 COMPLETE. Continue frontend parity phases in order:
 
 **Frontend Parity (Phases 14-19):**
 - Phase 14: Wishlist & Favorites - COMPLETE
 - Phase 15: Tenant Documents Vault - COMPLETE
-- Phase 16: Tenant Preferences & Profile (needed before 19) - NEXT
-- Phase 17: Coupons & Discounts (independent)
+- Phase 16: Tenant Preferences & Profile - COMPLETE
+- Phase 17: Coupons & Discounts (independent) - NEXT
 - Phase 18: Dashboard & Activity Log (aggregates many features)
-- Phase 19: Property Recommendations (most complex, depends on 16)
+- Phase 19: Property Recommendations (most complex, depends on 16 - now unblocked)
 
 **PRO+ AI (Phases 20-22) - AL FINAL:**
 - Phase 20: AI Document Analysis (Claude integration)
@@ -437,6 +446,8 @@ Phase 15 COMPLETE. Continue frontend parity phases in order:
 | 2026-02-07 | Executed 14-01-PLAN.md | WishlistItem model, WishlistsModule, 3 REST endpoints, Phase 14 complete |
 | 2026-02-07 | Executed 15-01-PLAN.md | LeaseDocument model, LeaseDocumentType enum, LeaseDocumentsService |
 | 2026-02-07 | Executed 15-02-PLAN.md | LeaseDocumentsController, tenant vault endpoint, Phase 15 complete |
+| 2026-02-07 | Executed 16-01-PLAN.md | TenantPreference model, UpdatePreferencesDto, PATCH/GET preferences endpoints |
+| 2026-02-07 | Executed 16-02-PLAN.md | TenantProfileDto, GET /users/me/profile aggregation endpoint, Phase 16 complete |
 
 ---
 *Last updated: 2026-02-07*

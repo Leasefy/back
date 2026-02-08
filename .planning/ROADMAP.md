@@ -40,7 +40,7 @@ Backend API en NestJS para el marketplace de arriendos "Arriendo Facil". Provee 
 - [x] **Phase 13: Insurance** - Optional insurance tiers (REORDERED)
 - [x] **Phase 14: Wishlist & Favorites** - Save/remove favorite properties per tenant (FRONTEND PARITY)
 - [x] **Phase 15: Tenant Documents Vault** - Extend documents to leases and personal vault (FRONTEND PARITY)
-- [ ] **Phase 16: Tenant Preferences & Profile** - Persist tenant search preferences and profile data (FRONTEND PARITY)
+- [x] **Phase 16: Tenant Preferences & Profile** - Persist tenant search preferences and profile data (FRONTEND PARITY)
 - [ ] **Phase 17: Coupons & Discounts** - Coupon codes for subscription discounts (FRONTEND PARITY)
 - [ ] **Phase 18: Dashboard & Activity Log** - Aggregated dashboard endpoints and activity feed (FRONTEND PARITY)
 - [ ] **Phase 19: Property Recommendations** - Personalized property matching and recommendations (FRONTEND PARITY)
@@ -619,8 +619,8 @@ enum LeaseDocumentType {
 **Plans**: 2 plans
 
 Plans:
-- [ ] 16-01-PLAN.md -- TenantPreference Prisma model + PATCH/GET preferences endpoints
-- [ ] 16-02-PLAN.md -- Aggregated tenant profile endpoint (user + preferences + application + risk)
+- [x] 16-01-PLAN.md -- TenantPreference Prisma model + PATCH/GET preferences endpoints
+- [x] 16-02-PLAN.md -- Aggregated tenant profile endpoint (user + preferences + application + risk)
 
 **Wave Structure:**
 - Wave 1: 16-01 (schema + preferences CRUD)
@@ -1022,4 +1022,4 @@ Phases execute in numeric order: 1 -> 2 -> **2.1** -> 3 -> 3.1 -> 3.2 -> 4 -> 5 
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-02-07 - Phase 15 complete (Tenant Documents Vault)*
+*Last updated: 2026-02-07 - Phase 16 complete (Tenant Preferences & Profile)*
