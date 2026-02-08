@@ -616,10 +616,15 @@ enum LeaseDocumentType {
   3. Preferences retrievable via GET endpoint
   4. Tenant profile includes computed data from applications (income, employment, risk level)
   5. Profile endpoint returns unified view of tenant data
-**Plans**: 0 plans
+**Plans**: 2 plans
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 16 to break down)
+- [ ] 16-01-PLAN.md -- TenantPreference Prisma model + PATCH/GET preferences endpoints
+- [ ] 16-02-PLAN.md -- Aggregated tenant profile endpoint (user + preferences + application + risk)
+
+**Wave Structure:**
+- Wave 1: 16-01 (schema + preferences CRUD)
+- Wave 2: 16-02 (profile aggregation, depends on 01)
 
 **Frontend Reference:**
 - `src/lib/context/TenantProfileContext.tsx` - Profile with preferences
@@ -628,32 +633,34 @@ Plans:
 
 **Expected Endpoints:**
 ```
-PATCH  /tenants/me/preferences    // Save/update property preferences
-GET    /tenants/me/preferences    // Get preferences
-GET    /tenants/me/profile        // Get full tenant profile (preferences + application data + risk)
+PATCH  /users/me/preferences    // Save/update property preferences
+GET    /users/me/preferences    // Get preferences
+GET    /users/me/profile        // Get full tenant profile (preferences + application data + risk)
 ```
 
 **Model:**
 ```prisma
 model TenantPreference {
-  id                     String   @id @default(cuid())
-  userId                 String   @unique
-  preferredCities        String[] @default([])
-  preferredBedrooms      Int?
-  preferredPropertyTypes String[] @default([])
-  minBudget              Int?
-  maxBudget              Int?
-  petFriendly            Boolean  @default(false)
-  moveInDate             DateTime?
-  updatedAt              DateTime @updatedAt
-  user                   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                     String    @id @default(uuid()) @db.Uuid
+  userId                 String    @unique @map("user_id") @db.Uuid
+  preferredCities        String[]  @default([])
+  preferredBedrooms      Int?      @map("preferred_bedrooms")
+  preferredPropertyTypes String[]  @default([]) @map("preferred_property_types")
+  minBudget              Int?      @map("min_budget")
+  maxBudget              Int?      @map("max_budget")
+  petFriendly            Boolean   @default(false) @map("pet_friendly")
+  moveInDate             DateTime? @map("move_in_date") @db.Date
+  updatedAt              DateTime  @updatedAt @map("updated_at")
+  user                   User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@map("tenant_preferences")
 }
 ```
 
 **Implementation Notes:**
 - MUST be implemented before Phase 19 (Recommendations depends on this)
+- Endpoints under /users/me/* (follows existing UsersModule pattern, not separate /tenants/)
 - Profile endpoint aggregates: User + TenantPreference + latest Application data + RiskScore
-- ~2 plans estimated (model + preferences + profile endpoint)
+- Preferences use upsert for idempotent create/update
 
 ### Phase 17: Coupons & Discounts (REORDERED - era Phase 19)
 **Goal**: Coupon code system for subscription discounts (previously deferred as SUBS-06, SUBS-07)
