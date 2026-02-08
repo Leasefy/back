@@ -3,11 +3,11 @@
 ## Current Status
 
 **Phase:** 17 (Coupons & Discounts)
-**Plan:** 1 of 2
-**Status:** In progress
-**Last activity:** 2026-02-08 - Completed 17-01-PLAN.md (Coupon infrastructure)
+**Plan:** 2 of 2
+**Status:** Phase complete
+**Last activity:** 2026-02-08 - Completed 17-02-PLAN.md (Coupon-Subscription Integration)
 
-**Progress:** [#####################################] 98% (63/~64 plans estimated)
+**Progress:** [#####################################] 100% (64/~64 plans estimated)
 
 ## Project Reference
 
@@ -15,7 +15,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 **Core value:** Ejecutar el Risk Score con analisis inteligente de documentos para que propietarios tomen decisiones informadas en minutos, con explicabilidad total.
 
-**Current focus:** Phase 16 COMPLETE. All core phases (1-13) + Phases 14-16 done. Phases 17-19 = remaining frontend parity, Phases 20-22 = IA al final. Next: Phase 17 (Coupons & Discounts).
+**Current focus:** Phase 17 COMPLETE. All core phases (1-13) + Phases 14-17 done. Phases 18-19 = remaining frontend parity, Phases 20-22 = IA al final. Next: Phase 18 (Dashboard & Activity Log).
 
 ## Quick Context
 
@@ -47,7 +47,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 14. Wishlist & Favorites | COMPLETE | 1 plan - WishlistItem model, service, controller, 3 endpoints |
 | 15. Tenant Documents Vault | COMPLETE | All 2 plans - LeaseDocument model/service, REST endpoints, tenant vault aggregation |
 | 16. Tenant Preferences & Profile | COMPLETE | All 2 plans - TenantPreference model, preferences endpoints, profile aggregation |
-| 17. Coupons & Discounts | In progress | Plan 1 done - Coupon models, admin CRUD, validation, discount calculation |
+| 17. Coupons & Discounts | COMPLETE | All 2 plans - Coupon infrastructure, subscription integration |
 | 18. Dashboard & Activity Log | Pending | Frontend parity - aggregated stats + activity feed |
 | 19. Property Recommendations | Pending | Frontend parity - depends on Phase 16 |
 | 20. AI Document Analysis (IA) | Pending | PRO+ tier - Claude integration |
@@ -290,12 +290,15 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 2026-02-08 | 17-01 | Plan applicability key format | Uses ${planType}_${tier} format (e.g. TENANT_PRO) for applicablePlans array |
 | 2026-02-08 | 17-01 | Atomic coupon usage tracking | recordUsage() uses transaction to increment currentUses and create CouponUsage atomically |
 | 2026-02-08 | 17-01 | Two-controller pattern for admin+public | CouponsAdminController and CouponsPublicController in same file |
+| 2026-02-08 | 17-02 | Coupon validation before payment | Validate coupon, apply discount, then process payment - finalPrice used for PSE requirement |
+| 2026-02-08 | 17-02 | Atomic usage after subscription | recordUsage() called after subscription.create() to capture subscription.id |
+| 2026-02-08 | 17-02 | Type casting for Prisma enums | Cast Prisma CouponType to app CouponType at module boundaries for TypeScript compatibility |
 
 ## Session Continuity
 
 **Last session:** 2026-02-08
-**Stopped at:** Phase 17 plan 01 complete (Coupon infrastructure)
-**Resume file:** .planning/phases/17-coupons-discounts/17-01-SUMMARY.md
+**Stopped at:** Phase 17 complete (Coupons & Discounts)
+**Resume file:** .planning/phases/17-coupons-discounts/17-02-SUMMARY.md
 
 ## Pending User Actions
 
@@ -371,14 +374,14 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 ## Next Action
 
-Phase 17 in progress. Plan 17-01 (Coupon Infrastructure) COMPLETE. Next: Plan 17-02 (Subscription Integration).
+Phase 17 COMPLETE. Next: Phase 18 (Dashboard & Activity Log).
 
 **Frontend Parity (Phases 14-19):**
 - Phase 14: Wishlist & Favorites - COMPLETE
 - Phase 15: Tenant Documents Vault - COMPLETE
 - Phase 16: Tenant Preferences & Profile - COMPLETE
-- Phase 17: Coupons & Discounts (independent) - IN PROGRESS (1/2 plans done)
-- Phase 18: Dashboard & Activity Log (aggregates many features)
+- Phase 17: Coupons & Discounts - COMPLETE (all 2 plans)
+- Phase 18: Dashboard & Activity Log (aggregates many features) - NEXT
 - Phase 19: Property Recommendations (most complex, depends on 16 - now unblocked)
 
 **PRO+ AI (Phases 20-22) - AL FINAL:**
@@ -458,6 +461,7 @@ Phase 17 in progress. Plan 17-01 (Coupon Infrastructure) COMPLETE. Next: Plan 17
 | 2026-02-07 | Executed 16-01-PLAN.md | TenantPreference model, UpdatePreferencesDto, PATCH/GET preferences endpoints |
 | 2026-02-07 | Executed 16-02-PLAN.md | TenantProfileDto, GET /users/me/profile aggregation endpoint, Phase 16 complete |
 | 2026-02-08 | Executed 17-01-PLAN.md | CouponType enum, Coupon/CouponUsage models, CouponsModule with 3 services, admin+public controllers |
+| 2026-02-08 | Executed 17-02-PLAN.md | Coupon integration into subscriptions, validation+discount+usage, Phase 17 complete |
 
 ---
 *Last updated: 2026-02-08*
