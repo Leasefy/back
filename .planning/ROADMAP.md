@@ -549,10 +549,15 @@ model WishlistItem {
   3. Landlord can upload lease-related documents (delivery inventory, addendums)
   4. Documents categorized by type (contract, receipt, inventory, annex, personal)
   5. Signed URLs for secure document access (reuse existing pattern)
-**Plans**: 0 plans
+**Plans**: 2 plans
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 15 to break down)
+- [ ] 15-01-PLAN.md -- LeaseDocument model, LeaseDocumentType enum, LeaseDocumentsService
+- [ ] 15-02-PLAN.md -- LeaseDocumentsController endpoints, tenant vault aggregated endpoint
+
+**Wave Structure:**
+- Wave 1: 15-01 (schema + service foundation)
+- Wave 2: 15-02 (controllers + vault endpoint, depends on 01)
 
 **Frontend Reference:**
 - `src/app/inquilino/documentos/page.tsx` - Document vault page
@@ -917,7 +922,7 @@ Phases execute in numeric order: 1 -> 2 -> **2.1** -> 3 -> 3.1 -> 3.2 -> 4 -> 5 
 | 12. Subscriptions & Plans | 4/4 | Complete | 2026-02-04 |
 | **13. Insurance** | 2/2 | Complete | 2026-02-04 |
 | **14. Wishlist & Favorites** | 1/1 | Complete | 2026-02-07 |
-| 15. Tenant Documents Vault | 0/0 | Not started | - |
+| 15. Tenant Documents Vault | 0/2 | Planned | - |
 | 16. Tenant Preferences & Profile | 0/0 | Not started | - |
 | 17. Coupons & Discounts | 0/0 | Not started | - |
 | 18. Dashboard & Activity Log | 0/0 | Not started | - |
