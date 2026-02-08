@@ -825,10 +825,16 @@ enum ActivityType {
   3. Acceptance probability calculated (alta/media/baja) based on tenant risk + property requirements
   4. Endpoint returns paginated recommended properties sorted by match score
   5. Recommendations update when preferences or properties change
-**Plans**: 0 plans
+**Research**: Complete (19-RESEARCH.md)
+**Plans**: 2 plans
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 19 to break down)
+- [ ] 19-01-PLAN.md -- Scoring engine: 4 sub-models (Affordability, RiskFit, ProfileStrength, Preferences) + RecommendationScorer
+- [ ] 19-02-PLAN.md -- RecommendationsService, Controller (3 endpoints), Module + AppModule registration
+
+**Wave Structure:**
+- Wave 1: 19-01 (scoring models + interfaces)
+- Wave 2: 19-02 (service + controller + module, depends on 01)
 
 **Frontend Reference:**
 - `src/lib/scoring/propertyMatching.ts` - Full matching algorithm
@@ -844,7 +850,7 @@ GET /recommendations              // Get personalized recommendations (authentic
     &probability=alta|media|baja
     &page=1&limit=9
 GET /recommendations/top          // Get best single recommendation
-GET /properties/:id/match-score   // Get match score for specific property
+GET /recommendations/property/:propertyId/match-score   // Get match score for specific property
 ```
 
 **Matching Factors:**
@@ -866,7 +872,8 @@ GET /properties/:id/match-score   // Get match score for specific property
 - Most complex non-AI feature
 - Depends on Phase 16 (Preferences) for tenant profile data
 - Port algorithm from frontend `propertyMatching.ts` to backend
-- ~2-3 plans estimated (matching service + recommendation controller + caching)
+- No new database models needed (reads from existing Property, TenantPreference, RiskScoreResult)
+- No new external dependencies
 
 ---
 ## FASES DE IA (AL FINAL)
@@ -944,7 +951,7 @@ Phases execute in numeric order: 1 -> 2 -> **2.1** -> 3 -> 3.1 -> 3.2 -> 4 -> 5 
 | **16. Tenant Preferences & Profile** | 2/2 | Complete | 2026-02-07 |
 | **17. Coupons & Discounts** | 2/2 | Complete | 2026-02-08 |
 | **18. Dashboard & Activity Log** | 3/3 | Complete | 2026-02-08 |
-| 19. Property Recommendations | 0/0 | Not started | - |
+| **19. Property Recommendations** | 0/2 | Planned | - |
 | 20. AI Document Analysis (IA) | 0/0 | Not started | - |
 | 21. Explainability (IA) | 0/0 | Not started | - |
 | 22. ML Persistence (IA) | 0/0 | Not started | - |
@@ -1033,4 +1040,4 @@ Phases execute in numeric order: 1 -> 2 -> **2.1** -> 3 -> 3.1 -> 3.2 -> 4 -> 5 
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-02-08 - Phase 18 complete (Dashboard & Activity Log)*
+*Last updated: 2026-02-08 - Phase 19 planned (Property Recommendations)*
