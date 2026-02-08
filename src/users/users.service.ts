@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import type { User } from '@prisma/client';
-import { Role as PrismaRole, ContractStatus } from '@prisma/client';
+import { Role as PrismaRole, ContractStatus, ApplicationStatus } from '@prisma/client';
 import { PrismaService } from '../database/prisma.service.js';
 import { Role } from '../common/enums/role.enum.js';
 import { LeaseDocumentType } from '../common/enums/index.js';
@@ -164,6 +164,79 @@ export class UsersService {
     return this.prisma.tenantPreference.findUnique({
       where: { userId },
     });
+  }
+
+  /**
+   * Get full tenant profile with aggregated data from multiple sources.
+   * Combines: User info + TenantPreference + latest Application data + RiskScoreResult.
+   *
+   * @param userId - Tenant user ID
+   * @returns Aggregated tenant profile
+   */
+  async getTenantProfile(userId: string) {
+    // Get user with preferences (single query with include)
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        tenantPreference: true,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    // Get latest submitted application with risk score
+    const latestApplication = await this.prisma.application.findFirst({
+      where: {
+        tenantId: userId,
+        status: {
+          in: [
+            ApplicationStatus.SUBMITTED,
+            ApplicationStatus.UNDER_REVIEW,
+            ApplicationStatus.NEEDS_INFO,
+            ApplicationStatus.PREAPPROVED,
+            ApplicationStatus.APPROVED,
+          ],
+        },
+      },
+      include: {
+        riskScore: true,
+      },
+      orderBy: { submittedAt: 'desc' },
+    });
+
+    // Extract application data from JSON fields
+    const applicationData = latestApplication
+      ? {
+          income: (latestApplication.incomeInfo as Record<string, unknown>)?.monthlySalary as number | null ?? null,
+          employment: (latestApplication.employmentInfo as Record<string, unknown>)?.employmentType as string | null ?? null,
+          employmentCompany: (latestApplication.employmentInfo as Record<string, unknown>)?.companyName as string | null ?? null,
+          applicationId: latestApplication.id,
+        }
+      : null;
+
+    // Extract risk score data
+    const riskData = latestApplication?.riskScore
+      ? {
+          totalScore: latestApplication.riskScore.totalScore,
+          level: latestApplication.riskScore.level,
+        }
+      : null;
+
+    return {
+      user: {
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        phone: user.phone,
+        role: user.role,
+      },
+      preferences: user.tenantPreference ?? null,
+      applicationData,
+      riskData,
+    };
   }
 
   /**

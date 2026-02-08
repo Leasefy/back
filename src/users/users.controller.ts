@@ -10,6 +10,7 @@ import type { User } from '@prisma/client';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import { Roles } from '../auth/decorators/roles.decorator.js';
 import { Role } from '../common/enums/index.js';
+import { TenantProfileDto } from './dto/tenant-profile.dto.js';
 import { UpdateProfileDto } from './dto/update-profile.dto.js';
 import { CompleteOnboardingDto } from './dto/complete-onboarding.dto.js';
 import { UpdatePreferencesDto } from './dto/update-preferences.dto.js';
@@ -108,6 +109,21 @@ export class UsersController {
   @ApiOkResponse({ description: 'Tenant preferences retrieved (null if not set)' })
   async getPreferences(@CurrentUser('id') userId: string) {
     return this.usersService.getPreferences(userId);
+  }
+
+  /**
+   * Get full tenant profile with aggregated data.
+   * Includes user info, preferences, latest application data, and risk score.
+   */
+  @Get('me/profile')
+  @Roles(Role.TENANT)
+  @ApiOperation({ summary: 'Get full tenant profile (preferences + application data + risk score)' })
+  @ApiOkResponse({
+    description: 'Aggregated tenant profile retrieved',
+    type: TenantProfileDto,
+  })
+  async getTenantProfile(@CurrentUser('id') userId: string) {
+    return this.usersService.getTenantProfile(userId);
   }
 
   /**
