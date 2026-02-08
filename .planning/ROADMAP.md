@@ -674,10 +674,15 @@ model TenantPreference {
   4. Coupon applied during subscription creation/change reduces price
   5. Coupon usage tracked per user (prevent reuse)
   6. Expired/maxed coupons rejected with clear message
-**Plans**: 0 plans
+**Plans**: 2 plans
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 17 to break down)
+- [ ] 17-01-PLAN.md -- Prisma models (CouponType, Coupon, CouponUsage), CouponsModule with admin CRUD + validation + discount services
+- [ ] 17-02-PLAN.md -- Subscription integration (couponCode in DTOs, discount in subscribe/changePlan flows)
+
+**Wave Structure:**
+- Wave 1: 17-01 (standalone coupon system)
+- Wave 2: 17-02 (subscription integration, depends on 01)
 
 **Frontend Reference:**
 - `src/lib/data/mock-coupons.ts` - 11 coupon codes with types/validity
