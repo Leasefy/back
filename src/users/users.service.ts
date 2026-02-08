@@ -1,10 +1,28 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import type { User } from '@prisma/client';
-import { Role as PrismaRole } from '@prisma/client';
+import { Role as PrismaRole, ContractStatus } from '@prisma/client';
 import { PrismaService } from '../database/prisma.service.js';
 import { Role } from '../common/enums/role.enum.js';
+import { LeaseDocumentType } from '../common/enums/index.js';
 import type { UpdateProfileDto } from './dto/update-profile.dto.js';
 import type { CompleteOnboardingDto } from './dto/complete-onboarding.dto.js';
+
+/**
+ * Unified document structure for tenant vault.
+ */
+export interface TenantVaultDocument {
+  id: string;
+  name: string;
+  type: 'contract' | 'receipt' | 'inventory';
+  category: string;
+  property: string;
+  date: string;
+  size: string;
+  status: 'signed' | 'pending' | 'available';
+  sourceType: 'application' | 'lease' | 'contract';
+  sourceId: string;
+  documentId: string;
+}
 
 /**
  * Service for user profile operations.
@@ -103,5 +121,216 @@ export class UsersService {
   async isOnboardingComplete(userId: string): Promise<boolean> {
     const user = await this.findById(userId);
     return user.firstName !== null && user.firstName.trim() !== '';
+  }
+
+  /**
+   * Get all tenant documents across applications, leases, and contracts.
+   * Aggregates documents from all sources into a unified vault view.
+   *
+   * @param userId - Tenant user ID
+   * @returns Unified document vault with stats
+   */
+  async getTenantDocuments(userId: string) {
+    // Query 3 sources in parallel
+    const [applicationDocs, leaseDocs, contractPdfs] = await Promise.all([
+      // 1. ApplicationDocuments
+      this.prisma.applicationDocument.findMany({
+        where: {
+          application: {
+            tenantId: userId,
+          },
+        },
+        include: {
+          application: {
+            select: {
+              id: true,
+              property: {
+                select: {
+                  title: true,
+                },
+              },
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+      }),
+
+      // 2. LeaseDocuments
+      this.prisma.leaseDocument.findMany({
+        where: {
+          lease: {
+            tenantId: userId,
+          },
+        },
+        include: {
+          lease: {
+            select: {
+              id: true,
+              propertyAddress: true,
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+      }),
+
+      // 3. Contract PDFs (signed contracts only)
+      this.prisma.contract.findMany({
+        where: {
+          tenantId: userId,
+          signedPdfPath: {
+            not: null,
+          },
+          status: {
+            in: [ContractStatus.SIGNED, ContractStatus.ACTIVE],
+          },
+        },
+        select: {
+          id: true,
+          signedPdfPath: true,
+          createdAt: true,
+          application: {
+            select: {
+              property: {
+                select: {
+                  title: true,
+                },
+              },
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+      }),
+    ]);
+
+    // Map each source to unified format
+    const documents: TenantVaultDocument[] = [
+      // Map ApplicationDocuments
+      ...applicationDocs.map((doc) => ({
+        id: doc.id,
+        name: doc.originalName,
+        type: this.mapDocumentTypeToFrontend(doc.type as string),
+        category: this.getCategoryFromDocumentType(doc.type as string),
+        property: doc.application.property.title,
+        date: doc.createdAt.toISOString(),
+        size: this.formatFileSize(doc.size),
+        status: 'available' as const,
+        sourceType: 'application' as const,
+        sourceId: doc.applicationId,
+        documentId: doc.id,
+      })),
+
+      // Map LeaseDocuments
+      ...leaseDocs.map((doc) => ({
+        id: doc.id,
+        name: doc.fileName,
+        type: this.mapLeaseDocumentTypeToFrontend(doc.type as LeaseDocumentType),
+        category: this.getCategoryFromLeaseDocumentType(doc.type as LeaseDocumentType),
+        property: doc.lease.propertyAddress,
+        date: doc.createdAt.toISOString(),
+        size: this.formatFileSize(doc.fileSize),
+        status: (doc.type as string) === 'CONTRACT_SIGNED'
+          ? ('signed' as const)
+          : ('available' as const),
+        sourceType: 'lease' as const,
+        sourceId: doc.leaseId,
+        documentId: doc.id,
+      })),
+
+      // Map Contract PDFs
+      ...contractPdfs.map((contract) => ({
+        id: contract.id,
+        name: 'Contrato firmado',
+        type: 'contract' as const,
+        category: 'Contratos',
+        property: contract.application.property.title,
+        date: contract.createdAt.toISOString(),
+        size: '', // Unknown, stored in Supabase
+        status: 'signed' as const,
+        sourceType: 'contract' as const,
+        sourceId: contract.id,
+        documentId: contract.id,
+      })),
+    ];
+
+    // Sort all documents by date desc
+    documents.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+    // Calculate stats
+    const stats = {
+      total: documents.length,
+      signed: documents.filter((d) => d.status === 'signed').length,
+      pending: documents.filter((d) => d.status === 'pending').length,
+      available: documents.filter((d) => d.status === 'available').length,
+    };
+
+    return {
+      documents,
+      stats,
+    };
+  }
+
+  /**
+   * Map DocumentType (application) to frontend types.
+   */
+  private mapDocumentTypeToFrontend(type: string): 'contract' | 'receipt' | 'inventory' {
+    if (type === 'ID_DOCUMENT') return 'contract';
+    if (type === 'PAY_STUB' || type === 'BANK_STATEMENT') return 'receipt';
+    return 'inventory'; // OTHER, EMPLOYMENT_LETTER
+  }
+
+  /**
+   * Get category from DocumentType (application).
+   */
+  private getCategoryFromDocumentType(type: string): string {
+    const categoryMap: Record<string, string> = {
+      ID_DOCUMENT: 'Identificación',
+      PAY_STUB: 'Comprobantes de Pago',
+      BANK_STATEMENT: 'Estados Financieros',
+      EMPLOYMENT_LETTER: 'Cartas de Empleo',
+      OTHER: 'Otros',
+    };
+    return categoryMap[type] ?? 'Otros';
+  }
+
+  /**
+   * Map LeaseDocumentType to frontend types.
+   */
+  private mapLeaseDocumentTypeToFrontend(type: LeaseDocumentType): 'contract' | 'receipt' | 'inventory' {
+    if (type === LeaseDocumentType.CONTRACT_SIGNED || type === LeaseDocumentType.ADDENDUM) {
+      return 'contract';
+    }
+    if (type === LeaseDocumentType.PAYMENT_RECEIPT) {
+      return 'receipt';
+    }
+    return 'inventory'; // DELIVERY_INVENTORY, RETURN_INVENTORY, PHOTO, OTHER
+  }
+
+  /**
+   * Get category from LeaseDocumentType.
+   */
+  private getCategoryFromLeaseDocumentType(type: LeaseDocumentType): string {
+    const categoryMap: Record<LeaseDocumentType, string> = {
+      [LeaseDocumentType.CONTRACT_SIGNED]: 'Contratos',
+      [LeaseDocumentType.PAYMENT_RECEIPT]: 'Comprobantes de Pago',
+      [LeaseDocumentType.DELIVERY_INVENTORY]: 'Inventarios',
+      [LeaseDocumentType.RETURN_INVENTORY]: 'Inventarios',
+      [LeaseDocumentType.ADDENDUM]: 'Contratos',
+      [LeaseDocumentType.PHOTO]: 'Fotos',
+      [LeaseDocumentType.OTHER]: 'Otros',
+    };
+    return categoryMap[type] ?? 'Otros';
+  }
+
+  /**
+   * Format file size from bytes to human-readable string.
+   */
+  private formatFileSize(bytes: number): string {
+    if (bytes < 1024) {
+      return `${bytes} B`;
+    }
+    if (bytes < 1024 * 1024) {
+      return `${(bytes / 1024).toFixed(1)} KB`;
+    }
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   }
 }

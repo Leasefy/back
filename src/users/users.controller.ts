@@ -4,9 +4,12 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiTags,
+  ApiResponse,
 } from '@nestjs/swagger';
 import type { User } from '@prisma/client';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
+import { Roles } from '../auth/decorators/roles.decorator.js';
+import { Role } from '../common/enums/index.js';
 import { UpdateProfileDto } from './dto/update-profile.dto.js';
 import { CompleteOnboardingDto } from './dto/complete-onboarding.dto.js';
 import { UsersService } from './users.service.js';
@@ -29,6 +32,54 @@ export class UsersController {
   @ApiOkResponse({ description: 'User profile retrieved successfully' })
   getProfile(@CurrentUser() user: User): User {
     return user;
+  }
+
+  /**
+   * Get all documents for the authenticated tenant.
+   * Aggregates documents from applications, leases, and contract PDFs.
+   */
+  @Get('me/documents')
+  @Roles(Role.TENANT)
+  @ApiOperation({ summary: 'Get all tenant documents across applications and leases' })
+  @ApiResponse({
+    status: 200,
+    description: 'Tenant document vault with stats',
+    schema: {
+      type: 'object',
+      properties: {
+        documents: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              name: { type: 'string' },
+              type: { type: 'string', enum: ['contract', 'receipt', 'inventory'] },
+              category: { type: 'string' },
+              property: { type: 'string' },
+              date: { type: 'string', format: 'date-time' },
+              size: { type: 'string' },
+              status: { type: 'string', enum: ['signed', 'pending', 'available'] },
+              sourceType: { type: 'string', enum: ['application', 'lease', 'contract'] },
+              sourceId: { type: 'string' },
+              documentId: { type: 'string' },
+            },
+          },
+        },
+        stats: {
+          type: 'object',
+          properties: {
+            total: { type: 'number' },
+            signed: { type: 'number' },
+            pending: { type: 'number' },
+            available: { type: 'number' },
+          },
+        },
+      },
+    },
+  })
+  async getAllDocuments(@CurrentUser('id') userId: string) {
+    return this.usersService.getTenantDocuments(userId);
   }
 
   /**
