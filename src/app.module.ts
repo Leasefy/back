@@ -23,6 +23,7 @@ import { SubscriptionsModule } from './subscriptions/subscriptions.module.js';
 import { InsuranceModule } from './insurance/insurance.module.js';
 import { ChatModule } from './chat/chat.module.js';
 import { WishlistsModule } from './wishlists/wishlists.module.js';
+import { CouponsModule } from './coupons/coupons.module.js';
 import { SupabaseAuthGuard } from './auth/guards/supabase-auth.guard.js';
 import { RolesGuard } from './auth/guards/roles.guard.js';
 import { AppController } from './app.controller.js';
@@ -56,6 +57,7 @@ import { AppService } from './app.service.js';
     NotificationTemplatesModule,
     NotificationsModule,
     SubscriptionsModule,
+    CouponsModule,
     ChatModule,
     WishlistsModule,
   ],
