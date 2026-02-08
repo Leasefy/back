@@ -2,12 +2,12 @@
 
 ## Current Status
 
-**Phase:** 16 (Tenant Preferences & Profile)
-**Plan:** 2 of 2
-**Status:** VERIFIED ✓
-**Last activity:** 2026-02-07 - Phase 16 verified (10/10 must-haves)
+**Phase:** 17 (Coupons & Discounts)
+**Plan:** 1 of 2
+**Status:** In progress
+**Last activity:** 2026-02-08 - Completed 17-01-PLAN.md (Coupon infrastructure)
 
-**Progress:** [####################################] 97% (62/~64 plans estimated)
+**Progress:** [#####################################] 98% (63/~64 plans estimated)
 
 ## Project Reference
 
@@ -47,7 +47,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 14. Wishlist & Favorites | COMPLETE | 1 plan - WishlistItem model, service, controller, 3 endpoints |
 | 15. Tenant Documents Vault | COMPLETE | All 2 plans - LeaseDocument model/service, REST endpoints, tenant vault aggregation |
 | 16. Tenant Preferences & Profile | COMPLETE | All 2 plans - TenantPreference model, preferences endpoints, profile aggregation |
-| 17. Coupons & Discounts | Pending | Frontend parity - coupon codes (was SUBS-06/07) |
+| 17. Coupons & Discounts | In progress | Plan 1 done - Coupon models, admin CRUD, validation, discount calculation |
 | 18. Dashboard & Activity Log | Pending | Frontend parity - aggregated stats + activity feed |
 | 19. Property Recommendations | Pending | Frontend parity - depends on Phase 16 |
 | 20. AI Document Analysis (IA) | Pending | PRO+ tier - Claude integration |
@@ -285,12 +285,17 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 2026-02-07 | 16-01 | getPreferences returns null not 404 | New tenants haven't set preferences yet - null is expected, not error |
 | 2026-02-07 | 16-02 | Two queries for profile aggregation | User+Preference (1 query with include), Application+RiskScore (1 query) |
 | 2026-02-07 | 16-02 | Non-DRAFT/WITHDRAWN/REJECTED filter | Only active applications contribute to profile data |
+| 2026-02-08 | 17-01 | Compound unique [couponId, userId] | Prevents user from using same coupon twice (per-user one-time use) |
+| 2026-02-08 | 17-01 | Uppercase code normalization | code.toUpperCase().trim() for case-insensitive coupon matching |
+| 2026-02-08 | 17-01 | Plan applicability key format | Uses ${planType}_${tier} format (e.g. TENANT_PRO) for applicablePlans array |
+| 2026-02-08 | 17-01 | Atomic coupon usage tracking | recordUsage() uses transaction to increment currentUses and create CouponUsage atomically |
+| 2026-02-08 | 17-01 | Two-controller pattern for admin+public | CouponsAdminController and CouponsPublicController in same file |
 
 ## Session Continuity
 
-**Last session:** 2026-02-07
-**Stopped at:** Phase 16 complete (verified 10/10 must-haves)
-**Resume file:** None
+**Last session:** 2026-02-08
+**Stopped at:** Phase 17 plan 01 complete (Coupon infrastructure)
+**Resume file:** .planning/phases/17-coupons-discounts/17-01-SUMMARY.md
 
 ## Pending User Actions
 
@@ -355,6 +360,10 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 1. Run: `npx prisma db push`
 2. Verify tenant_preferences table created in database
 
+**Sync Coupon models to database:**
+1. Run: `npx prisma db push`
+2. Verify CouponType enum and coupons, coupon_usages tables created in database
+
 **Phase 2.1 Role/Agent schema migration:** ✓ COMPLETED
 - Executed via `node scripts/run-migration-2.1.mjs` on 2026-02-05
 - Dropped active_role column, added AGENT to Role enum
@@ -362,13 +371,13 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 ## Next Action
 
-Phase 16 COMPLETE. Continue frontend parity phases in order:
+Phase 17 in progress. Plan 17-01 (Coupon Infrastructure) COMPLETE. Next: Plan 17-02 (Subscription Integration).
 
 **Frontend Parity (Phases 14-19):**
 - Phase 14: Wishlist & Favorites - COMPLETE
 - Phase 15: Tenant Documents Vault - COMPLETE
 - Phase 16: Tenant Preferences & Profile - COMPLETE
-- Phase 17: Coupons & Discounts (independent) - NEXT
+- Phase 17: Coupons & Discounts (independent) - IN PROGRESS (1/2 plans done)
 - Phase 18: Dashboard & Activity Log (aggregates many features)
 - Phase 19: Property Recommendations (most complex, depends on 16 - now unblocked)
 
@@ -448,6 +457,7 @@ Phase 16 COMPLETE. Continue frontend parity phases in order:
 | 2026-02-07 | Executed 15-02-PLAN.md | LeaseDocumentsController, tenant vault endpoint, Phase 15 complete |
 | 2026-02-07 | Executed 16-01-PLAN.md | TenantPreference model, UpdatePreferencesDto, PATCH/GET preferences endpoints |
 | 2026-02-07 | Executed 16-02-PLAN.md | TenantProfileDto, GET /users/me/profile aggregation endpoint, Phase 16 complete |
+| 2026-02-08 | Executed 17-01-PLAN.md | CouponType enum, Coupon/CouponUsage models, CouponsModule with 3 services, admin+public controllers |
 
 ---
-*Last updated: 2026-02-07*
+*Last updated: 2026-02-08*
