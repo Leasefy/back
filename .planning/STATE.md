@@ -3,11 +3,11 @@
 ## Current Status
 
 **Phase:** 18 (Dashboard & Activity Log)
-**Plan:** 2 of 2
-**Status:** In progress
-**Last activity:** 2026-02-08 - Completed 18-01-PLAN.md (Activity Log Infrastructure) + 18-02-PLAN.md (Dashboard Endpoints)
+**Plan:** 3 of 3
+**Status:** Phase complete
+**Last activity:** 2026-02-08 - Completed 18-03-PLAN.md (Activity Event Listeners)
 
-**Progress:** [#####################################] ~97% (66/~68 plans estimated)
+**Progress:** [######################################] ~98% (67/~68 plans estimated)
 
 ## Project Reference
 
@@ -15,7 +15,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 **Core value:** Ejecutar el Risk Score con analisis inteligente de documentos para que propietarios tomen decisiones informadas en minutos, con explicabilidad total.
 
-**Current focus:** Phase 18 in progress (2/3 plans done: 18-01 Activity Log + 18-02 Dashboard). Remaining: 18-03 (Activity Listeners). Next: complete Phase 18, then Phase 19 (Property Recommendations).
+**Current focus:** Phase 18 COMPLETE (3/3 plans: Activity Log + Dashboard + Listeners). Next: Phase 19 (Property Recommendations).
 
 ## Quick Context
 
@@ -48,7 +48,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 15. Tenant Documents Vault | COMPLETE | All 2 plans - LeaseDocument model/service, REST endpoints, tenant vault aggregation |
 | 16. Tenant Preferences & Profile | COMPLETE | All 2 plans - TenantPreference model, preferences endpoints, profile aggregation |
 | 17. Coupons & Discounts | COMPLETE | All 2 plans - Coupon infrastructure, subscription integration |
-| 18. Dashboard & Activity Log | IN PROGRESS | 2/3 plans done - ActivityLog (18-01), Dashboard endpoints (18-02). Remaining: 18-03 (Activity Listeners) |
+| 18. Dashboard & Activity Log | COMPLETE | All 3 plans - ActivityLog model (18-01), Dashboard endpoints (18-02), Activity event listeners (18-03) |
 | 19. Property Recommendations | Pending | Frontend parity - depends on Phase 16 |
 | 20. AI Document Analysis (IA) | Pending | PRO+ tier - Claude integration |
 | 21. Explainability (IA) | Pending | PRO+ tier - AI explanations |
@@ -300,12 +300,16 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 2026-02-08 | 18-02 | Direct Prisma queries for property access in dashboard | Avoids PropertyAccessService dependency, keeps dashboard module lightweight |
 | 2026-02-08 | 18-02 | Lowercase risk level keys in candidate distribution | Frontend compatibility - a/b/c/d instead of A/B/C/D |
 | 2026-02-08 | 18-02 | calculateNextPaymentDate advances to next month | If current month due date has passed, return next month's date |
+| 2026-02-08 | 18-03 | Dual-entry activity logging for both parties | Each domain event creates entries for both tenant and landlord feeds |
+| 2026-02-08 | 18-03 | propertyTitle from address+city for ContractActivatedEvent | Event lacks propertyTitle, constructed from available fields |
+| 2026-02-08 | 18-03 | contract.activated creates CONTRACT_ACTIVATED + LEASE_CREATED | Both events logically occur simultaneously on contract activation |
+| 2026-02-08 | 18-03 | try/catch isolation for all activity handlers | Prevents activity logging failures from breaking main event flow |
 
 ## Session Continuity
 
 **Last session:** 2026-02-08
-**Stopped at:** Phase 18 Plans 01+02 complete (Activity Log + Dashboard Endpoints)
-**Resume file:** .planning/phases/18-dashboard-activity-log/18-01-SUMMARY.md
+**Stopped at:** Phase 18 complete (all 3 plans: Activity Log + Dashboard + Listeners)
+**Resume file:** .planning/phases/18-dashboard-activity-log/18-03-SUMMARY.md
 
 ## Pending User Actions
 
@@ -381,14 +385,14 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 ## Next Action
 
-Phase 18 plans all executed (18-01 Activity Log + 18-02 Dashboard Endpoints). Verify Phase 18, then Phase 19.
+Phase 18 COMPLETE (all 3 plans). Next: Phase 19 (Property Recommendations).
 
 **Frontend Parity (Phases 14-19):**
 - Phase 14: Wishlist & Favorites - COMPLETE
 - Phase 15: Tenant Documents Vault - COMPLETE
 - Phase 16: Tenant Preferences & Profile - COMPLETE
 - Phase 17: Coupons & Discounts - COMPLETE (all 2 plans)
-- Phase 18: Dashboard & Activity Log - IN PROGRESS (2/2 plans done, pending verification)
+- Phase 18: Dashboard & Activity Log - COMPLETE (all 3 plans)
 - Phase 19: Property Recommendations (most complex, depends on 16 - now unblocked) - NEXT
 
 **PRO+ AI (Phases 20-22) - AL FINAL:**
@@ -471,6 +475,7 @@ Phase 18 plans all executed (18-01 Activity Log + 18-02 Dashboard Endpoints). Ve
 | 2026-02-08 | Executed 17-02-PLAN.md | Coupon integration into subscriptions, validation+discount+usage, Phase 17 complete |
 | 2026-02-08 | Executed 18-01-PLAN.md | ActivityLog model, ActivityType enum (21 values), GET /activities with cursor pagination |
 | 2026-02-08 | Executed 18-02-PLAN.md | Landlord + tenant dashboard endpoints with parallel aggregations |
+| 2026-02-08 | Executed 18-03-PLAN.md | 4 activity event listeners (application, payment, visit, contract), Phase 18 complete |
 
 ---
 *Last updated: 2026-02-08*
