@@ -5,7 +5,7 @@
 **Phase:** 18 (Dashboard & Activity Log)
 **Plan:** 2 of 2
 **Status:** In progress
-**Last activity:** 2026-02-08 - Completed 18-02-PLAN.md (Dashboard Endpoints)
+**Last activity:** 2026-02-08 - Completed 18-01-PLAN.md (Activity Log Infrastructure) + 18-02-PLAN.md (Dashboard Endpoints)
 
 **Progress:** [#####################################] ~97% (66/~68 plans estimated)
 
@@ -15,7 +15,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 **Core value:** Ejecutar el Risk Score con analisis inteligente de documentos para que propietarios tomen decisiones informadas en minutos, con explicabilidad total.
 
-**Current focus:** Phase 18 in progress (2/2 plans done). Dashboard endpoints complete. Activity Log from 18-01 also done. Next: verify Phase 18, then Phase 19 (Property Recommendations).
+**Current focus:** Phase 18 in progress (2/3 plans done: 18-01 Activity Log + 18-02 Dashboard). Remaining: 18-03 (Activity Listeners). Next: complete Phase 18, then Phase 19 (Property Recommendations).
 
 ## Quick Context
 
@@ -48,7 +48,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 15. Tenant Documents Vault | COMPLETE | All 2 plans - LeaseDocument model/service, REST endpoints, tenant vault aggregation |
 | 16. Tenant Preferences & Profile | COMPLETE | All 2 plans - TenantPreference model, preferences endpoints, profile aggregation |
 | 17. Coupons & Discounts | COMPLETE | All 2 plans - Coupon infrastructure, subscription integration |
-| 18. Dashboard & Activity Log | IN PROGRESS | 2/2 plans - ActivityLog (18-01), Dashboard endpoints (18-02) |
+| 18. Dashboard & Activity Log | IN PROGRESS | 2/3 plans done - ActivityLog (18-01), Dashboard endpoints (18-02). Remaining: 18-03 (Activity Listeners) |
 | 19. Property Recommendations | Pending | Frontend parity - depends on Phase 16 |
 | 20. AI Document Analysis (IA) | Pending | PRO+ tier - Claude integration |
 | 21. Explainability (IA) | Pending | PRO+ tier - AI explanations |
@@ -293,6 +293,10 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 2026-02-08 | 17-02 | Coupon validation before payment | Validate coupon, apply discount, then process payment - finalPrice used for PSE requirement |
 | 2026-02-08 | 17-02 | Atomic usage after subscription | recordUsage() called after subscription.create() to capture subscription.id |
 | 2026-02-08 | 17-02 | Type casting for Prisma enums | Cast Prisma CouponType to app CouponType at module boundaries for TypeScript compatibility |
+| 2026-02-08 | 18-01 | Cursor-based pagination using createdAt timestamps | Efficient infinite scroll for activity feeds |
+| 2026-02-08 | 18-01 | Polymorphic references (resourceType + resourceId) | Avoids separate FK columns per entity type in ActivityLog |
+| 2026-02-08 | 18-01 | JSON path query for propertyId filtering | Prisma metadata JSON path for filtering activities by property |
+| 2026-02-08 | 18-01 | No role restriction on activity feed | All authenticated users see their own activities regardless of role |
 | 2026-02-08 | 18-02 | Direct Prisma queries for property access in dashboard | Avoids PropertyAccessService dependency, keeps dashboard module lightweight |
 | 2026-02-08 | 18-02 | Lowercase risk level keys in candidate distribution | Frontend compatibility - a/b/c/d instead of A/B/C/D |
 | 2026-02-08 | 18-02 | calculateNextPaymentDate advances to next month | If current month due date has passed, return next month's date |
@@ -300,8 +304,8 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 ## Session Continuity
 
 **Last session:** 2026-02-08
-**Stopped at:** Phase 18 Plan 02 complete (Dashboard Endpoints)
-**Resume file:** .planning/phases/18-dashboard-activity-log/18-02-SUMMARY.md
+**Stopped at:** Phase 18 Plans 01+02 complete (Activity Log + Dashboard Endpoints)
+**Resume file:** .planning/phases/18-dashboard-activity-log/18-01-SUMMARY.md
 
 ## Pending User Actions
 
@@ -465,6 +469,7 @@ Phase 18 plans all executed (18-01 Activity Log + 18-02 Dashboard Endpoints). Ve
 | 2026-02-07 | Executed 16-02-PLAN.md | TenantProfileDto, GET /users/me/profile aggregation endpoint, Phase 16 complete |
 | 2026-02-08 | Executed 17-01-PLAN.md | CouponType enum, Coupon/CouponUsage models, CouponsModule with 3 services, admin+public controllers |
 | 2026-02-08 | Executed 17-02-PLAN.md | Coupon integration into subscriptions, validation+discount+usage, Phase 17 complete |
+| 2026-02-08 | Executed 18-01-PLAN.md | ActivityLog model, ActivityType enum (21 values), GET /activities with cursor pagination |
 | 2026-02-08 | Executed 18-02-PLAN.md | Landlord + tenant dashboard endpoints with parallel aggregations |
 
 ---
