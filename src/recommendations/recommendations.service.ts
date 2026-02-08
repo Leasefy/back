@@ -14,7 +14,7 @@ import {
 /**
  * Extended property with match data merged in.
  */
-interface PropertyWithMatch extends Property {
+export interface PropertyWithMatch extends Property {
   matchScore: number;
   acceptanceProbability: 'alta' | 'media' | 'baja';
   matchFactors: MatchResult['matchFactors'];
@@ -24,7 +24,7 @@ interface PropertyWithMatch extends Property {
 /**
  * Paginated response with metadata.
  */
-interface PaginatedResponse<T> {
+export interface PaginatedResponse<T> {
   data: T[];
   meta: {
     total: number;

@@ -26,6 +26,7 @@ import { WishlistsModule } from './wishlists/wishlists.module.js';
 import { CouponsModule } from './coupons/coupons.module.js';
 import { ActivityLogModule } from './activity-log/activity-log.module.js';
 import { DashboardModule } from './dashboard/dashboard.module.js';
+import { RecommendationsModule } from './recommendations/recommendations.module.js';
 import { SupabaseAuthGuard } from './auth/guards/supabase-auth.guard.js';
 import { RolesGuard } from './auth/guards/roles.guard.js';
 import { AppController } from './app.controller.js';
@@ -64,6 +65,7 @@ import { AppService } from './app.service.js';
     DashboardModule,
     ChatModule,
     WishlistsModule,
+    RecommendationsModule,
   ],
   controllers: [AppController],
   providers: [
