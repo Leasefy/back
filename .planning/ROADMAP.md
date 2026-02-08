@@ -39,7 +39,7 @@ Backend API en NestJS para el marketplace de arriendos "Arriendo Facil". Provee 
 - [x] **Phase 12: Subscriptions & Plans** - Pricing plans, billing, plan enforcement (REORDERED)
 - [x] **Phase 13: Insurance** - Optional insurance tiers (REORDERED)
 - [x] **Phase 14: Wishlist & Favorites** - Save/remove favorite properties per tenant (FRONTEND PARITY)
-- [ ] **Phase 15: Tenant Documents Vault** - Extend documents to leases and personal vault (FRONTEND PARITY)
+- [x] **Phase 15: Tenant Documents Vault** - Extend documents to leases and personal vault (FRONTEND PARITY)
 - [ ] **Phase 16: Tenant Preferences & Profile** - Persist tenant search preferences and profile data (FRONTEND PARITY)
 - [ ] **Phase 17: Coupons & Discounts** - Coupon codes for subscription discounts (FRONTEND PARITY)
 - [ ] **Phase 18: Dashboard & Activity Log** - Aggregated dashboard endpoints and activity feed (FRONTEND PARITY)
@@ -552,8 +552,8 @@ model WishlistItem {
 **Plans**: 2 plans
 
 Plans:
-- [ ] 15-01-PLAN.md -- LeaseDocument model, LeaseDocumentType enum, LeaseDocumentsService
-- [ ] 15-02-PLAN.md -- LeaseDocumentsController endpoints, tenant vault aggregated endpoint
+- [x] 15-01-PLAN.md -- LeaseDocument model, LeaseDocumentType enum, LeaseDocumentsService
+- [x] 15-02-PLAN.md -- LeaseDocumentsController endpoints, tenant vault aggregated endpoint
 
 **Wave Structure:**
 - Wave 1: 15-01 (schema + service foundation)
@@ -922,7 +922,7 @@ Phases execute in numeric order: 1 -> 2 -> **2.1** -> 3 -> 3.1 -> 3.2 -> 4 -> 5 
 | 12. Subscriptions & Plans | 4/4 | Complete | 2026-02-04 |
 | **13. Insurance** | 2/2 | Complete | 2026-02-04 |
 | **14. Wishlist & Favorites** | 1/1 | Complete | 2026-02-07 |
-| 15. Tenant Documents Vault | 0/2 | Planned | - |
+| **15. Tenant Documents Vault** | 2/2 | Complete | 2026-02-07 |
 | 16. Tenant Preferences & Profile | 0/0 | Not started | - |
 | 17. Coupons & Discounts | 0/0 | Not started | - |
 | 18. Dashboard & Activity Log | 0/0 | Not started | - |
@@ -1015,4 +1015,4 @@ Phases execute in numeric order: 1 -> 2 -> **2.1** -> 3 -> 3.1 -> 3.2 -> 4 -> 5 
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-02-07 - Phase 14 complete (Wishlist & Favorites)*
+*Last updated: 2026-02-07 - Phase 15 complete (Tenant Documents Vault)*
