@@ -219,6 +219,17 @@ enum NotificationStatus {
   FAILED
 }
 
+/// Type of document attached to a lease
+enum LeaseDocumentType {
+  CONTRACT_SIGNED
+  PAYMENT_RECEIPT
+  DELIVERY_INVENTORY
+  RETURN_INVENTORY
+  ADDENDUM
+  PHOTO
+  OTHER
+}
+
 // ============================================
 // MODELS
 // ============================================
@@ -277,6 +288,9 @@ model User {
 
   // Wishlist relations
   wishlistItems          WishlistItem[]
+
+  // Lease document relations
+  uploadedLeaseDocuments LeaseDocument[] @relation("UploadedLeaseDocuments")
 
   @@map("users")
 }
@@ -629,12 +643,34 @@ model Lease {
   tenant          User                   @relation("TenantLeases", fields: [tenantId], references: [id])
   payments        Payment[]
   paymentRequests TenantPaymentRequest[]
+  leaseDocuments  LeaseDocument[]
 
   @@index([landlordId])
   @@index([tenantId])
   @@index([propertyId])
   @@index([status])
   @@map("leases")
+}
+
+/// Document attached to a lease (inventory, addendum, photo, etc.)
+model LeaseDocument {
+  id         String            @id @default(cuid())
+  leaseId    String            @map("lease_id") @db.Uuid
+  uploadedBy String            @map("uploaded_by") @db.Uuid
+  type       LeaseDocumentType
+  fileName   String            @map("file_name") @db.VarChar(255)
+  filePath   String            @map("file_path") @db.VarChar(500)
+  fileSize   Int               @map("file_size")
+  mimeType   String            @map("mime_type") @db.VarChar(100)
+  createdAt  DateTime          @default(now()) @map("created_at")
+
+  // Relations
+  lease    Lease @relation(fields: [leaseId], references: [id], onDelete: Cascade)
+  uploader User  @relation("UploadedLeaseDocuments", fields: [uploadedBy], references: [id])
+
+  @@index([leaseId])
+  @@index([uploadedBy])
+  @@map("lease_documents")
 }
 
 /// Payment record for lease rent
