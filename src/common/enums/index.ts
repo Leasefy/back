@@ -26,3 +26,4 @@ export { NotificationStatus } from './notification-status.enum.js';
 export { InsuranceTier } from './insurance-tier.enum.js';
 export { LeaseDocumentType } from './lease-document-type.enum.js';
 export { CouponType } from './coupon-type.enum.js';
+export { ActivityType } from './activity-type.enum.js';

@@ -242,6 +242,31 @@ enum CouponType {
   FULL_ACCESS
 }
 
+/// Type of activity event in the unified activity log
+enum ActivityType {
+  APPLICATION_SUBMITTED
+  APPLICATION_STATUS_CHANGED
+  APPLICATION_INFO_REQUESTED
+  APPLICATION_DOCUMENT_UPLOADED
+  PAYMENT_RECORDED
+  PAYMENT_REQUEST_SUBMITTED
+  PAYMENT_REQUEST_APPROVED
+  PAYMENT_REQUEST_REJECTED
+  PAYMENT_DISPUTE_OPENED
+  VISIT_REQUESTED
+  VISIT_ACCEPTED
+  VISIT_REJECTED
+  VISIT_CANCELLED
+  VISIT_COMPLETED
+  VISIT_RESCHEDULED
+  CONTRACT_CREATED
+  CONTRACT_SIGNED
+  CONTRACT_ACTIVATED
+  LEASE_CREATED
+  LEASE_ENDING_SOON
+  LEASE_ENDED
+}
+
 // ============================================
 // MODELS
 // ============================================
@@ -309,6 +334,10 @@ model User {
 
   // Coupon relations
   couponUsages           CouponUsage[]
+
+  // Activity log relations
+  userActivities         ActivityLog[] @relation("UserActivities")
+  actorActivities        ActivityLog[] @relation("ActorActivities")
 
   @@map("users")
 }
@@ -1157,4 +1186,24 @@ model CouponUsage {
   @@unique([couponId, userId])
   @@index([userId])
   @@map("coupon_usages")
+}
+
+/// Unified activity log for user timelines and feeds
+model ActivityLog {
+  id           String       @id @default(uuid()) @db.Uuid
+  userId       String       @map("user_id") @db.Uuid
+  actorId      String       @map("actor_id") @db.Uuid
+  type         ActivityType
+  resourceType String       @map("resource_type") @db.VarChar(50)
+  resourceId   String       @map("resource_id") @db.Uuid
+  metadata     Json         @default("{}")
+  createdAt    DateTime     @default(now()) @map("created_at")
+
+  user         User         @relation("UserActivities", fields: [userId], references: [id], onDelete: Cascade)
+  actor        User         @relation("ActorActivities", fields: [actorId], references: [id])
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([resourceType, resourceId])
+  @@index([createdAt(sort: Desc)])
+  @@map("activity_logs")
 }
