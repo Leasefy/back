@@ -3,11 +3,11 @@
 ## Current Status
 
 **Phase:** 19 (Property Recommendations)
-**Plan:** 1 of 3
+**Plan:** 2 of 3
 **Status:** In progress
-**Last activity:** 2026-02-08 - Completed 19-01-PLAN.md
+**Last activity:** 2026-02-08 - Completed 19-02-PLAN.md
 
-**Progress:** [######################################] ~98% (68/~68 plans estimated)
+**Progress:** [######################################] ~99% (69/~68 plans estimated)
 
 ## Project Reference
 
@@ -15,7 +15,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 **Core value:** Ejecutar el Risk Score con analisis inteligente de documentos para que propietarios tomen decisiones informadas en minutos, con explicabilidad total.
 
-**Current focus:** Phase 19 IN PROGRESS (1/3 plans: Scoring Engine complete). Next: Plan 19-02 (RecommendationsService + endpoints).
+**Current focus:** Phase 19 IN PROGRESS (2/3 plans: Scoring Engine, Service+Endpoints complete). Next: Plan 19-03 (Testing/verification).
 
 ## Quick Context
 
@@ -49,7 +49,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 16. Tenant Preferences & Profile | COMPLETE | All 2 plans - TenantPreference model, preferences endpoints, profile aggregation |
 | 17. Coupons & Discounts | COMPLETE | All 2 plans - Coupon infrastructure, subscription integration |
 | 18. Dashboard & Activity Log | COMPLETE | All 3 plans - ActivityLog model (18-01), Dashboard endpoints (18-02), Activity event listeners (18-03) |
-| 19. Property Recommendations | IN PROGRESS | 1/3 plans - Scoring engine with 4 weighted models (19-01) |
+| 19. Property Recommendations | IN PROGRESS | 2/3 plans - Scoring engine (19-01), Service+Endpoints (19-02) |
 | 20. AI Document Analysis (IA) | Pending | PRO+ tier - Claude integration |
 | 21. Explainability (IA) | Pending | PRO+ tier - AI explanations |
 | 22. ML Persistence (IA) | Pending | Data for ML training |
@@ -304,12 +304,16 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 2026-02-08 | 18-03 | propertyTitle from address+city for ContractActivatedEvent | Event lacks propertyTitle, constructed from available fields |
 | 2026-02-08 | 18-03 | contract.activated creates CONTRACT_ACTIVATED + LEASE_CREATED | Both events logically occur simultaneously on contract activation |
 | 2026-02-08 | 18-03 | try/catch isolation for all activity handlers | Prevents activity logging failures from breaking main event flow |
+| 2026-02-08 | 19-02 | In-memory scoring vs database-side | Fetch all AVAILABLE properties (limit 1000), score in-memory, then filter/sort/paginate - simpler, acceptable for initial scale |
+| 2026-02-08 | 19-02 | Filter to AVAILABLE properties only | Recommendations exclude PENDING/RENTED - only show rentable properties |
+| 2026-02-08 | 19-02 | Minimum match score threshold of 40 | Hard-coded MIN_MATCH_SCORE = 40 prevents showing poor matches |
+| 2026-02-08 | 19-02 | Export interfaces from service | PropertyWithMatch and PaginatedResponse exported for type-safe controller responses |
 
 ## Session Continuity
 
 **Last session:** 2026-02-08
-**Stopped at:** Phase 18 complete (all 3 plans: Activity Log + Dashboard + Listeners)
-**Resume file:** .planning/phases/18-dashboard-activity-log/18-03-SUMMARY.md
+**Stopped at:** Phase 19 Plan 02 complete (RecommendationsService + REST endpoints)
+**Resume file:** .planning/phases/19-property-recommendations/19-02-SUMMARY.md
 
 ## Pending User Actions
 
@@ -389,7 +393,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 ## Next Action
 
-Phase 18 COMPLETE (all 3 plans). Next: Phase 19 (Property Recommendations).
+Phase 19 IN PROGRESS (2/3 plans complete). Next: Plan 19-03 (Testing/verification).
 
 **Frontend Parity (Phases 14-19):**
 - Phase 14: Wishlist & Favorites - COMPLETE
@@ -397,7 +401,7 @@ Phase 18 COMPLETE (all 3 plans). Next: Phase 19 (Property Recommendations).
 - Phase 16: Tenant Preferences & Profile - COMPLETE
 - Phase 17: Coupons & Discounts - COMPLETE (all 2 plans)
 - Phase 18: Dashboard & Activity Log - COMPLETE (all 3 plans)
-- Phase 19: Property Recommendations (most complex, depends on 16 - now unblocked) - NEXT
+- Phase 19: Property Recommendations - IN PROGRESS (2/3 plans: Scoring Engine, Service+Endpoints)
 
 **PRO+ AI (Phases 20-22) - AL FINAL:**
 - Phase 20: AI Document Analysis (Claude integration)
@@ -482,12 +486,13 @@ Phase 18 COMPLETE (all 3 plans). Next: Phase 19 (Property Recommendations).
 | 2026-02-08 | Executed 18-03-PLAN.md | 4 activity event listeners (application, payment, visit, contract), Phase 18 complete |
 | 2026-02-08 | Phase 18 verified | 27/27 must-haves passed |
 | 2026-02-08 | Executed 19-01-PLAN.md | MatchResult interface, 4 scoring sub-models (Affordability/RiskFit/ProfileStrength/Preferences), RecommendationScorer aggregator |
+| 2026-02-08 | Executed 19-02-PLAN.md | RecommendationsService (3 methods), RecommendationsController (3 TENANT endpoints), RecommendationsModule, AppModule integration |
 
 ## Session Continuity
 
 **Last session:** 2026-02-08
-**Stopped at:** Phase 19 Plan 01 complete
-**Resume file:** .planning/phases/19-property-recommendations/19-02-PLAN.md (next)
+**Stopped at:** Phase 19 Plan 02 complete (RecommendationsService + REST endpoints)
+**Resume file:** .planning/phases/19-property-recommendations/19-02-SUMMARY.md
 
 ---
 *Last updated: 2026-02-08*
