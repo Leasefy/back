@@ -751,10 +751,16 @@ model CouponRedemption {
   4. Tenant dashboard returns lease summary, payment status, upcoming events
   5. Activity log persisted to database (application events, payment events, visit events, contract events)
   6. Activity feed endpoint returns paginated chronological activity for user
-**Plans**: 0 plans
+**Plans**: 3 plans
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 18 to break down)
+- [ ] 18-01-PLAN.md -- ActivityLog model, ActivityType enum, ActivityLogModule (service + controller + DTOs)
+- [ ] 18-02-PLAN.md -- DashboardModule (landlord + tenant dashboard services, controllers, DTOs)
+- [ ] 18-03-PLAN.md -- Activity event listeners (application, payment, visit, contract)
+
+**Wave Structure:**
+- Wave 1 (parallel): 18-01 (activity log model + module), 18-02 (dashboard module)
+- Wave 2: 18-03 (event listeners, depends on 18-01)
 
 **Frontend Reference:**
 - `src/lib/data/mock-dashboard.ts` - Financial stats, urgent actions, risk distribution
