@@ -2,12 +2,12 @@
 
 ## Current Status
 
-**Phase:** 18 (Dashboard & Activity Log)
-**Plan:** 3 of 3
-**Status:** VERIFIED ✓
-**Last activity:** 2026-02-08 - Phase 18 verified (27/27 must-haves)
+**Phase:** 19 (Property Recommendations)
+**Plan:** 1 of 3
+**Status:** In progress
+**Last activity:** 2026-02-08 - Completed 19-01-PLAN.md
 
-**Progress:** [######################################] ~98% (67/~68 plans estimated)
+**Progress:** [######################################] ~98% (68/~68 plans estimated)
 
 ## Project Reference
 
@@ -15,7 +15,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 **Core value:** Ejecutar el Risk Score con analisis inteligente de documentos para que propietarios tomen decisiones informadas en minutos, con explicabilidad total.
 
-**Current focus:** Phase 18 COMPLETE (3/3 plans: Activity Log + Dashboard + Listeners). Next: Phase 19 (Property Recommendations).
+**Current focus:** Phase 19 IN PROGRESS (1/3 plans: Scoring Engine complete). Next: Plan 19-02 (RecommendationsService + endpoints).
 
 ## Quick Context
 
@@ -49,7 +49,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 16. Tenant Preferences & Profile | COMPLETE | All 2 plans - TenantPreference model, preferences endpoints, profile aggregation |
 | 17. Coupons & Discounts | COMPLETE | All 2 plans - Coupon infrastructure, subscription integration |
 | 18. Dashboard & Activity Log | COMPLETE | All 3 plans - ActivityLog model (18-01), Dashboard endpoints (18-02), Activity event listeners (18-03) |
-| 19. Property Recommendations | Pending | Frontend parity - depends on Phase 16 |
+| 19. Property Recommendations | IN PROGRESS | 1/3 plans - Scoring engine with 4 weighted models (19-01) |
 | 20. AI Document Analysis (IA) | Pending | PRO+ tier - Claude integration |
 | 21. Explainability (IA) | Pending | PRO+ tier - AI explanations |
 | 22. ML Persistence (IA) | Pending | Data for ML training |
@@ -481,6 +481,13 @@ Phase 18 COMPLETE (all 3 plans). Next: Phase 19 (Property Recommendations).
 | 2026-02-08 | Executed 18-02-PLAN.md | Landlord + tenant dashboard endpoints with parallel aggregations |
 | 2026-02-08 | Executed 18-03-PLAN.md | 4 activity event listeners (application, payment, visit, contract), Phase 18 complete |
 | 2026-02-08 | Phase 18 verified | 27/27 must-haves passed |
+| 2026-02-08 | Executed 19-01-PLAN.md | MatchResult interface, 4 scoring sub-models (Affordability/RiskFit/ProfileStrength/Preferences), RecommendationScorer aggregator |
+
+## Session Continuity
+
+**Last session:** 2026-02-08
+**Stopped at:** Phase 19 Plan 01 complete
+**Resume file:** .planning/phases/19-property-recommendations/19-02-PLAN.md (next)
 
 ---
 *Last updated: 2026-02-08*
