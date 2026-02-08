@@ -1,4 +1,10 @@
-import { IsUUID, IsEnum, IsOptional, ValidateNested } from 'class-validator';
+import {
+  IsUUID,
+  IsEnum,
+  IsOptional,
+  ValidateNested,
+  IsString,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { BillingCycle } from '../../common/enums/index.js';
@@ -29,4 +35,9 @@ export class CreateSubscriptionDto {
   @ValidateNested()
   @Type(() => PseSubscriptionPaymentDto)
   psePaymentData?: PseSubscriptionPaymentDto;
+
+  @ApiPropertyOptional({ description: 'Codigo de cupon (opcional)' })
+  @IsOptional()
+  @IsString()
+  couponCode?: string;
 }
