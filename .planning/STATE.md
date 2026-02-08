@@ -2,12 +2,12 @@
 
 ## Current Status
 
-**Phase:** 14 (Wishlist & Favorites)
-**Plan:** 1 of 1
-**Status:** VERIFIED ✓
-**Last activity:** 2026-02-07 - Phase 14 verified (5/5 must-haves)
+**Phase:** 15 (Tenant Documents Vault)
+**Plan:** 1 of ~3
+**Status:** In progress
+**Last activity:** 2026-02-08 - Completed 15-01-PLAN.md (Lease Document Storage)
 
-**Progress:** [#################################] 95% (58/~61 plans estimated)
+**Progress:** [##################################] 96% (59/~61 plans estimated)
 
 ## Project Reference
 
@@ -45,7 +45,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 13. Insurance | COMPLETE | All 2 plans - enum, service, controller, contract integration |
 | 2.1 User Roles & Agents | COMPLETE | All 4 plans - AGENT role, PropertyAccess, Chat |
 | 14. Wishlist & Favorites | COMPLETE | 1 plan - WishlistItem model, service, controller, 3 endpoints |
-| 15. Tenant Documents Vault | Pending | Frontend parity - extends existing document pattern |
+| 15. Tenant Documents Vault | IN PROGRESS | 1/~3 plans - LeaseDocument model, service (plan 01 done) |
 | 16. Tenant Preferences & Profile | Pending | Frontend parity - needed before Recommendations |
 | 17. Coupons & Discounts | Pending | Frontend parity - coupon codes (was SUBS-06/07) |
 | 18. Dashboard & Activity Log | Pending | Frontend parity - aggregated stats + activity feed |
@@ -276,12 +276,16 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 2026-02-07 | 14-01 | deleteMany for idempotent remove | No error if item doesn't exist - simplifies frontend logic |
 | 2026-02-07 | 14-01 | DRAFT property exclusion from wishlist | DRAFT properties are private to landlord, not visible publicly |
 | 2026-02-07 | 14-01 | TENANT-only role restriction | Wishlist is a tenant feature - landlords list properties, tenants favorite them |
+| 2026-02-08 | 15-01 | Reuse application-documents bucket for lease docs | Avoid bucket proliferation, use lease-documents/ subfolder |
+| 2026-02-08 | 15-01 | 24-hour deletion window for lease documents | Prevent accidental/malicious removal after handoff, allow quick correction |
+| 2026-02-08 | 15-01 | Uploader-only deletion | Prevents either party from deleting the other's evidence |
+| 2026-02-08 | 15-01 | Both tenant and landlord can upload | Shared responsibility model, collaborative document vault |
 
 ## Session Continuity
 
-**Last session:** 2026-02-07
-**Stopped at:** Completed 14-01-PLAN.md (Phase 14 complete)
-**Resume file:** None
+**Last session:** 2026-02-08
+**Stopped at:** Completed 15-01-PLAN.md (LeaseDocument model and service)
+**Resume file:** .planning/phases/15-tenant-documents-vault/15-01-SUMMARY.md
 
 ## Pending User Actions
 
