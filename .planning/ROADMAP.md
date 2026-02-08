@@ -42,7 +42,7 @@ Backend API en NestJS para el marketplace de arriendos "Arriendo Facil". Provee 
 - [x] **Phase 15: Tenant Documents Vault** - Extend documents to leases and personal vault (FRONTEND PARITY)
 - [x] **Phase 16: Tenant Preferences & Profile** - Persist tenant search preferences and profile data (FRONTEND PARITY)
 - [x] **Phase 17: Coupons & Discounts** - Coupon codes for subscription discounts (FRONTEND PARITY)
-- [ ] **Phase 18: Dashboard & Activity Log** - Aggregated dashboard endpoints and activity feed (FRONTEND PARITY)
+- [x] **Phase 18: Dashboard & Activity Log** - Aggregated dashboard endpoints and activity feed (FRONTEND PARITY)
 - [ ] **Phase 19: Property Recommendations** - Personalized property matching and recommendations (FRONTEND PARITY)
 - [ ] **Phase 20: AI Document Analysis** - Claude integration, document analyzers (PRO+) (REORDERED)
 - [ ] **Phase 21: Explainability** - Drivers, flags, AI explanation (PRO+) (REORDERED)
@@ -754,9 +754,9 @@ model CouponRedemption {
 **Plans**: 3 plans
 
 Plans:
-- [ ] 18-01-PLAN.md -- ActivityLog model, ActivityType enum, ActivityLogModule (service + controller + DTOs)
-- [ ] 18-02-PLAN.md -- DashboardModule (landlord + tenant dashboard services, controllers, DTOs)
-- [ ] 18-03-PLAN.md -- Activity event listeners (application, payment, visit, contract)
+- [x] 18-01-PLAN.md -- ActivityLog model, ActivityType enum, ActivityLogModule (service + controller + DTOs)
+- [x] 18-02-PLAN.md -- DashboardModule (landlord + tenant dashboard services, controllers, DTOs)
+- [x] 18-03-PLAN.md -- Activity event listeners (application, payment, visit, contract)
 
 **Wave Structure:**
 - Wave 1 (parallel): 18-01 (activity log model + module), 18-02 (dashboard module)
@@ -941,9 +941,9 @@ Phases execute in numeric order: 1 -> 2 -> **2.1** -> 3 -> 3.1 -> 3.2 -> 4 -> 5 
 | **13. Insurance** | 2/2 | Complete | 2026-02-04 |
 | **14. Wishlist & Favorites** | 1/1 | Complete | 2026-02-07 |
 | **15. Tenant Documents Vault** | 2/2 | Complete | 2026-02-07 |
-| 16. Tenant Preferences & Profile | 0/0 | Not started | - |
-| 17. Coupons & Discounts | 0/0 | Not started | - |
-| 18. Dashboard & Activity Log | 0/0 | Not started | - |
+| **16. Tenant Preferences & Profile** | 2/2 | Complete | 2026-02-07 |
+| **17. Coupons & Discounts** | 2/2 | Complete | 2026-02-08 |
+| **18. Dashboard & Activity Log** | 3/3 | Complete | 2026-02-08 |
 | 19. Property Recommendations | 0/0 | Not started | - |
 | 20. AI Document Analysis (IA) | 0/0 | Not started | - |
 | 21. Explainability (IA) | 0/0 | Not started | - |
@@ -1033,4 +1033,4 @@ Phases execute in numeric order: 1 -> 2 -> **2.1** -> 3 -> 3.1 -> 3.2 -> 4 -> 5 
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-02-08 - Phase 17 complete (Coupons & Discounts)*
+*Last updated: 2026-02-08 - Phase 18 complete (Dashboard & Activity Log)*

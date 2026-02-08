@@ -4,8 +4,8 @@
 
 **Phase:** 18 (Dashboard & Activity Log)
 **Plan:** 3 of 3
-**Status:** Phase complete
-**Last activity:** 2026-02-08 - Completed 18-03-PLAN.md (Activity Event Listeners)
+**Status:** VERIFIED ✓
+**Last activity:** 2026-02-08 - Phase 18 verified (27/27 must-haves)
 
 **Progress:** [######################################] ~98% (67/~68 plans estimated)
 
@@ -378,6 +378,10 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 1. Run: `npx prisma db push`
 2. Verify CouponType enum and coupons, coupon_usages tables created in database
 
+**Sync ActivityLog model to database:**
+1. Run: `npx prisma db push`
+2. Verify ActivityType enum and activity_logs table created in database
+
 **Phase 2.1 Role/Agent schema migration:** ✓ COMPLETED
 - Executed via `node scripts/run-migration-2.1.mjs` on 2026-02-05
 - Dropped active_role column, added AGENT to Role enum
@@ -476,6 +480,7 @@ Phase 18 COMPLETE (all 3 plans). Next: Phase 19 (Property Recommendations).
 | 2026-02-08 | Executed 18-01-PLAN.md | ActivityLog model, ActivityType enum (21 values), GET /activities with cursor pagination |
 | 2026-02-08 | Executed 18-02-PLAN.md | Landlord + tenant dashboard endpoints with parallel aggregations |
 | 2026-02-08 | Executed 18-03-PLAN.md | 4 activity event listeners (application, payment, visit, contract), Phase 18 complete |
+| 2026-02-08 | Phase 18 verified | 27/27 must-haves passed |
 
 ---
 *Last updated: 2026-02-08*
