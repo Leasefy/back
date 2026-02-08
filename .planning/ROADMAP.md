@@ -41,7 +41,7 @@ Backend API en NestJS para el marketplace de arriendos "Arriendo Facil". Provee 
 - [x] **Phase 14: Wishlist & Favorites** - Save/remove favorite properties per tenant (FRONTEND PARITY)
 - [x] **Phase 15: Tenant Documents Vault** - Extend documents to leases and personal vault (FRONTEND PARITY)
 - [x] **Phase 16: Tenant Preferences & Profile** - Persist tenant search preferences and profile data (FRONTEND PARITY)
-- [ ] **Phase 17: Coupons & Discounts** - Coupon codes for subscription discounts (FRONTEND PARITY)
+- [x] **Phase 17: Coupons & Discounts** - Coupon codes for subscription discounts (FRONTEND PARITY)
 - [ ] **Phase 18: Dashboard & Activity Log** - Aggregated dashboard endpoints and activity feed (FRONTEND PARITY)
 - [ ] **Phase 19: Property Recommendations** - Personalized property matching and recommendations (FRONTEND PARITY)
 - [ ] **Phase 20: AI Document Analysis** - Claude integration, document analyzers (PRO+) (REORDERED)
@@ -677,8 +677,8 @@ model TenantPreference {
 **Plans**: 2 plans
 
 Plans:
-- [ ] 17-01-PLAN.md -- Prisma models (CouponType, Coupon, CouponUsage), CouponsModule with admin CRUD + validation + discount services
-- [ ] 17-02-PLAN.md -- Subscription integration (couponCode in DTOs, discount in subscribe/changePlan flows)
+- [x] 17-01-PLAN.md -- Prisma models (CouponType, Coupon, CouponUsage), CouponsModule with admin CRUD + validation + discount services
+- [x] 17-02-PLAN.md -- Subscription integration (couponCode in DTOs, discount in subscribe/changePlan flows)
 
 **Wave Structure:**
 - Wave 1: 17-01 (standalone coupon system)
@@ -1027,4 +1027,4 @@ Phases execute in numeric order: 1 -> 2 -> **2.1** -> 3 -> 3.1 -> 3.2 -> 4 -> 5 
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-02-07 - Phase 16 complete (Tenant Preferences & Profile)*
+*Last updated: 2026-02-08 - Phase 17 complete (Coupons & Discounts)*
