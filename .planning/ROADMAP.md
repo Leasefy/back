@@ -43,7 +43,7 @@ Backend API en NestJS para el marketplace de arriendos "Arriendo Facil". Provee 
 - [x] **Phase 16: Tenant Preferences & Profile** - Persist tenant search preferences and profile data (FRONTEND PARITY)
 - [x] **Phase 17: Coupons & Discounts** - Coupon codes for subscription discounts (FRONTEND PARITY)
 - [x] **Phase 18: Dashboard & Activity Log** - Aggregated dashboard endpoints and activity feed (FRONTEND PARITY)
-- [ ] **Phase 19: Property Recommendations** - Personalized property matching and recommendations (FRONTEND PARITY)
+- [x] **Phase 19: Property Recommendations** - Personalized property matching and recommendations (FRONTEND PARITY)
 - [ ] **Phase 20: AI Document Analysis** - Claude integration, document analyzers (PRO+) (REORDERED)
 - [ ] **Phase 21: Explainability** - Drivers, flags, AI explanation (PRO+) (REORDERED)
 - [ ] **Phase 22: ML Persistence** - Feature logging, outcome tracking (REORDERED)
@@ -829,8 +829,8 @@ enum ActivityType {
 **Plans**: 2 plans
 
 Plans:
-- [ ] 19-01-PLAN.md -- Scoring engine: 4 sub-models (Affordability, RiskFit, ProfileStrength, Preferences) + RecommendationScorer
-- [ ] 19-02-PLAN.md -- RecommendationsService, Controller (3 endpoints), Module + AppModule registration
+- [x] 19-01-PLAN.md -- Scoring engine: 4 sub-models (Affordability, RiskFit, ProfileStrength, Preferences) + RecommendationScorer
+- [x] 19-02-PLAN.md -- RecommendationsService, Controller (3 endpoints), Module + AppModule registration
 
 **Wave Structure:**
 - Wave 1: 19-01 (scoring models + interfaces)
@@ -951,7 +951,7 @@ Phases execute in numeric order: 1 -> 2 -> **2.1** -> 3 -> 3.1 -> 3.2 -> 4 -> 5 
 | **16. Tenant Preferences & Profile** | 2/2 | Complete | 2026-02-07 |
 | **17. Coupons & Discounts** | 2/2 | Complete | 2026-02-08 |
 | **18. Dashboard & Activity Log** | 3/3 | Complete | 2026-02-08 |
-| **19. Property Recommendations** | 0/2 | Planned | - |
+| **19. Property Recommendations** | 2/2 | Complete | 2026-02-08 |
 | 20. AI Document Analysis (IA) | 0/0 | Not started | - |
 | 21. Explainability (IA) | 0/0 | Not started | - |
 | 22. ML Persistence (IA) | 0/0 | Not started | - |
@@ -1040,4 +1040,4 @@ Phases execute in numeric order: 1 -> 2 -> **2.1** -> 3 -> 3.1 -> 3.2 -> 4 -> 5 
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-02-08 - Phase 19 planned (Property Recommendations)*
+*Last updated: 2026-02-08 - Phase 19 complete (Property Recommendations)*
