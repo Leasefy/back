@@ -28,6 +28,8 @@ import { ActivityLogModule } from './activity-log/activity-log.module.js';
 import { DashboardModule } from './dashboard/dashboard.module.js';
 import { RecommendationsModule } from './recommendations/recommendations.module.js';
 import { AgencyModule } from './inmobiliaria/agency/agency.module.js';
+import { PipelineModule } from './inmobiliaria/pipeline/pipeline.module.js';
+import { PropietariosModule } from './inmobiliaria/propietarios/propietarios.module.js';
 import { SupabaseAuthGuard } from './auth/guards/supabase-auth.guard.js';
 import { RolesGuard } from './auth/guards/roles.guard.js';
 import { AppController } from './app.controller.js';
@@ -68,6 +70,8 @@ import { AppService } from './app.service.js';
     WishlistsModule,
     RecommendationsModule,
     AgencyModule,
+    PipelineModule,
+    PropietariosModule,
   ],
   controllers: [AppController],
   providers: [
