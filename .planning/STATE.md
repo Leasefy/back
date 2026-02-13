@@ -506,6 +506,11 @@ Phase 19 COMPLETE (all 2 plans). Frontend Parity phases (14-19) ALL DONE. Next: 
 | 2026-02-13 | 2.2-04 | @IsEmail on candidateEmail for proper validation | Rule 2 auto-fix: email fields need email validation |
 | 2026-02-13 | 2.2-04 | Stats route before :id route in controller | Prevents "stats" being parsed as UUID parameter |
 | 2026-02-13 | Executed 2.2-04-PLAN.md | PipelineModule with 8 endpoints, CONSIGNACION_INCLUDE bug fixed |
+| 2026-02-13 | 2.2-05 | GenerateCobrosDto uses @Body instead of @Query | Better REST semantics for POST state-changing operations |
+| 2026-02-13 | 2.2-05 | @IsInt for COP amounts in RegisterPaymentDto | Colombian pesos are integers, not floating point |
+| 2026-02-13 | 2.2-05 | cartera-report calls updateLateFees then getSummary | Simple aging report without separate ReportsService |
+| 2026-02-13 | 2.2-05 | Approve endpoint uses @CurrentUser('id') for approvedBy | Audit trail for dispersion approval workflow |
+| 2026-02-13 | Executed 2.2-05-PLAN.md | CobrosModule (8 endpoints) + DispersionesModule (5 endpoints) registered |
 | 2026-02-13 | 2.2-06 | Controllers use @UseGuards(AgencyMemberGuard) + @CurrentAgency pattern | Consistent with PipelineController, replaces manual resolveAgencyId |
 | 2026-02-13 | 2.2-06 | ipcRate @IsNumber, proposedRent/negotiatedRent @IsInt | Decimal rate vs integer COP amounts |
 | 2026-02-13 | 2.2-06 | /upcoming route before /:id in RenovacionesController | Prevents "upcoming" being parsed as UUID parameter |
