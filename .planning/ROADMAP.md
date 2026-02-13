@@ -25,6 +25,7 @@ Backend API en NestJS para el marketplace de arriendos "Arriendo Facil". Provee 
 - [x] **Phase 1: Foundation** - Project scaffold, Prisma, Supabase config
 - [x] **Phase 2: Auth & Users** - Supabase Auth, guards, user management
 - [x] **Phase 2.1: User Roles & Property Agents** - AGENT role, property delegation, application chat (INSERTED)
+- [ ] **Phase 2.2: Inmobiliaria Backend** - Full agency management: propietarios, consignaciones, pipeline, cobros, dispersiones, mantenimiento, renovaciones, actas, reports, analytics (INSERTED)
 - [x] **Phase 3: Properties** - CRUD, filtering, image upload, plans
 - [x] **Phase 3.1: Property Visits Scheduling** - Visit requests, availability, accept/reject (INSERTED)
 - [x] **Phase 3.2: Natural Language Search** - Smart property search with keyword parsing (INSERTED)
@@ -128,6 +129,62 @@ Plans:
 For higher scale (>200 concurrent connections), implement NestJS @WebSocketGateway
 with Socket.io instead of Supabase Realtime. This is free but more complex to implement
 (auth handling, scaling with Redis, testing). Current Supabase Realtime is sufficient for MVP.
+
+### Phase 2.2: Inmobiliaria Backend (INSERTED)
+**Goal**: Complete backend for real estate agency management - propietarios, consignaciones, pipeline, collections, disbursements, maintenance, renewals, documents, reports, analytics, and agency configuration
+**Depends on**: Phase 2.1 (AGENT role, PropertyAccess), Phase 3 (Properties), Phase 7 (Contracts), Phase 8 (Leases)
+**Requirements**: INMOB-01 through INMOB-80+
+**Tier**: BUSINESS (agency subscription plan)
+**Success Criteria** (what must be TRUE):
+  1. Agency entity exists with config, branding, and team management
+  2. Propietario CRUD with bank accounts and statement generation
+  3. Consignacion wraps Property with commission, agent assignment, contract dates
+  4. Pipeline with 10 stages (lead -> completed/lost), Kanban-ready
+  5. Monthly cobros generated from active leases, with payment tracking and late fees
+  6. Dispersiones aggregate cobros per propietario, deduct commissions, track transfers
+  7. Maintenance requests with multi-quote system and approval workflow
+  8. Lease renewal detection with IPC calculation and negotiation workflow
+  9. Actas de entrega with inventory, meter readings, key delivery, signatures
+  10. Document templates with variable substitution and signature tracking
+  11. 7 report types (extracto, cartera, comisiones, ocupacion, vencimientos, flujo caja, rendimiento)
+  12. Dashboard KPIs and analytics with trends and forecasts
+  13. Agency configuration (defaults, integrations, billing, team)
+  14. All endpoints scoped to agency membership with role-based access
+**Research**: Complete (2.2-RESEARCH.md)
+**Plans**: 8 plans
+
+Plans:
+- [ ] 2.2-01-PLAN.md - Database schema: 18 new models, 15 enums, Agency + Propietario + Consignacion + Pipeline + Cobro + Dispersion + Mantenimiento + Renovacion + Acta + config models
+- [ ] 2.2-02-PLAN.md - Agency core: AgencyModule, config CRUD, team management (invite, roles, status), agency guard/decorator
+- [ ] 2.2-03-PLAN.md - Propietarios + Consignaciones: Owner CRUD with bank accounts, consignment CRUD with agent assignment, portfolio endpoints
+- [ ] 2.2-04-PLAN.md - Pipeline: PipelineModule with 10-stage funnel, stage transitions, filtering, statistics, Kanban-ready API
+- [ ] 2.2-05-PLAN.md - Cobros + Dispersiones: Monthly collection generation, payment registration, late fees, reminder sending, disbursement aggregation, approval, transfer processing
+- [ ] 2.2-06-PLAN.md - Mantenimiento + Renovaciones: Maintenance requests with quotes/approval/completion, lease renewal detection with IPC calculation and negotiation workflow
+- [ ] 2.2-07-PLAN.md - Documents + Actas de entrega: Document templates with variable substitution, acta creation with inventory/meters/keys/signatures, photo uploads
+- [ ] 2.2-08-PLAN.md - Reports + Analytics + Dashboard: 7 report types, KPIs with sparklines, trend analysis, forecast scenarios, dashboard aggregation
+
+**Wave Structure:**
+- Wave 1: 2.2-01 (database schema foundation)
+- Wave 2: 2.2-02 (agency core module, depends on 01)
+- Wave 3 (parallel): 2.2-03 (propietarios + consignaciones), 2.2-04 (pipeline) - both depend on 02
+- Wave 4 (parallel): 2.2-05 (cobros + dispersiones), 2.2-06 (mantenimiento + renovaciones) - depend on 03
+- Wave 5: 2.2-07 (documents + actas, depends on 03)
+- Wave 6: 2.2-08 (reports + analytics + dashboard, depends on all)
+
+**Key Architectural Decisions:**
+- Agency is an organization entity that groups users (multi-tenancy)
+- Propietario is a client of the agency (not same as User.LANDLORD)
+- Consignacion wraps existing Property model with agency-specific data
+- All endpoints under `/inmobiliaria/*` prefix
+- Authorization via AgencyMember (role: admin | agente | contador | viewer)
+- Cobros auto-generated monthly from active leases
+- Dispersiones aggregate cobros per propietario, deducting commissions
+
+**Frontend Reference:**
+- 21 pages under `/panel/inmobiliaria/`
+- 83+ components in `src/components/inmobiliaria/`
+- 7 mock data files (~4000+ lines of types and data)
+- Full Kanban pipeline, financial operations, reporting
 
 ### Phase 3: Properties
 **Goal**: Landlords can manage properties, anyone can browse
@@ -926,13 +983,16 @@ GET /recommendations/property/:propertyId/match-score   // Get match score for s
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> **2.1** -> 3 -> 3.1 -> 3.2 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10 -> 11 -> 12 -> 13 -> **14 -> 15 -> 16 -> 17 -> 18 -> 19 (frontend parity)** -> **20 -> 21 -> 22 (IA al final)**
+Phases execute in numeric order: 1 -> 2 -> **2.1** -> **2.2** -> 3 -> 3.1 -> 3.2 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10 -> 11 -> 12 -> 13 -> **14 -> 15 -> 16 -> 17 -> 18 -> 19 (frontend parity)** -> **20 -> 21 -> 22 (IA al final)**
+
+Note: Phase 2.2 depends on Phases 3, 7, 8 (already complete), so it can execute now.
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 3/3 | Complete | 2026-01-25 |
 | 2. Auth & Users | 3/3 | Complete | 2026-01-26 |
 | **2.1. User Roles & Agents** | 4/4 | Complete | 2026-02-05 |
+| **2.2. Inmobiliaria Backend** | 0/8 | Planning complete | - |
 | 3. Properties | 4/4 | Complete | 2026-01-29 |
 | 3.1. Property Visits | 4/4 | Complete | 2026-02-03 |
 | 3.2. Natural Search | 1/1 | Complete | 2026-02-03 |
@@ -1040,4 +1100,4 @@ Phases execute in numeric order: 1 -> 2 -> **2.1** -> 3 -> 3.1 -> 3.2 -> 4 -> 5 
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-02-08 - Phase 19 complete (Property Recommendations)*
+*Last updated: 2026-02-13 - Phase 2.2 (Inmobiliaria Backend) planning complete: 8 plans written*
