@@ -31,6 +31,9 @@ import { AgencyModule } from './inmobiliaria/agency/agency.module.js';
 import { PipelineModule } from './inmobiliaria/pipeline/pipeline.module.js';
 import { PropietariosModule } from './inmobiliaria/propietarios/propietarios.module.js';
 import { ConsignacionesModule } from './inmobiliaria/consignaciones/consignaciones.module.js';
+import { CobrosModule } from './inmobiliaria/cobros/cobros.module.js';
+import { DispersionesModule } from './inmobiliaria/dispersiones/dispersiones.module.js';
+import { MantenimientoModule } from './inmobiliaria/mantenimiento/mantenimiento.module.js';
 import { SupabaseAuthGuard } from './auth/guards/supabase-auth.guard.js';
 import { RolesGuard } from './auth/guards/roles.guard.js';
 import { AppController } from './app.controller.js';
@@ -74,6 +77,9 @@ import { AppService } from './app.service.js';
     PipelineModule,
     PropietariosModule,
     ConsignacionesModule,
+    CobrosModule,
+    DispersionesModule,
+    MantenimientoModule,
   ],
   controllers: [AppController],
   providers: [
