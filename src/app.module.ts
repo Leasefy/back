@@ -37,6 +37,7 @@ import { MantenimientoModule } from './inmobiliaria/mantenimiento/mantenimiento.
 import { RenovacionesModule } from './inmobiliaria/renovaciones/renovaciones.module.js';
 import { DocumentosModule } from './inmobiliaria/documentos/documentos.module.js';
 import { ActasModule } from './inmobiliaria/actas/actas.module.js';
+import { ReportsModule } from './inmobiliaria/reports/reports.module.js';
 import { SupabaseAuthGuard } from './auth/guards/supabase-auth.guard.js';
 import { RolesGuard } from './auth/guards/roles.guard.js';
 import { AppController } from './app.controller.js';
@@ -86,6 +87,7 @@ import { AppService } from './app.service.js';
     RenovacionesModule,
     DocumentosModule,
     ActasModule,
+    ReportsModule,
   ],
   controllers: [AppController],
   providers: [
