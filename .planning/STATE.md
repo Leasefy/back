@@ -3,11 +3,11 @@
 ## Current Status
 
 **Phase:** 2.2 (Inmobiliaria Backend)
-**Plan:** 2 of 8
+**Plan:** 4 of 8
 **Status:** In Progress
-**Last activity:** 2026-02-13 - Completed 2.2-02-PLAN.md (Agency core module)
+**Last activity:** 2026-02-13 - Completed 2.2-04-PLAN.md (Pipeline module)
 
-**Progress:** [######################################] ~99% (71/~78 plans estimated)
+**Progress:** [######################################] ~99% (73/~78 plans estimated)
 
 ## Project Reference
 
@@ -15,7 +15,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 **Core value:** Ejecutar el Risk Score con analisis inteligente de documentos para que propietarios tomen decisiones informadas en minutos, con explicabilidad total.
 
-**Current focus:** Phase 2.2 IN PROGRESS (2/8 plans: Database Schema + Agency Module). Next: 2.2-03 (Propietarios module).
+**Current focus:** Phase 2.2 IN PROGRESS (4/8 plans: Schema, Agency, Propietarios, Pipeline). Next: 2.2-05 (Consignaciones module).
 
 ## Quick Context
 
@@ -50,7 +50,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 17. Coupons & Discounts | COMPLETE | All 2 plans - Coupon infrastructure, subscription integration |
 | 18. Dashboard & Activity Log | COMPLETE | All 3 plans - ActivityLog model (18-01), Dashboard endpoints (18-02), Activity event listeners (18-03) |
 | 19. Property Recommendations | COMPLETE | All 2 plans - Scoring engine (19-01), Service+Endpoints (19-02) |
-| 2.2 Inmobiliaria Backend | IN PROGRESS | 2/8 plans - Database schema (2.2-01), Agency module (2.2-02) |
+| 2.2 Inmobiliaria Backend | IN PROGRESS | 4/8 plans - Schema (2.2-01), Agency (2.2-02), Propietarios (2.2-03), Pipeline (2.2-04) |
 | 20. AI Document Analysis (IA) | Pending | PRO+ tier - Claude integration |
 | 21. Explainability (IA) | Pending | PRO+ tier - AI explanations |
 | 22. ML Persistence (IA) | Pending | Data for ML training |
@@ -497,12 +497,16 @@ Phase 19 COMPLETE (all 2 plans). Frontend Parity phases (14-19) ALL DONE. Next: 
 | 2026-02-13 | 2.2-01 | 17 inmobiliaria models total | Agency, AgencyMember, Propietario, Consignacion, PipelineItem, Cobro, Dispersion, DispersionItem, SolicitudMantenimiento, MantenimientoQuote, Renovacion, RenovacionHistory, ActaEntrega, AgencyDocumentTemplate, AgencyDocument, AgencyIntegration, ActivityLog |
 | 2026-02-13 | Executed 2.2-01-PLAN.md | Database schema validation, migration generation, 17 tables created |
 | 2026-02-13 | Executed 2.2-02-PLAN.md | AgencyModule registered in AppModule, DTOs with Swagger annotations |
+| 2026-02-13 | 2.2-04 | AgencyMemberGuard at class level replaces manual resolveAgencyId | Cleaner, consistent pattern for agency-scoped controllers |
+| 2026-02-13 | 2.2-04 | @IsEmail on candidateEmail for proper validation | Rule 2 auto-fix: email fields need email validation |
+| 2026-02-13 | 2.2-04 | Stats route before :id route in controller | Prevents "stats" being parsed as UUID parameter |
+| 2026-02-13 | Executed 2.2-04-PLAN.md | PipelineModule with 8 endpoints, CONSIGNACION_INCLUDE bug fixed |
 
 ## Session Continuity
 
 **Last session:** 2026-02-13
-**Stopped at:** Phase 2.2 in progress (2/8 plans complete: Database Schema, Agency Module)
-**Resume file:** .planning/phases/2.2-inmobiliaria-backend/2.2-02-SUMMARY.md
+**Stopped at:** Phase 2.2 in progress (4/8 plans complete: Schema, Agency, Propietarios, Pipeline)
+**Resume file:** .planning/phases/2.2-inmobiliaria-backend/2.2-04-SUMMARY.md
 
 ---
 *Last updated: 2026-02-13*
