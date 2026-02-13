@@ -497,6 +497,11 @@ Phase 19 COMPLETE (all 2 plans). Frontend Parity phases (14-19) ALL DONE. Next: 
 | 2026-02-13 | 2.2-01 | 17 inmobiliaria models total | Agency, AgencyMember, Propietario, Consignacion, PipelineItem, Cobro, Dispersion, DispersionItem, SolicitudMantenimiento, MantenimientoQuote, Renovacion, RenovacionHistory, ActaEntrega, AgencyDocumentTemplate, AgencyDocument, AgencyIntegration, ActivityLog |
 | 2026-02-13 | Executed 2.2-01-PLAN.md | Database schema validation, migration generation, 17 tables created |
 | 2026-02-13 | Executed 2.2-02-PLAN.md | AgencyModule registered in AppModule, DTOs with Swagger annotations |
+| 2026-02-13 | 2.2-03 | Controllers use @UseGuards(AgencyMemberGuard) + @CurrentAgency('agencyId') | Cleaner than manual AgencyService.getAgencyForUser() resolution |
+| 2026-02-13 | 2.2-03 | ConsignacionPropertyType app enum created | Needed for @IsEnum validation in DTO, mirrors Prisma enum |
+| 2026-02-13 | 2.2-03 | AssignAgentDto for typed assign-agent body | Proper class-validator integration vs inline type |
+| 2026-02-13 | 2.2-03 | Maintenance endpoint on ConsignacionesController | Queries SolicitudMantenimiento by consignacionId for completeness |
+| 2026-02-13 | Executed 2.2-03-PLAN.md | PropietariosModule (6 endpoints) + ConsignacionesModule (8 endpoints) registered |
 | 2026-02-13 | 2.2-04 | AgencyMemberGuard at class level replaces manual resolveAgencyId | Cleaner, consistent pattern for agency-scoped controllers |
 | 2026-02-13 | 2.2-04 | @IsEmail on candidateEmail for proper validation | Rule 2 auto-fix: email fields need email validation |
 | 2026-02-13 | 2.2-04 | Stats route before :id route in controller | Prevents "stats" being parsed as UUID parameter |
