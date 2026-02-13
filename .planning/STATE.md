@@ -2,12 +2,12 @@
 
 ## Current Status
 
-**Phase:** 19 (Property Recommendations)
-**Plan:** 2 of 2
-**Status:** VERIFIED ✓
-**Last activity:** 2026-02-08 - Phase 19 verified (11/11 must-haves)
+**Phase:** 2.2 (Inmobiliaria Backend)
+**Plan:** 1 of ~8 (estimated)
+**Status:** In Progress
+**Last activity:** 2026-02-13 - Completed 2.2-01-PLAN.md (database schema)
 
-**Progress:** [######################################] ~99% (69/~70 plans estimated)
+**Progress:** [######################################] ~99% (70/~78 plans estimated)
 
 ## Project Reference
 
@@ -15,7 +15,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 **Core value:** Ejecutar el Risk Score con analisis inteligente de documentos para que propietarios tomen decisiones informadas en minutos, con explicabilidad total.
 
-**Current focus:** Phase 19 COMPLETE (2/2 plans: Scoring Engine + Service/Endpoints). Next: Phase 20 (AI Document Analysis).
+**Current focus:** Phase 2.2 IN PROGRESS (1/~8 plans: Database Schema complete). Next: 2.2-02 (Core Services).
 
 ## Quick Context
 
@@ -50,6 +50,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 17. Coupons & Discounts | COMPLETE | All 2 plans - Coupon infrastructure, subscription integration |
 | 18. Dashboard & Activity Log | COMPLETE | All 3 plans - ActivityLog model (18-01), Dashboard endpoints (18-02), Activity event listeners (18-03) |
 | 19. Property Recommendations | COMPLETE | All 2 plans - Scoring engine (19-01), Service+Endpoints (19-02) |
+| 2.2 Inmobiliaria Backend | IN PROGRESS | 1/~8 plans - Database schema (2.2-01) |
 | 20. AI Document Analysis (IA) | Pending | PRO+ tier - Claude integration |
 | 21. Explainability (IA) | Pending | PRO+ tier - AI explanations |
 | 22. ML Persistence (IA) | Pending | Data for ML training |
@@ -488,12 +489,16 @@ Phase 19 COMPLETE (all 2 plans). Frontend Parity phases (14-19) ALL DONE. Next: 
 | 2026-02-08 | Executed 19-01-PLAN.md | MatchResult interface, 4 scoring sub-models (Affordability/RiskFit/ProfileStrength/Preferences), RecommendationScorer aggregator |
 | 2026-02-08 | Executed 19-02-PLAN.md | RecommendationsService (3 methods), RecommendationsController (3 TENANT endpoints), RecommendationsModule, AppModule integration |
 | 2026-02-08 | Phase 19 verified | 11/11 must-haves passed. Frontend Parity phases (14-19) ALL COMPLETE |
+| 2026-02-13 | 2.2-01 | Enum value prefixing for PostgreSQL | COBRO_PENDING, DISP_PENDING, MAINT_APPROVED avoid same-value-different-enum conflicts |
+| 2026-02-13 | 2.2-01 | ActivityType enum added to migration | Required by ActivityLog model, missing from previous migrations |
+| 2026-02-13 | 2.2-01 | 17 inmobiliaria models total | Agency, AgencyMember, Propietario, Consignacion, PipelineItem, Cobro, Dispersion, DispersionItem, SolicitudMantenimiento, MantenimientoQuote, Renovacion, RenovacionHistory, ActaEntrega, AgencyDocumentTemplate, AgencyDocument, AgencyIntegration, ActivityLog |
+| 2026-02-13 | Executed 2.2-01-PLAN.md | Database schema validation, migration generation, 17 tables created |
 
 ## Session Continuity
 
-**Last session:** 2026-02-08
-**Stopped at:** Phase 19 complete (all 2 plans: Scoring Engine + Service/Endpoints)
-**Resume file:** .planning/phases/19-property-recommendations/19-VERIFICATION.md
+**Last session:** 2026-02-13
+**Stopped at:** Phase 2.2 in progress (1/~8 plans complete: Database Schema)
+**Resume file:** .planning/phases/2.2-inmobiliaria-backend/2.2-01-SUMMARY.md
 
 ---
-*Last updated: 2026-02-08*
+*Last updated: 2026-02-13*
