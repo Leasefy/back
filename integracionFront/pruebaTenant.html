@@ -1,0 +1,1529 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Leasify - Test Tenant (Inquilino)</title>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    h1 { color: #333; }
+    h2 { color: #555; margin-top: 30px; border-bottom: 2px solid #ddd; padding-bottom: 10px; }
+    h3 { color: #666; margin-top: 20px; }
+    .section {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    button {
+      padding: 10px 20px;
+      margin: 5px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    button:hover { transform: translateY(-1px); }
+    .btn-primary { background: #4285f4; color: white; }
+    .btn-primary:hover { background: #3367d6; }
+    .btn-success { background: #34a853; color: white; }
+    .btn-success:hover { background: #2d8f47; }
+    .btn-warning { background: #fbbc04; color: #333; }
+    .btn-warning:hover { background: #f9a825; }
+    .btn-danger { background: #ea4335; color: white; }
+    .btn-danger:hover { background: #d93025; }
+    .btn-info { background: #6c757d; color: white; }
+    .btn-info:hover { background: #5a6268; }
+    pre {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 15px;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-size: 13px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .status { padding: 10px 15px; border-radius: 6px; margin: 10px 0; font-weight: 500; }
+    .status.success { background: #d4edda; color: #155724; }
+    .status.error { background: #f8d7da; color: #721c24; }
+    .status.info { background: #cce5ff; color: #004085; }
+    input, select, textarea {
+      padding: 10px;
+      margin: 5px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    input { width: 200px; }
+    .form-group { margin: 10px 0; }
+    .form-group label { display: inline-block; width: 150px; font-weight: 500; }
+    .jwt-display {
+      word-break: break-all;
+      font-size: 11px;
+      background: #2d2d2d;
+      padding: 10px;
+      border-radius: 4px;
+      margin-top: 10px;
+      color: #9cdcfe;
+    }
+    .step-box { background: #f8f9fa; padding: 15px; border-radius: 6px; margin: 10px 0; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  </style>
+</head>
+<body>
+  <h1>Leasify - Panel Inquilino (TENANT)</h1>
+
+  <!-- ==================== AUTH ==================== -->
+  <div class="section">
+    <h2>1. Autenticacion</h2>
+    <div style="margin-bottom: 15px;">
+      <button id="btnGoogle" class="btn-primary">Login con Google</button>
+      <button id="btnSession" class="btn-info">Ver Sesion</button>
+      <button id="btnLogout" class="btn-danger">Logout</button>
+    </div>
+    <div style="margin-bottom: 15px; padding: 15px; background: #e8f4fd; border-radius: 8px;">
+      <strong>Registro como TENANT:</strong><br>
+      <div class="form-group">
+        <label>Nombre:</label>
+        <input type="text" id="regFirstName" placeholder="Juan">
+      </div>
+      <div class="form-group">
+        <label>Apellido:</label>
+        <input type="text" id="regLastName" placeholder="Garcia">
+      </div>
+      <button id="btnRegister" class="btn-success">Registrarse con Google (TENANT)</button>
+    </div>
+    <div id="authStatus"></div>
+    <div id="jwtToken" class="jwt-display" style="display:none;"></div>
+    <button id="btnCopyToken" class="btn-info" style="display:none; margin-top: 10px;">Copiar Token</button>
+  </div>
+
+  <!-- ==================== PERFIL ==================== -->
+  <div class="section">
+    <h2>2. Perfil y Preferencias</h2>
+    <button id="btnGetProfile" class="btn-primary">GET /users/me</button>
+    <button id="btnGetFullProfile" class="btn-info">Perfil Completo</button>
+    <button id="btnMyDocuments" class="btn-info">Mis Documentos</button>
+    <pre id="profileOutput">// Resultado...</pre>
+
+    <h3>Actualizar Perfil</h3>
+    <div class="form-group">
+      <label>Nombre:</label>
+      <input type="text" id="firstName" placeholder="Juan">
+    </div>
+    <div class="form-group">
+      <label>Apellido:</label>
+      <input type="text" id="lastName" placeholder="Garcia">
+    </div>
+    <div class="form-group">
+      <label>Telefono:</label>
+      <input type="text" id="phone" placeholder="+573001234567">
+    </div>
+    <button id="btnUpdateProfile" class="btn-warning">PATCH /users/me</button>
+    <pre id="updateProfileOutput">// Resultado...</pre>
+
+    <h3>Preferencias de Busqueda</h3>
+    <button id="btnGetPreferences" class="btn-primary">Ver Preferencias</button>
+    <div class="grid-2">
+      <div class="form-group">
+        <label>Ciudades:</label>
+        <input type="text" id="prefCities" placeholder="Bogota,Medellin" style="width:100%;">
+      </div>
+      <div class="form-group">
+        <label>Habitaciones:</label>
+        <input type="number" id="prefBedrooms" value="2" style="width:100%;">
+      </div>
+      <div class="form-group">
+        <label>Tipos:</label>
+        <input type="text" id="prefTypes" placeholder="APARTMENT,HOUSE" style="width:100%;">
+      </div>
+      <div class="form-group">
+        <label>Presupuesto min:</label>
+        <input type="number" id="prefMinBudget" value="1000000" style="width:100%;">
+      </div>
+      <div class="form-group">
+        <label>Presupuesto max:</label>
+        <input type="number" id="prefMaxBudget" value="3000000" style="width:100%;">
+      </div>
+    </div>
+    <button id="btnSavePreferences" class="btn-success">Guardar Preferencias</button>
+    <pre id="preferencesOutput">// Preferencias...</pre>
+  </div>
+
+  <!-- ==================== DASHBOARD ==================== -->
+  <div class="section">
+    <h2>3. Dashboard Tenant</h2>
+    <button id="btnDashboard" class="btn-primary">GET /tenants/me/dashboard</button>
+    <pre id="dashboardOutput">// Dashboard...</pre>
+  </div>
+
+  <!-- ==================== BUSCAR PROPIEDADES ==================== -->
+  <div class="section">
+    <h2>4. Buscar Propiedades</h2>
+
+    <h3>4.1 Listado Publico</h3>
+    <div class="grid-2">
+      <div class="form-group">
+        <label>Ciudad:</label>
+        <input type="text" id="searchCity" placeholder="Bogota" style="width:100%;">
+      </div>
+      <div class="form-group">
+        <label>Tipo:</label>
+        <select id="searchType" style="width:100%;">
+          <option value="">Todos</option>
+          <option value="APARTMENT">Apartamento</option>
+          <option value="HOUSE">Casa</option>
+          <option value="STUDIO">Estudio</option>
+          <option value="ROOM">Habitacion</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Precio min:</label>
+        <input type="number" id="searchMinPrice" placeholder="0" style="width:100%;">
+      </div>
+      <div class="form-group">
+        <label>Precio max:</label>
+        <input type="number" id="searchMaxPrice" placeholder="5000000" style="width:100%;">
+      </div>
+      <div class="form-group">
+        <label>Habitaciones min:</label>
+        <input type="number" id="searchMinBeds" placeholder="" style="width:100%;">
+      </div>
+    </div>
+    <button id="btnSearchProperties" class="btn-primary">GET /properties (Filtros)</button>
+    <pre id="searchPropertiesOutput">// Propiedades...</pre>
+    <div id="propsList" style="display:none; margin-top:15px;">
+      <strong>Selecciona propiedad:</strong>
+      <select id="selectedPropertyId" style="width:100%; padding:10px;"></select>
+    </div>
+
+    <h3>4.2 Busqueda Natural (Lenguaje Natural)</h3>
+    <div class="form-group">
+      <label>Busqueda:</label>
+      <input type="text" id="naturalSearch" placeholder="apartamento en chapinero menos de 2 millones" style="width:400px;">
+    </div>
+    <button id="btnNaturalSearch" class="btn-primary">Buscar</button>
+    <pre id="naturalSearchOutput">// Resultados...</pre>
+
+    <h3>4.3 Detalle de Propiedad</h3>
+    <div class="form-group">
+      <label>Property ID:</label>
+      <input type="text" id="viewPropertyId" placeholder="UUID" style="width:300px;">
+      <button id="btnUseSelected" class="btn-info">Usar seleccionada</button>
+    </div>
+    <button id="btnViewProperty" class="btn-primary">GET /properties/:id</button>
+    <pre id="viewPropertyOutput">// Detalle...</pre>
+    <div id="propertyImagesGallery" style="display:none; margin-top:15px;">
+      <h4>Imagenes:</h4>
+      <div id="imagesContainer" style="display:flex; flex-wrap:wrap; gap:10px;"></div>
+    </div>
+
+    <h3>4.4 Slots de Visita Disponibles</h3>
+    <div class="form-group">
+      <label>Fecha inicio:</label>
+      <input type="date" id="slotsStart" style="width:200px;">
+    </div>
+    <div class="form-group">
+      <label>Fecha fin:</label>
+      <input type="date" id="slotsEnd" style="width:200px;">
+    </div>
+    <button id="btnGetSlots" class="btn-primary">Ver Slots Disponibles</button>
+    <pre id="slotsOutput">// Slots...</pre>
+  </div>
+
+  <!-- ==================== RECOMENDACIONES ==================== -->
+  <div class="section">
+    <h2>5. Recomendaciones Personalizadas</h2>
+    <div class="form-group">
+      <label>Ordenar por:</label>
+      <select id="recomSort" style="width:200px;">
+        <option value="match">Match Score</option>
+        <option value="price_asc">Precio (menor)</option>
+        <option value="price_desc">Precio (mayor)</option>
+        <option value="probability">Probabilidad</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Probabilidad:</label>
+      <select id="recomProb" style="width:200px;">
+        <option value="">Todas</option>
+        <option value="alta">Alta</option>
+        <option value="media">Media</option>
+        <option value="baja">Baja</option>
+      </select>
+    </div>
+    <button id="btnRecommendations" class="btn-primary">GET /recommendations</button>
+    <button id="btnTopRecom" class="btn-success">Mejor Recomendacion</button>
+    <pre id="recomOutput">// Recomendaciones...</pre>
+
+    <h3>Match Score de Propiedad</h3>
+    <div class="form-group">
+      <label>Property ID:</label>
+      <input type="text" id="matchPropertyId" placeholder="UUID" style="width:300px;">
+      <button id="btnUseSelectedMatch" class="btn-info">Usar seleccionada</button>
+    </div>
+    <button id="btnMatchScore" class="btn-primary">GET Match Score</button>
+    <pre id="matchScoreOutput">// Match score...</pre>
+  </div>
+
+  <!-- ==================== WISHLIST ==================== -->
+  <div class="section">
+    <h2>6. Favoritos / Wishlist</h2>
+    <button id="btnGetWishlist" class="btn-primary">GET /wishlists</button>
+    <pre id="wishlistOutput">// Favoritos...</pre>
+
+    <h3>Agregar/Quitar Favorito</h3>
+    <div class="form-group">
+      <label>Property ID:</label>
+      <input type="text" id="wishlistPropertyId" placeholder="UUID" style="width:300px;">
+      <button id="btnUseSelectedWish" class="btn-info">Usar seleccionada</button>
+    </div>
+    <button id="btnAddWishlist" class="btn-success">Agregar a Favoritos</button>
+    <button id="btnRemoveWishlist" class="btn-danger">Quitar de Favoritos</button>
+    <pre id="wishlistActionOutput">// Resultado...</pre>
+  </div>
+
+  <!-- ==================== VISITAS ==================== -->
+  <div class="section">
+    <h2>7. Visitas</h2>
+
+    <h3>7.1 Solicitar Visita</h3>
+    <div class="form-group">
+      <label>Property ID:</label>
+      <input type="text" id="visitPropertyId" placeholder="UUID" style="width:300px;">
+      <button id="btnUseSelectedVisit" class="btn-info">Usar seleccionada</button>
+    </div>
+    <div class="form-group">
+      <label>Fecha y hora:</label>
+      <input type="datetime-local" id="visitDateTime" style="width:250px;">
+    </div>
+    <div class="form-group">
+      <label>Mensaje (opcional):</label>
+      <input type="text" id="visitMessage" placeholder="Me gustaria visitar..." style="width:300px;">
+    </div>
+    <button id="btnRequestVisit" class="btn-success">POST /visits</button>
+    <pre id="requestVisitOutput">// Resultado...</pre>
+
+    <h3>7.2 Mis Visitas</h3>
+    <button id="btnMyVisits" class="btn-primary">GET /visits/mine</button>
+    <pre id="myVisitsOutput">// Visitas...</pre>
+    <div id="visitsList" style="display:none; margin-top:15px;">
+      <strong>Selecciona visita:</strong>
+      <select id="selectedVisitId" style="width:100%; padding:10px;"></select>
+    </div>
+
+    <h3>7.3 Gestionar Visita</h3>
+    <div class="form-group">
+      <label>Visit ID:</label>
+      <input type="text" id="visitId" placeholder="UUID" style="width:300px;">
+      <button id="btnUseSelectedVisitId" class="btn-info">Usar seleccionada</button>
+    </div>
+    <button id="btnVisitDetail" class="btn-primary">Ver Detalle</button>
+    <button id="btnCancelVisit" class="btn-danger">Cancelar Visita</button>
+    <pre id="visitActionOutput">// Resultado...</pre>
+
+    <h3>7.4 Reprogramar Visita</h3>
+    <div class="form-group">
+      <label>Nueva fecha/hora:</label>
+      <input type="datetime-local" id="rescheduleDateTime" style="width:250px;">
+    </div>
+    <button id="btnReschedule" class="btn-warning">Reprogramar</button>
+    <pre id="rescheduleOutput">// Resultado...</pre>
+  </div>
+
+  <!-- ==================== APLICACIONES ==================== -->
+  <div class="section">
+    <h2>8. Aplicaciones</h2>
+
+    <div style="background: #d4edda; padding: 10px; border-radius: 6px; margin-bottom: 15px; font-size: 13px;">
+      <strong>Flujo:</strong> Crear aplicacion -> Completar 4 pasos -> Subir documentos -> Enviar
+    </div>
+
+    <h3>8.1 Crear Aplicacion</h3>
+    <div class="form-group">
+      <label>Property ID:</label>
+      <input type="text" id="applyPropertyId" placeholder="UUID" style="width:300px;">
+      <button id="btnUseSelectedApply" class="btn-info">Usar seleccionada</button>
+    </div>
+    <button id="btnCreateApp" class="btn-success">POST /applications</button>
+    <pre id="createAppOutput">// Resultado...</pre>
+
+    <h3>8.2 Mis Aplicaciones</h3>
+    <button id="btnMyApps" class="btn-primary">GET /applications/mine</button>
+    <pre id="myAppsOutput">// Aplicaciones...</pre>
+    <div id="appsList" style="display:none; margin-top:15px;">
+      <strong>Selecciona aplicacion:</strong>
+      <select id="selectedAppId" style="width:100%; padding:10px;"></select>
+    </div>
+
+    <h3>8.3 Wizard - Completar Pasos</h3>
+    <div class="form-group">
+      <label>Application ID:</label>
+      <input type="text" id="wizardAppId" placeholder="UUID" style="width:300px;">
+      <button id="btnUseSelectedWizard" class="btn-info">Usar seleccionada</button>
+    </div>
+
+    <div class="step-box">
+      <strong>Paso 1: Informacion Personal</strong>
+      <div class="grid-2" style="margin-top:10px;">
+        <input type="text" id="s1Name" placeholder="Nombre completo" value="Juan Garcia Perez">
+        <input type="text" id="s1Cedula" placeholder="Cedula" value="1234567890">
+        <input type="date" id="s1DOB" value="1990-01-15">
+        <input type="email" id="s1Email" placeholder="Email" value="juan@email.com">
+        <input type="text" id="s1Phone" placeholder="Telefono" value="+573001234567">
+        <input type="text" id="s1Address" placeholder="Direccion actual" value="Calle 100 #15-20, Bogota">
+      </div>
+      <button id="btnStep1" class="btn-warning" style="margin-top:10px;">PATCH Paso 1</button>
+    </div>
+
+    <div class="step-box">
+      <strong>Paso 2: Informacion Laboral</strong>
+      <div class="grid-2" style="margin-top:10px;">
+        <select id="s2EmpType">
+          <option value="EMPLOYED">Empleado</option>
+          <option value="SELF_EMPLOYED">Independiente</option>
+          <option value="CONTRACTOR">Contratista</option>
+          <option value="STUDENT">Estudiante</option>
+        </select>
+        <input type="text" id="s2Company" placeholder="Empresa" value="Tech Corp SAS">
+        <input type="text" id="s2JobTitle" placeholder="Cargo" value="Desarrollador Senior">
+        <input type="date" id="s2StartDate" value="2022-03-01">
+        <input type="text" id="s2WorkAddr" placeholder="Dir. trabajo" value="Cra 7 #71-52, Bogota">
+        <input type="text" id="s2HRPhone" placeholder="Tel. RRHH" value="+5713001234">
+      </div>
+      <button id="btnStep2" class="btn-warning" style="margin-top:10px;">PATCH Paso 2</button>
+    </div>
+
+    <div class="step-box">
+      <strong>Paso 3: Informacion de Ingresos</strong>
+      <div class="grid-2" style="margin-top:10px;">
+        <input type="number" id="s3Salary" placeholder="Salario mensual" value="5000000">
+        <input type="number" id="s3Additional" placeholder="Ingresos adicionales" value="0">
+        <input type="text" id="s3AdditionalSource" placeholder="Fuente adicional">
+        <input type="number" id="s3Debt" placeholder="Pagos deuda mensual" value="0">
+      </div>
+      <button id="btnStep3" class="btn-warning" style="margin-top:10px;">PATCH Paso 3</button>
+    </div>
+
+    <div class="step-box">
+      <strong>Paso 4: Referencias</strong>
+      <p style="font-size:12px; color:#666;">Referencia Laboral:</p>
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">
+        <input type="text" id="s4EmpName" placeholder="Nombre jefe" value="Carlos Rodriguez">
+        <input type="text" id="s4EmpPhone" placeholder="Telefono" value="+573001112233">
+        <input type="text" id="s4EmpRelation" placeholder="Relacion" value="Jefe directo">
+      </div>
+      <p style="font-size:12px; color:#666;">Referencia Personal:</p>
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">
+        <input type="text" id="s4PersName" placeholder="Nombre" value="Maria Garcia">
+        <input type="text" id="s4PersPhone" placeholder="Telefono" value="+573009876543">
+        <input type="text" id="s4PersRelation" placeholder="Relacion" value="Hermana">
+      </div>
+      <button id="btnStep4" class="btn-warning" style="margin-top:10px;">PATCH Paso 4</button>
+    </div>
+
+    <pre id="wizardOutput">// Resultado wizard...</pre>
+
+    <h3>8.4 Subir Documentos</h3>
+    <div class="form-group">
+      <label>Application ID:</label>
+      <input type="text" id="docAppId" placeholder="UUID" style="width:300px;">
+      <button id="btnUseSelectedDoc" class="btn-info">Usar seleccionada</button>
+    </div>
+    <div class="form-group">
+      <label>Tipo documento:</label>
+      <select id="docType" style="width:200px;">
+        <option value="CEDULA">Cedula</option>
+        <option value="EMPLOYMENT_LETTER">Carta Laboral</option>
+        <option value="PAY_STUB">Desprendible de Pago</option>
+        <option value="BANK_STATEMENT">Extracto Bancario</option>
+        <option value="OTHER">Otro</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Archivo:</label>
+      <input type="file" id="documentFile" accept=".pdf,image/*">
+    </div>
+    <button id="btnUploadDoc" class="btn-warning">Subir Documento</button>
+    <pre id="uploadDocOutput">// Resultado...</pre>
+
+    <h3>8.5 Ver Documentos</h3>
+    <button id="btnListDocs" class="btn-primary">Ver Documentos de Aplicacion</button>
+    <pre id="listDocsOutput">// Documentos...</pre>
+
+    <h3>8.6 Enviar Aplicacion</h3>
+    <div class="form-group">
+      <label>Application ID:</label>
+      <input type="text" id="submitAppId" placeholder="UUID" style="width:300px;">
+      <button id="btnUseSelectedSubmit" class="btn-info">Usar seleccionada</button>
+    </div>
+    <button id="btnSubmitApp" class="btn-success">POST /applications/:id/submit</button>
+    <pre id="submitOutput">// Resultado...</pre>
+
+    <h3>8.7 Timeline</h3>
+    <button id="btnTimeline" class="btn-info">Ver Timeline</button>
+    <pre id="timelineOutput">// Timeline...</pre>
+
+    <h3>8.8 Info Requests del Landlord</h3>
+    <button id="btnInfoRequests" class="btn-primary">Ver Solicitudes de Info</button>
+    <pre id="infoRequestsOutput">// Solicitudes...</pre>
+    <div class="form-group">
+      <label>Respuesta:</label>
+      <input type="text" id="infoResponse" placeholder="Adjunto documentos solicitados..." style="width:400px;">
+    </div>
+    <button id="btnRespondInfo" class="btn-warning">Responder</button>
+    <pre id="respondInfoOutput">// Resultado...</pre>
+
+    <h3>8.9 Retirar / Reactivar Aplicacion</h3>
+    <div class="form-group">
+      <label>Razon:</label>
+      <input type="text" id="withdrawReason" placeholder="Encontre otra opcion" style="width:300px;">
+    </div>
+    <button id="btnWithdraw" class="btn-danger">Retirar</button>
+    <button id="btnReactivate" class="btn-warning">Reactivar</button>
+    <pre id="withdrawOutput">// Resultado...</pre>
+  </div>
+
+  <!-- ==================== CHAT ==================== -->
+  <div class="section">
+    <h2>9. Chat con Propietario</h2>
+    <div class="form-group">
+      <label>Application ID:</label>
+      <input type="text" id="chatAppId" placeholder="UUID aplicacion" style="width:300px;">
+    </div>
+    <button id="btnGetChat" class="btn-primary">Ver Conversacion</button>
+    <button id="btnUnreadCount" class="btn-info">No leidos</button>
+    <button id="btnMarkRead" class="btn-warning">Marcar leidos</button>
+    <pre id="chatOutput">// Chat...</pre>
+    <div class="form-group">
+      <label>Mensaje:</label>
+      <input type="text" id="chatMessage" placeholder="Buenos dias, tengo una pregunta..." style="width:400px;">
+    </div>
+    <button id="btnSendMessage" class="btn-success">Enviar Mensaje</button>
+    <pre id="sendMessageOutput">// Resultado...</pre>
+  </div>
+
+  <!-- ==================== CONTRATOS ==================== -->
+  <div class="section">
+    <h2>10. Contratos</h2>
+    <button id="btnMyContracts" class="btn-primary">GET /contracts</button>
+    <pre id="contractsOutput">// Contratos...</pre>
+    <div id="contractsList" style="display:none; margin-top:15px;">
+      <strong>Selecciona contrato:</strong>
+      <select id="selectedContractId" style="width:100%; padding:10px;"></select>
+    </div>
+
+    <h3>Detalle / Firmar Contrato</h3>
+    <div class="form-group">
+      <label>Contract ID:</label>
+      <input type="text" id="contractId" placeholder="UUID" style="width:300px;">
+      <button id="btnUseSelectedContract" class="btn-info">Usar seleccionado</button>
+    </div>
+    <button id="btnContractDetail" class="btn-primary">Ver Detalle</button>
+    <button id="btnContractPreview" class="btn-info">Preview HTML</button>
+    <button id="btnContractPdf" class="btn-warning">Descargar PDF</button>
+    <pre id="contractDetailOutput">// Detalle...</pre>
+
+    <div class="form-group">
+      <label>Firma (texto):</label>
+      <input type="text" id="signatureText" value="Juan Garcia" style="width:300px;">
+    </div>
+    <button id="btnSignTenant" class="btn-success">Firmar Contrato (Tenant)</button>
+    <pre id="signOutput">// Resultado...</pre>
+  </div>
+
+  <!-- ==================== ARRIENDO ACTIVO ==================== -->
+  <div class="section">
+    <h2>11. Mi Arriendo Activo</h2>
+    <button id="btnMyLease" class="btn-primary">GET /leases/my-lease</button>
+    <pre id="myLeaseOutput">// Arriendo...</pre>
+
+    <h3>Detalle de Arriendo</h3>
+    <div class="form-group">
+      <label>Lease ID:</label>
+      <input type="text" id="leaseId" placeholder="UUID" style="width:300px;">
+    </div>
+    <button id="btnLeaseDetail" class="btn-primary">GET /leases/:id</button>
+    <pre id="leaseDetailOutput">// Detalle...</pre>
+
+    <h3>Historial de Pagos</h3>
+    <button id="btnPaymentHistory" class="btn-primary">Ver Pagos</button>
+    <button id="btnPaymentSummary" class="btn-info">Resumen Pagos</button>
+    <pre id="paymentHistoryOutput">// Pagos...</pre>
+
+    <h3>Documentos del Arriendo</h3>
+    <button id="btnLeaseDocuments" class="btn-primary">Ver Documentos</button>
+    <pre id="leaseDocumentsOutput">// Documentos...</pre>
+  </div>
+
+  <!-- ==================== PAGOS TENANT ==================== -->
+  <div class="section">
+    <h2>12. Pagos del Inquilino</h2>
+
+    <h3>12.1 Metodos de Pago del Landlord</h3>
+    <div class="form-group">
+      <label>Lease ID:</label>
+      <input type="text" id="payLeaseId" placeholder="UUID arriendo" style="width:300px;">
+    </div>
+    <button id="btnPaymentMethods" class="btn-primary">Ver Metodos de Pago</button>
+    <pre id="paymentMethodsOutput">// Metodos...</pre>
+
+    <h3>12.2 Info de Pago (auto-llenado)</h3>
+    <button id="btnPaymentInfo" class="btn-primary">GET Payment Info</button>
+    <pre id="paymentInfoOutput">// Info pago...</pre>
+
+    <h3>12.3 Crear Solicitud de Pago (con recibo)</h3>
+    <div class="form-group">
+      <label>Monto (COP):</label>
+      <input type="number" id="payAmount" placeholder="2500000" style="width:200px;">
+    </div>
+    <div class="form-group">
+      <label>Metodo pago ID:</label>
+      <input type="text" id="payMethodId" placeholder="UUID metodo" style="width:300px;">
+    </div>
+    <div class="form-group">
+      <label>Periodo:</label>
+      <input type="text" id="payPeriod" placeholder="2026-02" style="width:150px;">
+    </div>
+    <div class="form-group">
+      <label>Recibo/Comprobante:</label>
+      <input type="file" id="receiptFile" accept=".pdf,image/*">
+    </div>
+    <button id="btnCreatePayReq" class="btn-success">Crear Solicitud de Pago</button>
+    <pre id="createPayReqOutput">// Resultado...</pre>
+
+    <h3>12.4 Mis Solicitudes de Pago</h3>
+    <button id="btnMyPayReqs" class="btn-primary">Listar Solicitudes</button>
+    <pre id="myPayReqsOutput">// Solicitudes...</pre>
+
+    <h3>12.5 Cancelar Solicitud</h3>
+    <div class="form-group">
+      <label>Request ID:</label>
+      <input type="text" id="cancelReqId" placeholder="UUID solicitud" style="width:300px;">
+    </div>
+    <button id="btnCancelPayReq" class="btn-danger">Cancelar Solicitud</button>
+    <pre id="cancelPayReqOutput">// Resultado...</pre>
+
+    <h3>12.6 PSE Mock (Simulacion)</h3>
+    <button id="btnPSEBanks" class="btn-primary">Ver Bancos PSE</button>
+    <pre id="pseBanksOutput">// Bancos...</pre>
+    <div class="form-group">
+      <label>Banco:</label>
+      <input type="text" id="pseBank" placeholder="BANCOLOMBIA" style="width:200px;">
+    </div>
+    <div class="form-group">
+      <label>Monto:</label>
+      <input type="number" id="pseAmount" placeholder="2500000" style="width:200px;">
+    </div>
+    <div class="form-group">
+      <label>Lease ID:</label>
+      <input type="text" id="pseLeaseId" placeholder="UUID arriendo" style="width:300px;">
+    </div>
+    <button id="btnProcessPSE" class="btn-success">Procesar Pago PSE</button>
+    <pre id="pseOutput">// Resultado PSE...</pre>
+  </div>
+
+  <!-- ==================== DISPUTAS ==================== -->
+  <div class="section">
+    <h2>13. Disputas de Pagos</h2>
+
+    <h3>13.1 Abrir Disputa</h3>
+    <div class="form-group">
+      <label>Request ID:</label>
+      <input type="text" id="disputeReqId" placeholder="UUID solicitud rechazada" style="width:300px;">
+    </div>
+    <div class="form-group">
+      <label>Razon:</label>
+      <input type="text" id="disputeReason" placeholder="El pago fue realizado correctamente" style="width:400px;">
+    </div>
+    <div class="form-group">
+      <label>Evidencia:</label>
+      <input type="file" id="disputeEvidence" accept=".pdf,image/*">
+    </div>
+    <button id="btnOpenDispute" class="btn-warning">Abrir Disputa</button>
+    <pre id="disputeOutput">// Resultado...</pre>
+
+    <h3>13.2 Mis Disputas</h3>
+    <button id="btnMyDisputes" class="btn-primary">GET /disputes</button>
+    <pre id="myDisputesOutput">// Disputas...</pre>
+
+    <h3>13.3 Detalle de Disputa</h3>
+    <div class="form-group">
+      <label>Dispute ID:</label>
+      <input type="text" id="disputeId" placeholder="UUID disputa" style="width:300px;">
+    </div>
+    <button id="btnDisputeDetail" class="btn-primary">Ver Detalle</button>
+    <button id="btnDisputeEvidence" class="btn-info">Ver Evidencia</button>
+    <pre id="disputeDetailOutput">// Detalle...</pre>
+  </div>
+
+  <!-- ==================== SCORING ==================== -->
+  <div class="section">
+    <h2>14. Mi Reputacion de Pago</h2>
+    <button id="btnMyReputation" class="btn-primary">GET /scoring/my-reputation</button>
+    <pre id="reputationOutput">// Reputacion...</pre>
+
+    <h3>Score de Aplicacion</h3>
+    <div class="form-group">
+      <label>Application ID:</label>
+      <input type="text" id="scoringAppId" placeholder="UUID" style="width:300px;">
+    </div>
+    <button id="btnAppScore" class="btn-primary">GET /scoring/:id</button>
+    <pre id="scoringOutput">// Score...</pre>
+  </div>
+
+  <!-- ==================== SUSCRIPCION ==================== -->
+  <div class="section">
+    <h2>15. Suscripcion</h2>
+    <button id="btnMySubscription" class="btn-primary">GET /subscriptions/me</button>
+    <button id="btnUsage" class="btn-info">Uso</button>
+    <pre id="subscriptionOutput">// Suscripcion...</pre>
+    <button id="btnStartTrial" class="btn-success">Iniciar Trial</button>
+    <div class="form-group">
+      <label>Plan ID:</label>
+      <input type="text" id="subsPlanId" placeholder="UUID plan" style="width:300px;">
+    </div>
+    <button id="btnSubscribe" class="btn-success">Suscribirse</button>
+    <button id="btnCancelSub" class="btn-danger">Cancelar</button>
+    <button id="btnBuyScoringView" class="btn-warning">Comprar Vista Scoring</button>
+    <pre id="subsActionOutput">// Resultado...</pre>
+    <button id="btnListPlans" class="btn-primary">Ver Planes</button>
+    <pre id="plansOutput">// Planes...</pre>
+  </div>
+
+  <!-- ==================== SEGUROS ==================== -->
+  <div class="section">
+    <h2>16. Seguros</h2>
+    <button id="btnInsuranceTiers" class="btn-primary">GET /insurance/tiers</button>
+    <pre id="insuranceOutput">// Seguros...</pre>
+    <div class="form-group">
+      <label>Tier:</label>
+      <select id="insuranceTier" style="width:200px;">
+        <option value="BASIC">Basico</option>
+        <option value="STANDARD">Estandar</option>
+        <option value="PREMIUM">Premium</option>
+      </select>
+    </div>
+    <button id="btnInsuranceDetail" class="btn-info">Ver Detalle Tier</button>
+    <pre id="insuranceDetailOutput">// Detalle...</pre>
+  </div>
+
+  <!-- ==================== ACTIVIDAD ==================== -->
+  <div class="section">
+    <h2>17. Actividad Reciente</h2>
+    <button id="btnActivities" class="btn-primary">GET /activities</button>
+    <pre id="activitiesOutput">// Actividad...</pre>
+  </div>
+
+  <!-- ==================== CUPONES ==================== -->
+  <div class="section">
+    <h2>18. Validar Cupon</h2>
+    <div class="form-group">
+      <label>Codigo cupon:</label>
+      <input type="text" id="couponCode" placeholder="DESCUENTO20" style="width:200px;">
+    </div>
+    <button id="btnValidateCoupon" class="btn-primary">POST /coupons/validate</button>
+    <pre id="couponOutput">// Resultado...</pre>
+  </div>
+
+  <!-- ==================== LOGS ==================== -->
+  <div class="section">
+    <h2>Log de Peticiones</h2>
+    <button id="btnClearLogs" class="btn-info">Limpiar Logs</button>
+    <pre id="requestLog">// Log de peticiones HTTP...</pre>
+  </div>
+
+  <script>
+    // ==================== CONFIG ====================
+    const SUPABASE_URL = 'https://jraqurdcjwnifzpdqtnm.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_o0rCunkxRvbRrlLTmMekHw_GCpKgvrw';
+    const BACKEND_URL = 'http://localhost:3000';
+    const CLEAN_REDIRECT_URL = window.location.origin + window.location.pathname;
+
+    if (window.location.search.includes('error=') || window.location.hash.includes('error=')) {
+      window.history.replaceState({}, document.title, CLEAN_REDIRECT_URL);
+    }
+
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    let currentSession = null;
+    let requestLogs = [];
+
+    // ==================== UTILS ====================
+    function showStatus(id, msg, type) {
+      document.getElementById(id).innerHTML = '<div class="status ' + type + '">' + msg + '</div>';
+    }
+    function showJson(id, data) {
+      document.getElementById(id).textContent = JSON.stringify(data, null, 2);
+    }
+    function addLog(method, url, status, response) {
+      const ts = new Date().toLocaleTimeString();
+      requestLogs.unshift('[' + ts + '] ' + method + ' ' + url + ' => ' + status + '\n' + JSON.stringify(response, null, 2) + '\n' + '='.repeat(50));
+      document.getElementById('requestLog').textContent = requestLogs.join('\n\n');
+    }
+    function getAuthHeaders() {
+      if (!currentSession) return { 'Content-Type': 'application/json' };
+      return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + currentSession.access_token };
+    }
+    async function makeRequest(method, endpoint, body) {
+      const url = BACKEND_URL + endpoint;
+      const opts = { method, headers: getAuthHeaders() };
+      if (body) opts.body = JSON.stringify(body);
+      try {
+        const r = await fetch(url, opts);
+        const data = await r.json();
+        addLog(method, endpoint, r.status, data);
+        return { status: r.status, data, ok: r.ok };
+      } catch (e) {
+        addLog(method, endpoint, 'ERROR', { error: e.message });
+        return { status: 'ERROR', data: { error: e.message }, ok: false };
+      }
+    }
+    async function makeFormRequest(method, endpoint, formData) {
+      const url = BACKEND_URL + endpoint;
+      const headers = {};
+      if (currentSession) headers['Authorization'] = 'Bearer ' + currentSession.access_token;
+      try {
+        const r = await fetch(url, { method, headers, body: formData });
+        const data = await r.json();
+        addLog(method, endpoint, r.status, data);
+        return { status: r.status, data, ok: r.ok };
+      } catch (e) {
+        addLog(method, endpoint, 'ERROR', { error: e.message });
+        return { status: 'ERROR', data: { error: e.message }, ok: false };
+      }
+    }
+    function requireAuth(outputId) {
+      if (!currentSession) { showJson(outputId, { error: 'No autenticado' }); return false; }
+      return true;
+    }
+
+    // ==================== AUTH ====================
+    async function updateAuthStatus() {
+      const { data } = await supabaseClient.auth.getSession();
+      currentSession = data.session;
+      if (currentSession) {
+        showStatus('authStatus', 'Autenticado: ' + currentSession.user.email, 'success');
+        document.getElementById('jwtToken').style.display = 'block';
+        document.getElementById('jwtToken').innerHTML = '<strong>JWT:</strong><br>' + currentSession.access_token;
+        document.getElementById('btnCopyToken').style.display = 'inline-block';
+      } else {
+        showStatus('authStatus', 'No autenticado', 'info');
+        document.getElementById('jwtToken').style.display = 'none';
+        document.getElementById('btnCopyToken').style.display = 'none';
+      }
+    }
+
+    document.getElementById('btnGoogle').onclick = async () => {
+      localStorage.removeItem('pendingRegistration');
+      await supabaseClient.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: CLEAN_REDIRECT_URL } });
+    };
+    document.getElementById('btnRegister').onclick = async () => {
+      localStorage.setItem('pendingRegistration', JSON.stringify({
+        role: 'TENANT',
+        firstName: document.getElementById('regFirstName').value.trim() || null,
+        lastName: document.getElementById('regLastName').value.trim() || null,
+        isNewRegistration: true
+      }));
+      await supabaseClient.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: CLEAN_REDIRECT_URL, queryParams: { prompt: 'select_account' } } });
+    };
+    document.getElementById('btnSession').onclick = () => updateAuthStatus();
+    document.getElementById('btnLogout').onclick = async () => {
+      await supabaseClient.auth.signOut();
+      currentSession = null;
+      showStatus('authStatus', 'Sesion cerrada', 'info');
+      document.getElementById('jwtToken').style.display = 'none';
+      document.getElementById('btnCopyToken').style.display = 'none';
+    };
+    document.getElementById('btnCopyToken').onclick = async function() {
+      if (currentSession) {
+        await navigator.clipboard.writeText(currentSession.access_token);
+        this.textContent = 'Copiado!';
+        setTimeout(() => { this.textContent = 'Copiar Token'; }, 2000);
+      }
+    };
+
+    async function handlePendingRegistration() {
+      const pd = localStorage.getItem('pendingRegistration');
+      if (!pd) return;
+      const reg = JSON.parse(pd);
+      localStorage.removeItem('pendingRegistration');
+      if (!reg.isNewRegistration || !currentSession) return;
+      showStatus('authStatus', 'Completando registro...', 'info');
+      const body = {
+        firstName: reg.firstName || currentSession.user.user_metadata?.full_name?.split(' ')[0] || 'Usuario',
+        lastName: reg.lastName || currentSession.user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || '',
+        userType: reg.role
+      };
+      const result = await makeRequest('POST', '/users/me/onboarding', body);
+      if (result.ok) {
+        showStatus('authStatus', 'Registro completado como TENANT: ' + result.data.firstName, 'success');
+        showJson('profileOutput', result.data);
+      }
+    }
+
+    // ==================== PERFIL ====================
+    document.getElementById('btnGetProfile').onclick = async () => {
+      if (!requireAuth('profileOutput')) return;
+      const r = await makeRequest('GET', '/users/me');
+      showJson('profileOutput', r.data);
+    };
+    document.getElementById('btnGetFullProfile').onclick = async () => {
+      if (!requireAuth('profileOutput')) return;
+      const r = await makeRequest('GET', '/users/me/profile');
+      showJson('profileOutput', r.data);
+    };
+    document.getElementById('btnMyDocuments').onclick = async () => {
+      if (!requireAuth('profileOutput')) return;
+      const r = await makeRequest('GET', '/users/me/documents');
+      showJson('profileOutput', r.data);
+    };
+    document.getElementById('btnUpdateProfile').onclick = async () => {
+      if (!requireAuth('updateProfileOutput')) return;
+      const body = {};
+      const fn = document.getElementById('firstName').value.trim();
+      const ln = document.getElementById('lastName').value.trim();
+      const ph = document.getElementById('phone').value.trim();
+      if (fn) body.firstName = fn;
+      if (ln) body.lastName = ln;
+      if (ph) body.phone = ph;
+      const r = await makeRequest('PATCH', '/users/me', body);
+      showJson('updateProfileOutput', r.data);
+    };
+    document.getElementById('btnGetPreferences').onclick = async () => {
+      if (!requireAuth('preferencesOutput')) return;
+      const r = await makeRequest('GET', '/users/me/preferences');
+      showJson('preferencesOutput', r.data);
+    };
+    document.getElementById('btnSavePreferences').onclick = async () => {
+      if (!requireAuth('preferencesOutput')) return;
+      const body = {
+        preferredCities: document.getElementById('prefCities').value.split(',').map(s => s.trim()).filter(Boolean),
+        preferredBedrooms: parseInt(document.getElementById('prefBedrooms').value) || undefined,
+        preferredPropertyTypes: document.getElementById('prefTypes').value.split(',').map(s => s.trim()).filter(Boolean),
+        minBudget: parseInt(document.getElementById('prefMinBudget').value) || undefined,
+        maxBudget: parseInt(document.getElementById('prefMaxBudget').value) || undefined
+      };
+      Object.keys(body).forEach(k => body[k] === undefined && delete body[k]);
+      const r = await makeRequest('PATCH', '/users/me/preferences', body);
+      showJson('preferencesOutput', r.data);
+    };
+
+    // ==================== DASHBOARD ====================
+    document.getElementById('btnDashboard').onclick = async () => {
+      if (!requireAuth('dashboardOutput')) return;
+      const r = await makeRequest('GET', '/tenants/me/dashboard');
+      showJson('dashboardOutput', r.data);
+    };
+
+    // ==================== PROPIEDADES ====================
+    function useSelectedProp(targetId) {
+      const id = document.getElementById('selectedPropertyId').value;
+      if (id) document.getElementById(targetId).value = id;
+    }
+    document.getElementById('btnUseSelected').onclick = () => useSelectedProp('viewPropertyId');
+    document.getElementById('btnUseSelectedMatch').onclick = () => useSelectedProp('matchPropertyId');
+    document.getElementById('btnUseSelectedWish').onclick = () => useSelectedProp('wishlistPropertyId');
+    document.getElementById('btnUseSelectedVisit').onclick = () => useSelectedProp('visitPropertyId');
+    document.getElementById('btnUseSelectedApply').onclick = () => useSelectedProp('applyPropertyId');
+
+    document.getElementById('btnSearchProperties').onclick = async () => {
+      let q = '?';
+      const city = document.getElementById('searchCity').value.trim();
+      const type = document.getElementById('searchType').value;
+      const minP = document.getElementById('searchMinPrice').value;
+      const maxP = document.getElementById('searchMaxPrice').value;
+      const minB = document.getElementById('searchMinBeds').value;
+      if (city) q += 'city=' + city + '&';
+      if (type) q += 'type=' + type + '&';
+      if (minP) q += 'minPrice=' + minP + '&';
+      if (maxP) q += 'maxPrice=' + maxP + '&';
+      if (minB) q += 'minBedrooms=' + minB + '&';
+      const r = await makeRequest('GET', '/properties' + q);
+      showJson('searchPropertiesOutput', r.data);
+      if (r.ok && r.data.data && r.data.data.length > 0) {
+        document.getElementById('selectedPropertyId').innerHTML = r.data.data.map(p => '<option value="' + p.id + '">' + p.title + ' - $' + (p.monthlyRent||0).toLocaleString() + '/mes - ' + p.city + '</option>').join('');
+        document.getElementById('propsList').style.display = 'block';
+      }
+    };
+    document.getElementById('btnNaturalSearch').onclick = async () => {
+      const q = document.getElementById('naturalSearch').value;
+      if (!q) { showJson('naturalSearchOutput', { error: 'Ingresa texto de busqueda' }); return; }
+      const r = await makeRequest('GET', '/properties?q=' + encodeURIComponent(q));
+      showJson('naturalSearchOutput', r.data);
+    };
+    document.getElementById('btnViewProperty').onclick = async () => {
+      const id = document.getElementById('viewPropertyId').value;
+      if (!id) { showJson('viewPropertyOutput', { error: 'Ingresa Property ID' }); return; }
+      const r = await makeRequest('GET', '/properties/' + id);
+      showJson('viewPropertyOutput', r.data);
+      if (r.ok && r.data.images && r.data.images.length > 0) {
+        document.getElementById('imagesContainer').innerHTML = r.data.images.map((img, i) =>
+          '<div style="text-align:center;"><img src="' + img.url + '" style="width:120px;height:120px;object-fit:cover;border-radius:8px;"><div style="font-size:11px;">' + (i === 0 ? 'Thumbnail' : 'Img ' + (i+1)) + '</div></div>'
+        ).join('');
+        document.getElementById('propertyImagesGallery').style.display = 'block';
+      }
+    };
+    document.getElementById('btnGetSlots').onclick = async () => {
+      const propId = document.getElementById('viewPropertyId').value;
+      if (!propId) { showJson('slotsOutput', { error: 'Selecciona propiedad primero' }); return; }
+      let q = '';
+      const start = document.getElementById('slotsStart').value;
+      const end = document.getElementById('slotsEnd').value;
+      if (start) q += '?startDate=' + start;
+      if (end) q += (q ? '&' : '?') + 'endDate=' + end;
+      const r = await makeRequest('GET', '/visits/properties/' + propId + '/slots' + q);
+      showJson('slotsOutput', r.data);
+    };
+
+    // ==================== RECOMENDACIONES ====================
+    document.getElementById('btnRecommendations').onclick = async () => {
+      if (!requireAuth('recomOutput')) return;
+      const sort = document.getElementById('recomSort').value;
+      const prob = document.getElementById('recomProb').value;
+      let q = '?sort=' + sort;
+      if (prob) q += '&probability=' + prob;
+      const r = await makeRequest('GET', '/recommendations' + q);
+      showJson('recomOutput', r.data);
+    };
+    document.getElementById('btnTopRecom').onclick = async () => {
+      if (!requireAuth('recomOutput')) return;
+      const r = await makeRequest('GET', '/recommendations/top');
+      showJson('recomOutput', r.data);
+    };
+    document.getElementById('btnMatchScore').onclick = async () => {
+      if (!requireAuth('matchScoreOutput')) return;
+      const id = document.getElementById('matchPropertyId').value;
+      if (!id) { showJson('matchScoreOutput', { error: 'Ingresa Property ID' }); return; }
+      const r = await makeRequest('GET', '/recommendations/property/' + id + '/match-score');
+      showJson('matchScoreOutput', r.data);
+    };
+
+    // ==================== WISHLIST ====================
+    document.getElementById('btnGetWishlist').onclick = async () => {
+      if (!requireAuth('wishlistOutput')) return;
+      const r = await makeRequest('GET', '/wishlists');
+      showJson('wishlistOutput', r.data);
+    };
+    document.getElementById('btnAddWishlist').onclick = async () => {
+      if (!requireAuth('wishlistActionOutput')) return;
+      const id = document.getElementById('wishlistPropertyId').value;
+      if (!id) { showJson('wishlistActionOutput', { error: 'Ingresa Property ID' }); return; }
+      const r = await makeRequest('POST', '/wishlists/items', { propertyId: id });
+      showJson('wishlistActionOutput', r.data);
+    };
+    document.getElementById('btnRemoveWishlist').onclick = async () => {
+      if (!requireAuth('wishlistActionOutput')) return;
+      const id = document.getElementById('wishlistPropertyId').value;
+      if (!id) { showJson('wishlistActionOutput', { error: 'Ingresa Property ID' }); return; }
+      const r = await makeRequest('DELETE', '/wishlists/items/' + id);
+      showJson('wishlistActionOutput', r.data);
+    };
+
+    // ==================== VISITAS ====================
+    document.getElementById('btnRequestVisit').onclick = async () => {
+      if (!requireAuth('requestVisitOutput')) return;
+      const propId = document.getElementById('visitPropertyId').value;
+      if (!propId) { showJson('requestVisitOutput', { error: 'Ingresa Property ID' }); return; }
+      const body = {
+        propertyId: propId,
+        scheduledAt: document.getElementById('visitDateTime').value ? new Date(document.getElementById('visitDateTime').value).toISOString() : new Date(Date.now() + 86400000).toISOString(),
+        message: document.getElementById('visitMessage').value || undefined
+      };
+      const r = await makeRequest('POST', '/visits', body);
+      showJson('requestVisitOutput', r.data);
+      if (r.ok && r.data.id) document.getElementById('visitId').value = r.data.id;
+    };
+    document.getElementById('btnMyVisits').onclick = async () => {
+      if (!requireAuth('myVisitsOutput')) return;
+      const r = await makeRequest('GET', '/visits/mine');
+      showJson('myVisitsOutput', r.data);
+      if (r.ok && Array.isArray(r.data) && r.data.length > 0) {
+        document.getElementById('selectedVisitId').innerHTML = r.data.map(v => '<option value="' + v.id + '">' + v.id.slice(0,8) + ' - ' + v.status + ' - ' + new Date(v.scheduledAt).toLocaleString() + '</option>').join('');
+        document.getElementById('visitsList').style.display = 'block';
+      }
+    };
+    document.getElementById('btnUseSelectedVisitId').onclick = () => {
+      const id = document.getElementById('selectedVisitId').value;
+      if (id) document.getElementById('visitId').value = id;
+    };
+    document.getElementById('btnVisitDetail').onclick = async () => {
+      if (!requireAuth('visitActionOutput')) return;
+      const id = document.getElementById('visitId').value;
+      if (!id) { showJson('visitActionOutput', { error: 'Ingresa Visit ID' }); return; }
+      const r = await makeRequest('GET', '/visits/' + id);
+      showJson('visitActionOutput', r.data);
+    };
+    document.getElementById('btnCancelVisit').onclick = async () => {
+      if (!requireAuth('visitActionOutput')) return;
+      const id = document.getElementById('visitId').value;
+      if (!id) { showJson('visitActionOutput', { error: 'Ingresa Visit ID' }); return; }
+      const r = await makeRequest('PATCH', '/visits/' + id + '/cancel', { reason: 'Cancelado por inquilino' });
+      showJson('visitActionOutput', r.data);
+    };
+    document.getElementById('btnReschedule').onclick = async () => {
+      if (!requireAuth('rescheduleOutput')) return;
+      const id = document.getElementById('visitId').value;
+      if (!id) { showJson('rescheduleOutput', { error: 'Ingresa Visit ID' }); return; }
+      const dt = document.getElementById('rescheduleDateTime').value;
+      const body = { scheduledAt: dt ? new Date(dt).toISOString() : new Date(Date.now() + 172800000).toISOString() };
+      const r = await makeRequest('POST', '/visits/' + id + '/reschedule', body);
+      showJson('rescheduleOutput', r.data);
+    };
+
+    // ==================== APLICACIONES ====================
+    function useSelectedApp(targetId) {
+      const id = document.getElementById('selectedAppId').value;
+      if (id) document.getElementById(targetId).value = id;
+    }
+    document.getElementById('btnUseSelectedWizard').onclick = () => useSelectedApp('wizardAppId');
+    document.getElementById('btnUseSelectedDoc').onclick = () => useSelectedApp('docAppId');
+    document.getElementById('btnUseSelectedSubmit').onclick = () => useSelectedApp('submitAppId');
+
+    document.getElementById('btnCreateApp').onclick = async () => {
+      if (!requireAuth('createAppOutput')) return;
+      const propId = document.getElementById('applyPropertyId').value;
+      if (!propId) { showJson('createAppOutput', { error: 'Ingresa Property ID' }); return; }
+      const r = await makeRequest('POST', '/applications', { propertyId: propId });
+      showJson('createAppOutput', r.data);
+      if (r.ok && r.data.id) {
+        ['wizardAppId','docAppId','submitAppId','chatAppId','scoringAppId'].forEach(id => document.getElementById(id).value = r.data.id);
+      }
+    };
+    document.getElementById('btnMyApps').onclick = async () => {
+      if (!requireAuth('myAppsOutput')) return;
+      const r = await makeRequest('GET', '/applications/mine');
+      showJson('myAppsOutput', r.data);
+      if (r.ok && Array.isArray(r.data) && r.data.length > 0) {
+        document.getElementById('selectedAppId').innerHTML = r.data.map(a => '<option value="' + a.id + '">App ' + a.id.slice(0,8) + ' - ' + a.status + ' - Step ' + a.currentStep + '</option>').join('');
+        document.getElementById('appsList').style.display = 'block';
+      }
+    };
+
+    document.getElementById('btnStep1').onclick = async () => {
+      const appId = document.getElementById('wizardAppId').value;
+      if (!appId) { showJson('wizardOutput', { error: 'Ingresa Application ID' }); return; }
+      const r = await makeRequest('PATCH', '/applications/' + appId + '/steps/1', {
+        fullName: document.getElementById('s1Name').value,
+        cedula: document.getElementById('s1Cedula').value,
+        dateOfBirth: document.getElementById('s1DOB').value,
+        email: document.getElementById('s1Email').value,
+        phone: document.getElementById('s1Phone').value,
+        currentAddress: document.getElementById('s1Address').value
+      });
+      showJson('wizardOutput', r.data);
+    };
+    document.getElementById('btnStep2').onclick = async () => {
+      const appId = document.getElementById('wizardAppId').value;
+      if (!appId) { showJson('wizardOutput', { error: 'Ingresa Application ID' }); return; }
+      const r = await makeRequest('PATCH', '/applications/' + appId + '/steps/2', {
+        employmentType: document.getElementById('s2EmpType').value,
+        companyName: document.getElementById('s2Company').value,
+        jobTitle: document.getElementById('s2JobTitle').value,
+        startDate: document.getElementById('s2StartDate').value,
+        workAddress: document.getElementById('s2WorkAddr').value,
+        hrContactPhone: document.getElementById('s2HRPhone').value
+      });
+      showJson('wizardOutput', r.data);
+    };
+    document.getElementById('btnStep3').onclick = async () => {
+      const appId = document.getElementById('wizardAppId').value;
+      if (!appId) { showJson('wizardOutput', { error: 'Ingresa Application ID' }); return; }
+      const body = {
+        monthlySalary: parseInt(document.getElementById('s3Salary').value) || 5000000,
+        additionalIncome: parseInt(document.getElementById('s3Additional').value) || 0,
+        monthlyDebtPayments: parseInt(document.getElementById('s3Debt').value) || 0
+      };
+      const src = document.getElementById('s3AdditionalSource').value.trim();
+      if (src) body.additionalIncomeSource = src;
+      const r = await makeRequest('PATCH', '/applications/' + appId + '/steps/3', body);
+      showJson('wizardOutput', r.data);
+    };
+    document.getElementById('btnStep4').onclick = async () => {
+      const appId = document.getElementById('wizardAppId').value;
+      if (!appId) { showJson('wizardOutput', { error: 'Ingresa Application ID' }); return; }
+      const r = await makeRequest('PATCH', '/applications/' + appId + '/steps/4', {
+        employmentReference: {
+          name: document.getElementById('s4EmpName').value,
+          phone: document.getElementById('s4EmpPhone').value,
+          relationship: document.getElementById('s4EmpRelation').value
+        },
+        personalReferences: [{
+          name: document.getElementById('s4PersName').value,
+          phone: document.getElementById('s4PersPhone').value,
+          relationship: document.getElementById('s4PersRelation').value
+        }]
+      });
+      showJson('wizardOutput', r.data);
+    };
+
+    document.getElementById('btnUploadDoc').onclick = async () => {
+      if (!requireAuth('uploadDocOutput')) return;
+      const appId = document.getElementById('docAppId').value;
+      if (!appId) { showJson('uploadDocOutput', { error: 'Ingresa Application ID' }); return; }
+      const file = document.getElementById('documentFile').files[0];
+      if (!file) { showJson('uploadDocOutput', { error: 'Selecciona archivo' }); return; }
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('type', document.getElementById('docType').value);
+      const r = await makeFormRequest('POST', '/applications/' + appId + '/documents', fd);
+      showJson('uploadDocOutput', r.data);
+    };
+    document.getElementById('btnListDocs').onclick = async () => {
+      if (!requireAuth('listDocsOutput')) return;
+      const appId = document.getElementById('docAppId').value;
+      if (!appId) { showJson('listDocsOutput', { error: 'Ingresa Application ID' }); return; }
+      const r = await makeRequest('GET', '/applications/' + appId + '/documents');
+      showJson('listDocsOutput', r.data);
+    };
+    document.getElementById('btnSubmitApp').onclick = async () => {
+      if (!requireAuth('submitOutput')) return;
+      const id = document.getElementById('submitAppId').value;
+      if (!id) { showJson('submitOutput', { error: 'Ingresa Application ID' }); return; }
+      const r = await makeRequest('POST', '/applications/' + id + '/submit');
+      showJson('submitOutput', r.data);
+    };
+    document.getElementById('btnTimeline').onclick = async () => {
+      const id = document.getElementById('wizardAppId').value || document.getElementById('submitAppId').value;
+      if (!id) { showJson('timelineOutput', { error: 'Ingresa Application ID' }); return; }
+      const r = await makeRequest('GET', '/applications/' + id + '/timeline');
+      showJson('timelineOutput', r.data);
+    };
+    document.getElementById('btnInfoRequests').onclick = async () => {
+      if (!requireAuth('infoRequestsOutput')) return;
+      const id = document.getElementById('wizardAppId').value;
+      if (!id) { showJson('infoRequestsOutput', { error: 'Ingresa Application ID' }); return; }
+      const r = await makeRequest('GET', '/applications/' + id + '/info-requests');
+      showJson('infoRequestsOutput', r.data);
+    };
+    document.getElementById('btnRespondInfo').onclick = async () => {
+      if (!requireAuth('respondInfoOutput')) return;
+      const id = document.getElementById('wizardAppId').value;
+      if (!id) { showJson('respondInfoOutput', { error: 'Ingresa Application ID' }); return; }
+      const r = await makeRequest('POST', '/applications/' + id + '/respond-info', {
+        response: document.getElementById('infoResponse').value || 'Adjunto la informacion solicitada'
+      });
+      showJson('respondInfoOutput', r.data);
+    };
+    document.getElementById('btnWithdraw').onclick = async () => {
+      if (!requireAuth('withdrawOutput')) return;
+      const id = document.getElementById('submitAppId').value || document.getElementById('wizardAppId').value;
+      if (!id) { showJson('withdrawOutput', { error: 'Ingresa Application ID' }); return; }
+      const r = await makeRequest('POST', '/applications/' + id + '/withdraw', { reason: document.getElementById('withdrawReason').value || undefined });
+      showJson('withdrawOutput', r.data);
+    };
+    document.getElementById('btnReactivate').onclick = async () => {
+      if (!requireAuth('withdrawOutput')) return;
+      const id = document.getElementById('submitAppId').value || document.getElementById('wizardAppId').value;
+      if (!id) { showJson('withdrawOutput', { error: 'Ingresa Application ID' }); return; }
+      const r = await makeRequest('POST', '/applications/' + id + '/reactivate');
+      showJson('withdrawOutput', r.data);
+    };
+
+    // ==================== CHAT ====================
+    document.getElementById('btnGetChat').onclick = async () => {
+      if (!requireAuth('chatOutput')) return;
+      const id = document.getElementById('chatAppId').value;
+      if (!id) { showJson('chatOutput', { error: 'Ingresa Application ID' }); return; }
+      const r = await makeRequest('GET', '/applications/' + id + '/chat');
+      showJson('chatOutput', r.data);
+    };
+    document.getElementById('btnUnreadCount').onclick = async () => {
+      if (!requireAuth('chatOutput')) return;
+      const id = document.getElementById('chatAppId').value;
+      if (!id) { showJson('chatOutput', { error: 'Ingresa Application ID' }); return; }
+      const r = await makeRequest('GET', '/applications/' + id + '/chat/unread');
+      showJson('chatOutput', r.data);
+    };
+    document.getElementById('btnMarkRead').onclick = async () => {
+      if (!requireAuth('chatOutput')) return;
+      const id = document.getElementById('chatAppId').value;
+      if (!id) { showJson('chatOutput', { error: 'Ingresa Application ID' }); return; }
+      const r = await makeRequest('PATCH', '/applications/' + id + '/chat/read');
+      showJson('chatOutput', r.data);
+    };
+    document.getElementById('btnSendMessage').onclick = async () => {
+      if (!requireAuth('sendMessageOutput')) return;
+      const id = document.getElementById('chatAppId').value;
+      if (!id) { showJson('sendMessageOutput', { error: 'Ingresa Application ID' }); return; }
+      const r = await makeRequest('POST', '/applications/' + id + '/chat/messages', { content: document.getElementById('chatMessage').value || 'Hola!' });
+      showJson('sendMessageOutput', r.data);
+    };
+
+    // ==================== CONTRATOS ====================
+    document.getElementById('btnMyContracts').onclick = async () => {
+      if (!requireAuth('contractsOutput')) return;
+      const r = await makeRequest('GET', '/contracts');
+      showJson('contractsOutput', r.data);
+      if (r.ok && Array.isArray(r.data) && r.data.length > 0) {
+        document.getElementById('selectedContractId').innerHTML = r.data.map(c => '<option value="' + c.id + '">' + c.id.slice(0,8) + ' - ' + c.status + '</option>').join('');
+        document.getElementById('contractsList').style.display = 'block';
+      }
+    };
+    document.getElementById('btnUseSelectedContract').onclick = () => {
+      const id = document.getElementById('selectedContractId').value;
+      if (id) document.getElementById('contractId').value = id;
+    };
+    document.getElementById('btnContractDetail').onclick = async () => {
+      if (!requireAuth('contractDetailOutput')) return;
+      const id = document.getElementById('contractId').value;
+      if (!id) { showJson('contractDetailOutput', { error: 'Ingresa Contract ID' }); return; }
+      const r = await makeRequest('GET', '/contracts/' + id);
+      showJson('contractDetailOutput', r.data);
+    };
+    document.getElementById('btnContractPreview').onclick = async () => {
+      if (!requireAuth('contractDetailOutput')) return;
+      const id = document.getElementById('contractId').value;
+      if (!id) { showJson('contractDetailOutput', { error: 'Ingresa Contract ID' }); return; }
+      const r = await makeRequest('GET', '/contracts/' + id + '/preview');
+      showJson('contractDetailOutput', r.data);
+    };
+    document.getElementById('btnContractPdf').onclick = () => {
+      const id = document.getElementById('contractId').value;
+      if (!id) return;
+      window.open(BACKEND_URL + '/contracts/' + id + '/pdf', '_blank');
+    };
+    document.getElementById('btnSignTenant').onclick = async () => {
+      if (!requireAuth('signOutput')) return;
+      const id = document.getElementById('contractId').value;
+      if (!id) { showJson('signOutput', { error: 'Ingresa Contract ID' }); return; }
+      const sig = document.getElementById('signatureText').value || 'Firma Tenant';
+      const r = await makeRequest('POST', '/contracts/' + id + '/sign/tenant', { signatureText: sig });
+      showJson('signOutput', r.data);
+    };
+
+    // ==================== MI ARRIENDO ====================
+    document.getElementById('btnMyLease').onclick = async () => {
+      if (!requireAuth('myLeaseOutput')) return;
+      const r = await makeRequest('GET', '/leases/my-lease');
+      showJson('myLeaseOutput', r.data);
+      if (r.ok && r.data && r.data.id) {
+        document.getElementById('leaseId').value = r.data.id;
+        document.getElementById('payLeaseId').value = r.data.id;
+        document.getElementById('pseLeaseId').value = r.data.id;
+      }
+    };
+    document.getElementById('btnLeaseDetail').onclick = async () => {
+      if (!requireAuth('leaseDetailOutput')) return;
+      const id = document.getElementById('leaseId').value;
+      if (!id) { showJson('leaseDetailOutput', { error: 'Ingresa Lease ID' }); return; }
+      const r = await makeRequest('GET', '/leases/' + id);
+      showJson('leaseDetailOutput', r.data);
+    };
+    document.getElementById('btnPaymentHistory').onclick = async () => {
+      if (!requireAuth('paymentHistoryOutput')) return;
+      const id = document.getElementById('leaseId').value;
+      if (!id) { showJson('paymentHistoryOutput', { error: 'Ingresa Lease ID' }); return; }
+      const r = await makeRequest('GET', '/leases/' + id + '/payments');
+      showJson('paymentHistoryOutput', r.data);
+    };
+    document.getElementById('btnPaymentSummary').onclick = async () => {
+      if (!requireAuth('paymentHistoryOutput')) return;
+      const id = document.getElementById('leaseId').value;
+      if (!id) { showJson('paymentHistoryOutput', { error: 'Ingresa Lease ID' }); return; }
+      const r = await makeRequest('GET', '/leases/' + id + '/payments/summary');
+      showJson('paymentHistoryOutput', r.data);
+    };
+    document.getElementById('btnLeaseDocuments').onclick = async () => {
+      if (!requireAuth('leaseDocumentsOutput')) return;
+      const id = document.getElementById('leaseId').value;
+      if (!id) { showJson('leaseDocumentsOutput', { error: 'Ingresa Lease ID' }); return; }
+      const r = await makeRequest('GET', '/leases/' + id + '/documents');
+      showJson('leaseDocumentsOutput', r.data);
+    };
+
+    // ==================== PAGOS TENANT ====================
+    document.getElementById('btnPaymentMethods').onclick = async () => {
+      if (!requireAuth('paymentMethodsOutput')) return;
+      const id = document.getElementById('payLeaseId').value;
+      if (!id) { showJson('paymentMethodsOutput', { error: 'Ingresa Lease ID' }); return; }
+      const r = await makeRequest('GET', '/leases/' + id + '/payment-methods');
+      showJson('paymentMethodsOutput', r.data);
+    };
+    document.getElementById('btnPaymentInfo').onclick = async () => {
+      if (!requireAuth('paymentInfoOutput')) return;
+      const id = document.getElementById('payLeaseId').value;
+      if (!id) { showJson('paymentInfoOutput', { error: 'Ingresa Lease ID' }); return; }
+      const r = await makeRequest('GET', '/leases/' + id + '/payment-info');
+      showJson('paymentInfoOutput', r.data);
+    };
+    document.getElementById('btnCreatePayReq').onclick = async () => {
+      if (!requireAuth('createPayReqOutput')) return;
+      const leaseId = document.getElementById('payLeaseId').value;
+      if (!leaseId) { showJson('createPayReqOutput', { error: 'Ingresa Lease ID' }); return; }
+      const file = document.getElementById('receiptFile').files[0];
+      const fd = new FormData();
+      fd.append('amount', document.getElementById('payAmount').value || '2500000');
+      fd.append('paymentMethodId', document.getElementById('payMethodId').value || '');
+      fd.append('period', document.getElementById('payPeriod').value || new Date().toISOString().slice(0,7));
+      if (file) fd.append('receipt', file);
+      const r = await makeFormRequest('POST', '/leases/' + leaseId + '/payment-requests', fd);
+      showJson('createPayReqOutput', r.data);
+    };
+    document.getElementById('btnMyPayReqs').onclick = async () => {
+      if (!requireAuth('myPayReqsOutput')) return;
+      const id = document.getElementById('payLeaseId').value;
+      if (!id) { showJson('myPayReqsOutput', { error: 'Ingresa Lease ID' }); return; }
+      const r = await makeRequest('GET', '/leases/' + id + '/payment-requests');
+      showJson('myPayReqsOutput', r.data);
+    };
+    document.getElementById('btnCancelPayReq').onclick = async () => {
+      if (!requireAuth('cancelPayReqOutput')) return;
+      const leaseId = document.getElementById('payLeaseId').value;
+      const reqId = document.getElementById('cancelReqId').value;
+      if (!leaseId || !reqId) { showJson('cancelPayReqOutput', { error: 'Ingresa Lease ID y Request ID' }); return; }
+      const r = await makeRequest('DELETE', '/leases/' + leaseId + '/payment-requests/' + reqId);
+      showJson('cancelPayReqOutput', r.data);
+    };
+    document.getElementById('btnPSEBanks').onclick = async () => {
+      const r = await makeRequest('GET', '/pse-mock/banks');
+      showJson('pseBanksOutput', r.data);
+    };
+    document.getElementById('btnProcessPSE').onclick = async () => {
+      if (!requireAuth('pseOutput')) return;
+      const body = {
+        bankCode: document.getElementById('pseBank').value || 'BANCOLOMBIA',
+        amount: parseInt(document.getElementById('pseAmount').value) || 2500000,
+        leaseId: document.getElementById('pseLeaseId').value
+      };
+      const r = await makeRequest('POST', '/pse-mock/process', body);
+      showJson('pseOutput', r.data);
+    };
+
+    // ==================== DISPUTAS ====================
+    document.getElementById('btnOpenDispute').onclick = async () => {
+      if (!requireAuth('disputeOutput')) return;
+      const reqId = document.getElementById('disputeReqId').value;
+      if (!reqId) { showJson('disputeOutput', { error: 'Ingresa Request ID' }); return; }
+      const fd = new FormData();
+      fd.append('reason', document.getElementById('disputeReason').value || 'Pago fue realizado correctamente');
+      const file = document.getElementById('disputeEvidence').files[0];
+      if (file) fd.append('evidence', file);
+      const r = await makeFormRequest('POST', '/payment-requests/' + reqId + '/dispute', fd);
+      showJson('disputeOutput', r.data);
+    };
+    document.getElementById('btnMyDisputes').onclick = async () => {
+      if (!requireAuth('myDisputesOutput')) return;
+      const r = await makeRequest('GET', '/disputes');
+      showJson('myDisputesOutput', r.data);
+    };
+    document.getElementById('btnDisputeDetail').onclick = async () => {
+      if (!requireAuth('disputeDetailOutput')) return;
+      const id = document.getElementById('disputeId').value;
+      if (!id) { showJson('disputeDetailOutput', { error: 'Ingresa Dispute ID' }); return; }
+      const r = await makeRequest('GET', '/disputes/' + id);
+      showJson('disputeDetailOutput', r.data);
+    };
+    document.getElementById('btnDisputeEvidence').onclick = async () => {
+      if (!requireAuth('disputeDetailOutput')) return;
+      const id = document.getElementById('disputeId').value;
+      if (!id) { showJson('disputeDetailOutput', { error: 'Ingresa Dispute ID' }); return; }
+      const r = await makeRequest('GET', '/disputes/' + id + '/evidence-url');
+      showJson('disputeDetailOutput', r.data);
+    };
+
+    // ==================== SCORING ====================
+    document.getElementById('btnMyReputation').onclick = async () => {
+      if (!requireAuth('reputationOutput')) return;
+      const r = await makeRequest('GET', '/scoring/my-reputation');
+      showJson('reputationOutput', r.data);
+    };
+    document.getElementById('btnAppScore').onclick = async () => {
+      if (!requireAuth('scoringOutput')) return;
+      const id = document.getElementById('scoringAppId').value;
+      if (!id) { showJson('scoringOutput', { error: 'Ingresa Application ID' }); return; }
+      const r = await makeRequest('GET', '/scoring/' + id);
+      showJson('scoringOutput', r.data);
+    };
+
+    // ==================== SUSCRIPCION ====================
+    document.getElementById('btnMySubscription').onclick = async () => {
+      if (!requireAuth('subscriptionOutput')) return;
+      const r = await makeRequest('GET', '/subscriptions/me');
+      showJson('subscriptionOutput', r.data);
+    };
+    document.getElementById('btnUsage').onclick = async () => {
+      if (!requireAuth('subscriptionOutput')) return;
+      const r = await makeRequest('GET', '/subscriptions/usage');
+      showJson('subscriptionOutput', r.data);
+    };
+    document.getElementById('btnStartTrial').onclick = async () => {
+      if (!requireAuth('subsActionOutput')) return;
+      const r = await makeRequest('POST', '/subscriptions/trial');
+      showJson('subsActionOutput', r.data);
+    };
+    document.getElementById('btnSubscribe').onclick = async () => {
+      if (!requireAuth('subsActionOutput')) return;
+      const planId = document.getElementById('subsPlanId').value;
+      if (!planId) { showJson('subsActionOutput', { error: 'Ingresa Plan ID' }); return; }
+      const r = await makeRequest('POST', '/subscriptions/subscribe', { planId });
+      showJson('subsActionOutput', r.data);
+    };
+    document.getElementById('btnCancelSub').onclick = async () => {
+      if (!requireAuth('subsActionOutput')) return;
+      const r = await makeRequest('POST', '/subscriptions/cancel');
+      showJson('subsActionOutput', r.data);
+    };
+    document.getElementById('btnBuyScoringView').onclick = async () => {
+      if (!requireAuth('subsActionOutput')) return;
+      const r = await makeRequest('POST', '/subscriptions/micropayment/scoring-view');
+      showJson('subsActionOutput', r.data);
+    };
+    document.getElementById('btnListPlans').onclick = async () => {
+      const r = await makeRequest('GET', '/subscription-plans');
+      showJson('plansOutput', r.data);
+    };
+
+    // ==================== SEGUROS ====================
+    document.getElementById('btnInsuranceTiers').onclick = async () => {
+      const r = await makeRequest('GET', '/insurance/tiers');
+      showJson('insuranceOutput', r.data);
+    };
+    document.getElementById('btnInsuranceDetail').onclick = async () => {
+      const tier = document.getElementById('insuranceTier').value;
+      const r = await makeRequest('GET', '/insurance/tiers/' + tier);
+      showJson('insuranceDetailOutput', r.data);
+    };
+
+    // ==================== ACTIVIDAD ====================
+    document.getElementById('btnActivities').onclick = async () => {
+      if (!requireAuth('activitiesOutput')) return;
+      const r = await makeRequest('GET', '/activities');
+      showJson('activitiesOutput', r.data);
+    };
+
+    // ==================== CUPONES ====================
+    document.getElementById('btnValidateCoupon').onclick = async () => {
+      if (!requireAuth('couponOutput')) return;
+      const code = document.getElementById('couponCode').value;
+      if (!code) { showJson('couponOutput', { error: 'Ingresa codigo de cupon' }); return; }
+      const r = await makeRequest('POST', '/coupons/validate', { code });
+      showJson('couponOutput', r.data);
+    };
+
+    // ==================== LOGS ====================
+    document.getElementById('btnClearLogs').onclick = () => {
+      requestLogs = [];
+      document.getElementById('requestLog').textContent = '// Log limpiado...';
+    };
+
+    // ==================== INIT ====================
+    updateAuthStatus();
+    supabaseClient.auth.onAuthStateChange(async (event, session) => {
+      currentSession = session;
+      updateAuthStatus();
+      if (event === 'SIGNED_IN' && session) setTimeout(handlePendingRegistration, 1000);
+    });
+  </script>
+</body>
+</html>

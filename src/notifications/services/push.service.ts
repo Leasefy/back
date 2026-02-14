@@ -46,14 +46,19 @@ export class PushService implements OnModuleInit {
   onModuleInit(): void {
     // Initialize Firebase Admin only if not already initialized
     if (admin.apps.length === 0) {
-      try {
-        const projectId = this.config.getOrThrow<string>('FIREBASE_PROJECT_ID');
-        const privateKey = this.config
-          .getOrThrow<string>('FIREBASE_PRIVATE_KEY')
-          .replace(/\\n/g, '\n'); // Convert escaped newlines
-        const clientEmail = this.config.getOrThrow<string>(
-          'FIREBASE_CLIENT_EMAIL',
+      const projectId = this.config.get<string>('FIREBASE_PROJECT_ID');
+      const privateKeyRaw = this.config.get<string>('FIREBASE_PRIVATE_KEY');
+      const clientEmail = this.config.get<string>('FIREBASE_CLIENT_EMAIL');
+
+      if (!projectId || !privateKeyRaw || !clientEmail) {
+        this.logger.warn(
+          'Firebase config not set — push notifications disabled',
         );
+        return;
+      }
+
+      try {
+        const privateKey = privateKeyRaw.replace(/\\n/g, '\n');
 
         admin.initializeApp({
           credential: admin.credential.cert({
@@ -69,7 +74,6 @@ export class PushService implements OnModuleInit {
         const message =
           error instanceof Error ? error.message : 'Unknown error';
         this.logger.error(`Failed to initialize Firebase: ${message}`);
-        // Don't throw - allow app to start, push will fail gracefully
       }
     } else {
       this.initialized = true;

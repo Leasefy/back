@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Leasify - Test Inmobiliaria (AGENT)</title>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    h1 { color: #333; }
+    h2 { color: #555; margin-top: 30px; border-bottom: 2px solid #ddd; padding-bottom: 10px; }
+    h3 { color: #666; margin-top: 20px; }
+    .section {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    button {
+      padding: 10px 20px;
+      margin: 5px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    button:hover { transform: translateY(-1px); }
+    .btn-primary { background: #4285f4; color: white; }
+    .btn-primary:hover { background: #3367d6; }
+    .btn-success { background: #34a853; color: white; }
+    .btn-success:hover { background: #2d8f47; }
+    .btn-warning { background: #fbbc04; color: #333; }
+    .btn-warning:hover { background: #f9a825; }
+    .btn-danger { background: #ea4335; color: white; }
+    .btn-danger:hover { background: #d93025; }
+    .btn-info { background: #6c757d; color: white; }
+    .btn-info:hover { background: #5a6268; }
+    pre {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 15px;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-size: 13px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .status { padding: 10px 15px; border-radius: 6px; margin: 10px 0; font-weight: 500; }
+    .status.success { background: #d4edda; color: #155724; }
+    .status.error { background: #f8d7da; color: #721c24; }
+    .status.info { background: #cce5ff; color: #004085; }
+    input, select, textarea {
+      padding: 10px;
+      margin: 5px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    input { width: 200px; }
+    .form-group { margin: 10px 0; }
+    .form-group label { display: inline-block; width: 130px; font-weight: 500; }
+    .jwt-display {
+      word-break: break-all;
+      font-size: 11px;
+      background: #2d2d2d;
+      padding: 10px;
+      border-radius: 4px;
+      margin-top: 10px;
+      color: #9cdcfe;
+    }
+    .note { background: #fff3cd; padding: 10px; border-radius: 6px; margin-bottom: 15px; font-size: 13px; }
+    .info-box { background: #e8f4fd; padding: 12px; border-radius: 6px; margin-bottom: 15px; font-size: 13px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  </style>
+</head>
+<body>
+  <h1>Leasify - Panel Inmobiliaria (AGENT)</h1>
+
+  <div class="info-box">
+    <strong>Flujo del Agente Inmobiliario:</strong><br>
+    1. Un LANDLORD asigna al agente a una propiedad via <code>POST /properties/:id/agents</code><br>
+    2. El agente (rol AGENT) hereda permisos de LANDLORD sobre las propiedades asignadas<br>
+    3. El agente puede gestionar propiedades, visitas, candidatos, contratos, etc. de las propiedades que tiene asignadas<br>
+    4. El RolesGuard permite AGENT cuando se requiere LANDLORD, pero el PropertyAccessService valida que el agente tenga acceso a esa propiedad especifica
+  </div>
+
+  <!-- ==================== AUTH ==================== -->
+  <div class="section">
+    <h2>1. Autenticacion</h2>
+    <div style="margin-bottom: 15px;">
+      <button id="btnGoogle" class="btn-primary">Login con Google</button>
+      <button id="btnSession" class="btn-info">Ver Sesion</button>
+      <button id="btnLogout" class="btn-danger">Logout</button>
+    </div>
+    <div class="note">
+      <strong>Nota:</strong> El rol AGENT se asigna por un LANDLORD via <code>POST /properties/:propertyId/agents</code> usando el email del agente. El agente debe estar registrado en la plataforma primero (con cualquier rol). Al ser asignado, su rol cambia a AGENT automaticamente.
+    </div>
+    <div id="authStatus"></div>
+    <div id="jwtToken" class="jwt-display" style="display:none;"></div>
+    <button id="btnCopyToken" class="btn-info" style="display:none; margin-top: 10px;">Copiar Token</button>
+  </div>
+
+  <!-- ==================== PERFIL ==================== -->
+  <div class="section">
+    <h2>2. Perfil</h2>
+    <button id="btnGetProfile" class="btn-primary">GET /users/me</button>
+    <pre id="profileOutput">// Resultado...</pre>
+    <h3>Actualizar Perfil</h3>
+    <div class="form-group">
+      <label>Nombre:</label>
+      <input type="text" id="firstName" placeholder="Ana">
+    </div>
+    <div class="form-group">
+      <label>Apellido:</label>
+      <input type="text" id="lastName" placeholder="Martinez">
+    </div>
+    <div class="form-group">
+      <label>Telefono:</label>
+      <input type="text" id="phone" placeholder="+573001234567">
+    </div>
+    <button id="btnUpdateProfile" class="btn-warning">PATCH /users/me</button>
+    <pre id="updateProfileOutput">// Resultado...</pre>
+  </div>
+
+  <!-- ==================== MIS PROPIEDADES ASIGNADAS ==================== -->
+  <div class="section">
+    <h2>3. Mis Propiedades Asignadas</h2>
+    <button id="btnMyProperties" class="btn-primary">GET /agents/me/properties</button>
+    <pre id="myPropertiesOutput">// Propiedades asignadas...</pre>
+    <div id="propertiesList" style="display:none; margin-top:15px;">
+      <strong>Selecciona propiedad:</strong>
+      <select id="selectedPropertyId" style="width:100%; padding:10px;"></select>
+    </div>
+
+    <h3>3.1 Info del Landlord de Propiedad</h3>
+    <div class="form-group">
+      <label>Property ID:</label>
+      <input type="text" id="landlordInfoPropId" placeholder="UUID" style="width:300px;">
+      <button id="btnUseSelectedLandlord" class="btn-info">Usar seleccionada</button>
+    </div>
+    <button id="btnLandlordInfo" class="btn-primary">GET /agents/me/properties/:id/landlord</button>
+    <pre id="landlordInfoOutput">// Info landlord...</pre>
+  </div>
+
+  <!-- ==================== GESTION DE PROPIEDADES ==================== -->
+  <div class="section">
+    <h2>4. Gestionar Propiedad (como LANDLORD delegado)</h2>
+    <div class="note">
+      El agente usa los mismos endpoints de LANDLORD. El sistema valida automaticamente que el agente tenga acceso a la propiedad.
+    </div>
+
+    <h3>4.1 Ver Detalle</h3>
+    <div class="form-group">
+      <label>Property ID:</label>
+      <input type="text" id="viewPropertyId" placeholder="UUID" style="width:300px;">
+      <button id="btnUseSelectedView" class="btn-info">Usar seleccionada</button>
+    </div>
+    <button id="btnViewProperty" class="btn-primary">GET /properties/:id</button>
+    <pre id="viewPropertyOutput">// Detalle...</pre>
+
+    <h3>4.2 Actualizar Propiedad</h3>
+    <div class="form-group">
+      <label>Estado:</label>
+      <select id="propStatus" style="width:200px;">
+        <option value="AVAILABLE">AVAILABLE</option>
+        <option value="DRAFT">DRAFT</option>
+        <option value="RENTED">RENTED</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Nuevo Arriendo:</label>
+      <input type="number" id="updateRent" placeholder="Opcional" style="width:200px;">
+    </div>
+    <button id="btnUpdateProperty" class="btn-warning">PATCH /properties/:id</button>
+    <pre id="updatePropertyOutput">// Resultado...</pre>
+
+    <h3>4.3 Subir Imagenes</h3>
+    <div class="form-group">
+      <label>Imagenes:</label>
+      <input type="file" id="propertyImages" multiple accept="image/*" style="padding:5px;">
+    </div>
+    <button id="btnUploadImages" class="btn-warning">POST /properties/:id/images</button>
+    <div id="uploadProgress" style="display:none; margin:10px 0; padding:10px; background:#e8f4fd; border-radius:6px;"></div>
+    <pre id="uploadImagesOutput">// Resultado...</pre>
+  </div>
+
+  <!-- ==================== VISITAS ==================== -->
+  <div class="section">
+    <h2>5. Visitas (Gestion como LANDLORD)</h2>
+
+    <h3>5.1 Configurar Disponibilidad</h3>
+    <div class="form-group">
+      <label>Dia semana:</label>
+      <select id="availDay" style="width:200px;">
+        <option value="MONDAY">Lunes</option>
+        <option value="TUESDAY">Martes</option>
+        <option value="WEDNESDAY">Miercoles</option>
+        <option value="THURSDAY">Jueves</option>
+        <option value="FRIDAY">Viernes</option>
+        <option value="SATURDAY">Sabado</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Hora inicio:</label>
+      <input type="text" id="availStart" value="09:00" style="width:100px;">
+    </div>
+    <div class="form-group">
+      <label>Hora fin:</label>
+      <input type="text" id="availEnd" value="17:00" style="width:100px;">
+    </div>
+    <div class="form-group">
+      <label>Duracion (min):</label>
+      <input type="number" id="availDuration" value="30" style="width:100px;">
+    </div>
+    <button id="btnCreateAvail" class="btn-success">Crear Disponibilidad</button>
+    <pre id="createAvailOutput">// Resultado...</pre>
+
+    <h3>5.2 Ver Disponibilidad</h3>
+    <button id="btnGetAvail" class="btn-primary">Ver Disponibilidad</button>
+    <pre id="getAvailOutput">// Disponibilidad...</pre>
+
+    <h3>5.3 Visitas de la Propiedad</h3>
+    <button id="btnPropertyVisits" class="btn-primary">GET /visits/properties/:id</button>
+    <pre id="propertyVisitsOutput">// Visitas...</pre>
+
+    <h3>5.4 Visitas como Landlord (todas)</h3>
+    <button id="btnLandlordVisits" class="btn-primary">GET /visits/landlord</button>
+    <pre id="landlordVisitsOutput">// Todas las visitas...</pre>
+
+    <h3>5.5 Gestionar Visita</h3>
+    <div class="form-group">
+      <label>Visit ID:</label>
+      <input type="text" id="visitId" placeholder="UUID visita" style="width:300px;">
+    </div>
+    <button id="btnAcceptVisit" class="btn-success">Aceptar</button>
+    <button id="btnRejectVisit" class="btn-danger">Rechazar</button>
+    <button id="btnCompleteVisit" class="btn-warning">Completar</button>
+    <button id="btnVisitDetail" class="btn-primary">Detalle</button>
+    <div class="form-group">
+      <label>Razon rechazo:</label>
+      <input type="text" id="rejectReason" placeholder="Razon..." style="width:300px;">
+    </div>
+    <pre id="visitActionOutput">// Resultado...</pre>
+  </div>
+
+  <!-- ==================== CANDIDATOS ==================== -->
+  <div class="section">
+    <h2>6. Candidatos / Aplicaciones</h2>
+
+    <h3>6.1 Ver Candidatos</h3>
+    <button id="btnGetCandidates" class="btn-primary">GET /landlord/properties/:id/candidates</button>
+    <pre id="candidatesOutput">// Candidatos...</pre>
+    <div id="candidatesList" style="display:none; margin-top:15px;">
+      <strong>Selecciona candidato:</strong>
+      <select id="selectedCandidateId" style="width:100%; padding:10px;"></select>
+    </div>
+
+    <h3>6.2 Detalle de Candidato</h3>
+    <div class="form-group">
+      <label>Application ID:</label>
+      <input type="text" id="candAppId" placeholder="UUID" style="width:300px;">
+      <button id="btnUseSelectedCand" class="btn-info">Usar seleccionado</button>
+    </div>
+    <button id="btnCandidateDetail" class="btn-primary">Ver Detalle</button>
+    <pre id="candidateDetailOutput">// Detalle...</pre>
+
+    <h3>6.3 Acciones sobre Candidato</h3>
+    <button id="btnPreapprove" class="btn-warning">Pre-aprobar</button>
+    <button id="btnApprove" class="btn-success">Aprobar</button>
+    <button id="btnReject" class="btn-danger">Rechazar</button>
+    <div class="form-group">
+      <label>Razon rechazo:</label>
+      <input type="text" id="rejectAppReason" placeholder="Razon..." style="width:300px;">
+    </div>
+    <pre id="actionOutput">// Resultado...</pre>
+
+    <h3>6.4 Solicitar Informacion</h3>
+    <div class="form-group">
+      <label>Mensaje:</label>
+      <input type="text" id="infoRequestMsg" placeholder="Necesitamos extractos bancarios" style="width:400px;">
+    </div>
+    <button id="btnRequestInfo" class="btn-warning">Solicitar Info</button>
+    <pre id="requestInfoOutput">// Resultado...</pre>
+
+    <h3>6.5 Notas Privadas</h3>
+    <div class="form-group">
+      <label>Nota:</label>
+      <textarea id="privateNote" rows="2" style="width:100%; padding:10px; border-radius:6px; border:1px solid #ddd;">Buen candidato, verificar referencias.</textarea>
+    </div>
+    <button id="btnSaveNote" class="btn-success">Guardar Nota</button>
+    <button id="btnDeleteNote" class="btn-danger">Eliminar Nota</button>
+    <pre id="noteOutput">// Resultado...</pre>
+  </div>
+
+  <!-- ==================== CHAT ==================== -->
+  <div class="section">
+    <h2>7. Chat con Candidato</h2>
+    <div class="form-group">
+      <label>Application ID:</label>
+      <input type="text" id="chatAppId" placeholder="UUID" style="width:300px;">
+    </div>
+    <button id="btnGetChat" class="btn-primary">Ver Conversacion</button>
+    <button id="btnUnreadCount" class="btn-info">No leidos</button>
+    <button id="btnMarkRead" class="btn-warning">Marcar leidos</button>
+    <pre id="chatOutput">// Chat...</pre>
+    <div class="form-group">
+      <label>Mensaje:</label>
+      <input type="text" id="chatMessage" placeholder="Hola, le informamos que..." style="width:400px;">
+    </div>
+    <button id="btnSendMessage" class="btn-success">Enviar Mensaje</button>
+    <pre id="sendMessageOutput">// Resultado...</pre>
+  </div>
+
+  <!-- ==================== CONTRATOS ==================== -->
+  <div class="section">
+    <h2>8. Contratos</h2>
+
+    <h3>8.1 Crear Contrato</h3>
+    <div class="form-group">
+      <label>Application ID:</label>
+      <input type="text" id="contractAppId" placeholder="UUID aprobada" style="width:300px;">
+    </div>
+    <div class="form-group">
+      <label>Fecha inicio:</label>
+      <input type="date" id="contractStartDate" style="width:200px;">
+    </div>
+    <div class="form-group">
+      <label>Duracion (meses):</label>
+      <input type="number" id="contractDuration" value="12" style="width:100px;">
+    </div>
+    <div class="form-group">
+      <label>Deposito (COP):</label>
+      <input type="number" id="contractDeposit" value="2500000" style="width:200px;">
+    </div>
+    <button id="btnCreateContract" class="btn-success">POST /contracts</button>
+    <pre id="createContractOutput">// Resultado...</pre>
+
+    <h3>8.2 Mis Contratos</h3>
+    <button id="btnMyContracts" class="btn-primary">GET /contracts</button>
+    <pre id="myContractsOutput">// Contratos...</pre>
+    <div id="contractsList" style="display:none; margin-top:15px;">
+      <strong>Selecciona contrato:</strong>
+      <select id="selectedContractId" style="width:100%; padding:10px;"></select>
+    </div>
+
+    <h3>8.3 Gestionar Contrato</h3>
+    <div class="form-group">
+      <label>Contract ID:</label>
+      <input type="text" id="contractId" placeholder="UUID" style="width:300px;">
+      <button id="btnUseSelectedContract" class="btn-info">Usar seleccionado</button>
+    </div>
+    <button id="btnContractDetail" class="btn-primary">Detalle</button>
+    <button id="btnContractPreview" class="btn-info">Preview</button>
+    <button id="btnSendContract" class="btn-warning">Enviar para Firma</button>
+    <pre id="contractDetailOutput">// Detalle...</pre>
+
+    <div class="form-group">
+      <label>Firma (texto):</label>
+      <input type="text" id="signatureText" value="Inmobiliaria XYZ" style="width:300px;">
+    </div>
+    <button id="btnSignLandlord" class="btn-success">Firmar (como Landlord)</button>
+    <button id="btnActivateContract" class="btn-success">Activar Contrato</button>
+    <pre id="signContractOutput">// Resultado...</pre>
+  </div>
+
+  <!-- ==================== SCORING ==================== -->
+  <div class="section">
+    <h2>9. Scoring de Aplicacion</h2>
+    <div class="form-group">
+      <label>Application ID:</label>
+      <input type="text" id="scoringAppId" placeholder="UUID" style="width:300px;">
+    </div>
+    <button id="btnGetScore" class="btn-primary">GET /scoring/:id</button>
+    <pre id="scoringOutput">// Score...</pre>
+  </div>
+
+  <!-- ==================== ACTIVIDAD ==================== -->
+  <div class="section">
+    <h2>10. Actividad Reciente</h2>
+    <button id="btnActivities" class="btn-primary">GET /activities</button>
+    <pre id="activitiesOutput">// Actividad...</pre>
+  </div>
+
+  <!-- ==================== SUSCRIPCION ==================== -->
+  <div class="section">
+    <h2>11. Suscripcion</h2>
+    <button id="btnMySubscription" class="btn-primary">Mi Suscripcion</button>
+    <button id="btnUsage" class="btn-info">Uso</button>
+    <pre id="subscriptionOutput">// Suscripcion...</pre>
+    <button id="btnListPlans" class="btn-primary">Ver Planes</button>
+    <pre id="plansOutput">// Planes...</pre>
+  </div>
+
+  <!-- ==================== LOGS ==================== -->
+  <div class="section">
+    <h2>Log de Peticiones</h2>
+    <button id="btnClearLogs" class="btn-info">Limpiar Logs</button>
+    <pre id="requestLog">// Log de peticiones HTTP...</pre>
+  </div>
+
+  <script>
+    // ==================== CONFIG ====================
+    const SUPABASE_URL = 'https://jraqurdcjwnifzpdqtnm.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_o0rCunkxRvbRrlLTmMekHw_GCpKgvrw';
+    const BACKEND_URL = 'http://localhost:3000';
+    const CLEAN_REDIRECT_URL = window.location.origin + window.location.pathname;
+
+    if (window.location.search.includes('error=') || window.location.hash.includes('error=')) {
+      window.history.replaceState({}, document.title, CLEAN_REDIRECT_URL);
+    }
+
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    let currentSession = null;
+    let requestLogs = [];
+
+    // ==================== UTILS ====================
+    function showStatus(id, msg, type) {
+      document.getElementById(id).innerHTML = '<div class="status ' + type + '">' + msg + '</div>';
+    }
+    function showJson(id, data) {
+      document.getElementById(id).textContent = JSON.stringify(data, null, 2);
+    }
+    function addLog(method, url, status, response) {
+      const ts = new Date().toLocaleTimeString();
+      requestLogs.unshift('[' + ts + '] ' + method + ' ' + url + ' => ' + status + '\n' + JSON.stringify(response, null, 2) + '\n' + '='.repeat(50));
+      document.getElementById('requestLog').textContent = requestLogs.join('\n\n');
+    }
+    function getAuthHeaders() {
+      if (!currentSession) return { 'Content-Type': 'application/json' };
+      return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + currentSession.access_token };
+    }
+    async function makeRequest(method, endpoint, body) {
+      const url = BACKEND_URL + endpoint;
+      const opts = { method, headers: getAuthHeaders() };
+      if (body) opts.body = JSON.stringify(body);
+      try {
+        const r = await fetch(url, opts);
+        const data = await r.json();
+        addLog(method, endpoint, r.status, data);
+        return { status: r.status, data, ok: r.ok };
+      } catch (e) {
+        addLog(method, endpoint, 'ERROR', { error: e.message });
+        return { status: 'ERROR', data: { error: e.message }, ok: false };
+      }
+    }
+    async function makeFormRequest(method, endpoint, formData) {
+      const url = BACKEND_URL + endpoint;
+      const headers = {};
+      if (currentSession) headers['Authorization'] = 'Bearer ' + currentSession.access_token;
+      try {
+        const r = await fetch(url, { method, headers, body: formData });
+        const data = await r.json();
+        addLog(method, endpoint, r.status, data);
+        return { status: r.status, data, ok: r.ok };
+      } catch (e) {
+        addLog(method, endpoint, 'ERROR', { error: e.message });
+        return { status: 'ERROR', data: { error: e.message }, ok: false };
+      }
+    }
+    function requireAuth(outputId) {
+      if (!currentSession) { showJson(outputId, { error: 'No autenticado' }); return false; }
+      return true;
+    }
+    function getSelectedPropId() { return document.getElementById('selectedPropertyId').value; }
+
+    // ==================== AUTH ====================
+    async function updateAuthStatus() {
+      const { data } = await supabaseClient.auth.getSession();
+      currentSession = data.session;
+      if (currentSession) {
+        showStatus('authStatus', 'Autenticado: ' + currentSession.user.email, 'success');
+        document.getElementById('jwtToken').style.display = 'block';
+        document.getElementById('jwtToken').innerHTML = '<strong>JWT:</strong><br>' + currentSession.access_token;
+        document.getElementById('btnCopyToken').style.display = 'inline-block';
+      } else {
+        showStatus('authStatus', 'No autenticado', 'info');
+        document.getElementById('jwtToken').style.display = 'none';
+        document.getElementById('btnCopyToken').style.display = 'none';
+      }
+    }
+
+    document.getElementById('btnGoogle').onclick = async () => {
+      await supabaseClient.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: CLEAN_REDIRECT_URL } });
+    };
+    document.getElementById('btnSession').onclick = () => updateAuthStatus();
+    document.getElementById('btnLogout').onclick = async () => {
+      await supabaseClient.auth.signOut();
+      currentSession = null;
+      showStatus('authStatus', 'Sesion cerrada', 'info');
+      document.getElementById('jwtToken').style.display = 'none';
+      document.getElementById('btnCopyToken').style.display = 'none';
+    };
+    document.getElementById('btnCopyToken').onclick = async function() {
+      if (currentSession) {
+        await navigator.clipboard.writeText(currentSession.access_token);
+        this.textContent = 'Copiado!';
+        setTimeout(() => { this.textContent = 'Copiar Token'; }, 2000);
+      }
+    };
+
+    // ==================== PERFIL ====================
+    document.getElementById('btnGetProfile').onclick = async () => {
+      if (!requireAuth('profileOutput')) return;
+      const r = await makeRequest('GET', '/users/me');
+      showJson('profileOutput', r.data);
+    };
+    document.getElementById('btnUpdateProfile').onclick = async () => {
+      if (!requireAuth('updateProfileOutput')) return;
+      const body = {};
+      const fn = document.getElementById('firstName').value.trim();
+      const ln = document.getElementById('lastName').value.trim();
+      const ph = document.getElementById('phone').value.trim();
+      if (fn) body.firstName = fn;
+      if (ln) body.lastName = ln;
+      if (ph) body.phone = ph;
+      const r = await makeRequest('PATCH', '/users/me', body);
+      showJson('updateProfileOutput', r.data);
+    };
+
+    // ==================== MIS PROPIEDADES ASIGNADAS ====================
+    document.getElementById('btnMyProperties').onclick = async () => {
+      if (!requireAuth('myPropertiesOutput')) return;
+      const r = await makeRequest('GET', '/agents/me/properties');
+      showJson('myPropertiesOutput', r.data);
+      if (r.ok && Array.isArray(r.data) && r.data.length > 0) {
+        document.getElementById('selectedPropertyId').innerHTML = r.data.map(p => '<option value="' + p.id + '">' + (p.title || p.id.slice(0,8)) + ' - ' + (p.status || '?') + ' - ' + (p.city || '') + '</option>').join('');
+        document.getElementById('propertiesList').style.display = 'block';
+      }
+    };
+    document.getElementById('btnUseSelectedLandlord').onclick = () => {
+      const id = getSelectedPropId();
+      if (id) document.getElementById('landlordInfoPropId').value = id;
+    };
+    document.getElementById('btnLandlordInfo').onclick = async () => {
+      if (!requireAuth('landlordInfoOutput')) return;
+      const id = document.getElementById('landlordInfoPropId').value;
+      if (!id) { showJson('landlordInfoOutput', { error: 'Ingresa Property ID' }); return; }
+      const r = await makeRequest('GET', '/agents/me/properties/' + id + '/landlord');
+      showJson('landlordInfoOutput', r.data);
+    };
+
+    // ==================== GESTION PROPIEDADES ====================
+    document.getElementById('btnUseSelectedView').onclick = () => {
+      const id = getSelectedPropId();
+      if (id) document.getElementById('viewPropertyId').value = id;
+    };
+    document.getElementById('btnViewProperty').onclick = async () => {
+      const id = document.getElementById('viewPropertyId').value || getSelectedPropId();
+      if (!id) { showJson('viewPropertyOutput', { error: 'Ingresa Property ID' }); return; }
+      const r = await makeRequest('GET', '/properties/' + id);
+      showJson('viewPropertyOutput', r.data);
+    };
+    document.getElementById('btnUpdateProperty').onclick = async () => {
+      if (!requireAuth('updatePropertyOutput')) return;
+      const id = document.getElementById('viewPropertyId').value || getSelectedPropId();
+      if (!id) { showJson('updatePropertyOutput', { error: 'Selecciona propiedad' }); return; }
+      const body = { status: document.getElementById('propStatus').value };
+      const rent = document.getElementById('updateRent').value;
+      if (rent) body.monthlyRent = parseInt(rent);
+      const r = await makeRequest('PATCH', '/properties/' + id, body);
+      showJson('updatePropertyOutput', r.data);
+    };
+    document.getElementById('btnUploadImages').onclick = async () => {
+      if (!requireAuth('uploadImagesOutput')) return;
+      const propId = document.getElementById('viewPropertyId').value || getSelectedPropId();
+      if (!propId) { showJson('uploadImagesOutput', { error: 'Selecciona propiedad' }); return; }
+      const files = document.getElementById('propertyImages').files;
+      if (!files.length) { showJson('uploadImagesOutput', { error: 'Selecciona imagenes' }); return; }
+      const prog = document.getElementById('uploadProgress');
+      prog.style.display = 'block';
+      const results = [];
+      for (let i = 0; i < files.length; i++) {
+        prog.textContent = 'Subiendo ' + (i+1) + '/' + files.length;
+        const fd = new FormData();
+        fd.append('file', files[i]);
+        fd.append('order', i.toString());
+        const r = await makeFormRequest('POST', '/properties/' + propId + '/images', fd);
+        results.push({ file: files[i].name, ...r.data });
+      }
+      prog.textContent = 'Completado!';
+      showJson('uploadImagesOutput', results);
+    };
+
+    // ==================== VISITAS ====================
+    document.getElementById('btnCreateAvail').onclick = async () => {
+      if (!requireAuth('createAvailOutput')) return;
+      const propId = document.getElementById('viewPropertyId').value || getSelectedPropId();
+      if (!propId) { showJson('createAvailOutput', { error: 'Selecciona propiedad' }); return; }
+      const r = await makeRequest('POST', '/visits/properties/' + propId + '/availability', {
+        dayOfWeek: document.getElementById('availDay').value,
+        startTime: document.getElementById('availStart').value,
+        endTime: document.getElementById('availEnd').value,
+        slotDurationMinutes: parseInt(document.getElementById('availDuration').value) || 30
+      });
+      showJson('createAvailOutput', r.data);
+    };
+    document.getElementById('btnGetAvail').onclick = async () => {
+      const propId = document.getElementById('viewPropertyId').value || getSelectedPropId();
+      if (!propId) { showJson('getAvailOutput', { error: 'Selecciona propiedad' }); return; }
+      const r = await makeRequest('GET', '/visits/properties/' + propId + '/availability');
+      showJson('getAvailOutput', r.data);
+    };
+    document.getElementById('btnPropertyVisits').onclick = async () => {
+      if (!requireAuth('propertyVisitsOutput')) return;
+      const propId = document.getElementById('viewPropertyId').value || getSelectedPropId();
+      if (!propId) { showJson('propertyVisitsOutput', { error: 'Selecciona propiedad' }); return; }
+      const r = await makeRequest('GET', '/visits/properties/' + propId);
+      showJson('propertyVisitsOutput', r.data);
+    };
+    document.getElementById('btnLandlordVisits').onclick = async () => {
+      if (!requireAuth('landlordVisitsOutput')) return;
+      const r = await makeRequest('GET', '/visits/landlord');
+      showJson('landlordVisitsOutput', r.data);
+    };
+    document.getElementById('btnAcceptVisit').onclick = async () => {
+      if (!requireAuth('visitActionOutput')) return;
+      const id = document.getElementById('visitId').value;
+      if (!id) { showJson('visitActionOutput', { error: 'Ingresa Visit ID' }); return; }
+      const r = await makeRequest('PATCH', '/visits/' + id + '/accept');
+      showJson('visitActionOutput', r.data);
+    };
+    document.getElementById('btnRejectVisit').onclick = async () => {
+      if (!requireAuth('visitActionOutput')) return;
+      const id = document.getElementById('visitId').value;
+      if (!id) { showJson('visitActionOutput', { error: 'Ingresa Visit ID' }); return; }
+      const r = await makeRequest('PATCH', '/visits/' + id + '/reject', { reason: document.getElementById('rejectReason').value || undefined });
+      showJson('visitActionOutput', r.data);
+    };
+    document.getElementById('btnCompleteVisit').onclick = async () => {
+      if (!requireAuth('visitActionOutput')) return;
+      const id = document.getElementById('visitId').value;
+      if (!id) { showJson('visitActionOutput', { error: 'Ingresa Visit ID' }); return; }
+      const r = await makeRequest('PATCH', '/visits/' + id + '/complete');
+      showJson('visitActionOutput', r.data);
+    };
+    document.getElementById('btnVisitDetail').onclick = async () => {
+      if (!requireAuth('visitActionOutput')) return;
+      const id = document.getElementById('visitId').value;
+      if (!id) { showJson('visitActionOutput', { error: 'Ingresa Visit ID' }); return; }
+      const r = await makeRequest('GET', '/visits/' + id);
+      showJson('visitActionOutput', r.data);
+    };
+
+    // ==================== CANDIDATOS ====================
+    document.getElementById('btnGetCandidates').onclick = async () => {
+      if (!requireAuth('candidatesOutput')) return;
+      const propId = document.getElementById('viewPropertyId').value || getSelectedPropId();
+      if (!propId) { showJson('candidatesOutput', { error: 'Selecciona propiedad' }); return; }
+      const r = await makeRequest('GET', '/landlord/properties/' + propId + '/candidates');
+      showJson('candidatesOutput', r.data);
+      if (r.ok && Array.isArray(r.data) && r.data.length > 0) {
+        document.getElementById('selectedCandidateId').innerHTML = r.data.map(c => '<option value="' + c.id + '">' + (c.tenantName || c.id.slice(0,8)) + ' - ' + c.status + '</option>').join('');
+        document.getElementById('candidatesList').style.display = 'block';
+      }
+    };
+    document.getElementById('btnUseSelectedCand').onclick = () => {
+      const id = document.getElementById('selectedCandidateId').value;
+      if (id) {
+        document.getElementById('candAppId').value = id;
+        document.getElementById('chatAppId').value = id;
+        document.getElementById('contractAppId').value = id;
+        document.getElementById('scoringAppId').value = id;
+      }
+    };
+    document.getElementById('btnCandidateDetail').onclick = async () => {
+      if (!requireAuth('candidateDetailOutput')) return;
+      const id = document.getElementById('candAppId').value;
+      if (!id) { showJson('candidateDetailOutput', { error: 'Ingresa Application ID' }); return; }
+      const r = await makeRequest('GET', '/landlord/applications/' + id);
+      showJson('candidateDetailOutput', r.data);
+    };
+    document.getElementById('btnPreapprove').onclick = async () => {
+      if (!requireAuth('actionOutput')) return;
+      const id = document.getElementById('candAppId').value;
+      if (!id) { showJson('actionOutput', { error: 'Ingresa Application ID' }); return; }
+      const r = await makeRequest('POST', '/landlord/applications/' + id + '/preapprove');
+      showJson('actionOutput', r.data);
+    };
+    document.getElementById('btnApprove').onclick = async () => {
+      if (!requireAuth('actionOutput')) return;
+      const id = document.getElementById('candAppId').value;
+      if (!id) { showJson('actionOutput', { error: 'Ingresa Application ID' }); return; }
+      const r = await makeRequest('POST', '/landlord/applications/' + id + '/approve');
+      showJson('actionOutput', r.data);
+    };
+    document.getElementById('btnReject').onclick = async () => {
+      if (!requireAuth('actionOutput')) return;
+      const id = document.getElementById('candAppId').value;
+      if (!id) { showJson('actionOutput', { error: 'Ingresa Application ID' }); return; }
+      const r = await makeRequest('POST', '/landlord/applications/' + id + '/reject', { reason: document.getElementById('rejectAppReason').value || 'No cumple requisitos' });
+      showJson('actionOutput', r.data);
+    };
+    document.getElementById('btnRequestInfo').onclick = async () => {
+      if (!requireAuth('requestInfoOutput')) return;
+      const id = document.getElementById('candAppId').value;
+      if (!id) { showJson('requestInfoOutput', { error: 'Ingresa Application ID' }); return; }
+      const r = await makeRequest('POST', '/landlord/applications/' + id + '/request-info', { message: document.getElementById('infoRequestMsg').value || 'Por favor envie documentos adicionales' });
+      showJson('requestInfoOutput', r.data);
+    };
+    document.getElementById('btnSaveNote').onclick = async () => {
+      if (!requireAuth('noteOutput')) return;
+      const id = document.getElementById('candAppId').value;
+      if (!id) { showJson('noteOutput', { error: 'Ingresa Application ID' }); return; }
+      const r = await makeRequest('POST', '/landlord/applications/' + id + '/notes', { content: document.getElementById('privateNote').value });
+      showJson('noteOutput', r.data);
+    };
+    document.getElementById('btnDeleteNote').onclick = async () => {
+      if (!requireAuth('noteOutput')) return;
+      const id = document.getElementById('candAppId').value;
+      if (!id) { showJson('noteOutput', { error: 'Ingresa Application ID' }); return; }
+      const r = await makeRequest('DELETE', '/landlord/applications/' + id + '/notes');
+      showJson('noteOutput', r.data);
+    };
+
+    // ==================== CHAT ====================
+    document.getElementById('btnGetChat').onclick = async () => {
+      if (!requireAuth('chatOutput')) return;
+      const id = document.getElementById('chatAppId').value;
+      if (!id) { showJson('chatOutput', { error: 'Ingresa Application ID' }); return; }
+      const r = await makeRequest('GET', '/applications/' + id + '/chat');
+      showJson('chatOutput', r.data);
+    };
+    document.getElementById('btnUnreadCount').onclick = async () => {
+      if (!requireAuth('chatOutput')) return;
+      const id = document.getElementById('chatAppId').value;
+      if (!id) { showJson('chatOutput', { error: 'Ingresa Application ID' }); return; }
+      const r = await makeRequest('GET', '/applications/' + id + '/chat/unread');
+      showJson('chatOutput', r.data);
+    };
+    document.getElementById('btnMarkRead').onclick = async () => {
+      if (!requireAuth('chatOutput')) return;
+      const id = document.getElementById('chatAppId').value;
+      if (!id) { showJson('chatOutput', { error: 'Ingresa Application ID' }); return; }
+      const r = await makeRequest('PATCH', '/applications/' + id + '/chat/read');
+      showJson('chatOutput', r.data);
+    };
+    document.getElementById('btnSendMessage').onclick = async () => {
+      if (!requireAuth('sendMessageOutput')) return;
+      const id = document.getElementById('chatAppId').value;
+      if (!id) { showJson('sendMessageOutput', { error: 'Ingresa Application ID' }); return; }
+      const r = await makeRequest('POST', '/applications/' + id + '/chat/messages', { content: document.getElementById('chatMessage').value || 'Hola!' });
+      showJson('sendMessageOutput', r.data);
+    };
+
+    // ==================== CONTRATOS ====================
+    document.getElementById('btnCreateContract').onclick = async () => {
+      if (!requireAuth('createContractOutput')) return;
+      const appId = document.getElementById('contractAppId').value;
+      if (!appId) { showJson('createContractOutput', { error: 'Ingresa Application ID' }); return; }
+      const r = await makeRequest('POST', '/contracts', {
+        applicationId: appId,
+        startDate: document.getElementById('contractStartDate').value || new Date().toISOString().split('T')[0],
+        durationMonths: parseInt(document.getElementById('contractDuration').value) || 12,
+        depositAmount: parseInt(document.getElementById('contractDeposit').value) || 2500000
+      });
+      showJson('createContractOutput', r.data);
+      if (r.ok && r.data.id) document.getElementById('contractId').value = r.data.id;
+    };
+    document.getElementById('btnMyContracts').onclick = async () => {
+      if (!requireAuth('myContractsOutput')) return;
+      const r = await makeRequest('GET', '/contracts');
+      showJson('myContractsOutput', r.data);
+      if (r.ok && Array.isArray(r.data) && r.data.length > 0) {
+        document.getElementById('selectedContractId').innerHTML = r.data.map(c => '<option value="' + c.id + '">' + c.id.slice(0,8) + ' - ' + c.status + '</option>').join('');
+        document.getElementById('contractsList').style.display = 'block';
+      }
+    };
+    document.getElementById('btnUseSelectedContract').onclick = () => {
+      const id = document.getElementById('selectedContractId').value;
+      if (id) document.getElementById('contractId').value = id;
+    };
+    document.getElementById('btnContractDetail').onclick = async () => {
+      if (!requireAuth('contractDetailOutput')) return;
+      const id = document.getElementById('contractId').value;
+      if (!id) { showJson('contractDetailOutput', { error: 'Ingresa Contract ID' }); return; }
+      const r = await makeRequest('GET', '/contracts/' + id);
+      showJson('contractDetailOutput', r.data);
+    };
+    document.getElementById('btnContractPreview').onclick = async () => {
+      if (!requireAuth('contractDetailOutput')) return;
+      const id = document.getElementById('contractId').value;
+      if (!id) { showJson('contractDetailOutput', { error: 'Ingresa Contract ID' }); return; }
+      const r = await makeRequest('GET', '/contracts/' + id + '/preview');
+      showJson('contractDetailOutput', r.data);
+    };
+    document.getElementById('btnSendContract').onclick = async () => {
+      if (!requireAuth('signContractOutput')) return;
+      const id = document.getElementById('contractId').value;
+      if (!id) { showJson('signContractOutput', { error: 'Ingresa Contract ID' }); return; }
+      const r = await makeRequest('POST', '/contracts/' + id + '/send');
+      showJson('signContractOutput', r.data);
+    };
+    document.getElementById('btnSignLandlord').onclick = async () => {
+      if (!requireAuth('signContractOutput')) return;
+      const id = document.getElementById('contractId').value;
+      if (!id) { showJson('signContractOutput', { error: 'Ingresa Contract ID' }); return; }
+      const r = await makeRequest('POST', '/contracts/' + id + '/sign/landlord', { signatureText: document.getElementById('signatureText').value || 'Firma Agente' });
+      showJson('signContractOutput', r.data);
+    };
+    document.getElementById('btnActivateContract').onclick = async () => {
+      if (!requireAuth('signContractOutput')) return;
+      const id = document.getElementById('contractId').value;
+      if (!id) { showJson('signContractOutput', { error: 'Ingresa Contract ID' }); return; }
+      const r = await makeRequest('POST', '/contracts/' + id + '/activate');
+      showJson('signContractOutput', r.data);
+    };
+
+    // ==================== SCORING ====================
+    document.getElementById('btnGetScore').onclick = async () => {
+      if (!requireAuth('scoringOutput')) return;
+      const id = document.getElementById('scoringAppId').value;
+      if (!id) { showJson('scoringOutput', { error: 'Ingresa Application ID' }); return; }
+      const r = await makeRequest('GET', '/scoring/' + id);
+      showJson('scoringOutput', r.data);
+    };
+
+    // ==================== ACTIVIDAD ====================
+    document.getElementById('btnActivities').onclick = async () => {
+      if (!requireAuth('activitiesOutput')) return;
+      const r = await makeRequest('GET', '/activities');
+      showJson('activitiesOutput', r.data);
+    };
+
+    // ==================== SUSCRIPCION ====================
+    document.getElementById('btnMySubscription').onclick = async () => {
+      if (!requireAuth('subscriptionOutput')) return;
+      const r = await makeRequest('GET', '/subscriptions/me');
+      showJson('subscriptionOutput', r.data);
+    };
+    document.getElementById('btnUsage').onclick = async () => {
+      if (!requireAuth('subscriptionOutput')) return;
+      const r = await makeRequest('GET', '/subscriptions/usage');
+      showJson('subscriptionOutput', r.data);
+    };
+    document.getElementById('btnListPlans').onclick = async () => {
+      const r = await makeRequest('GET', '/subscription-plans');
+      showJson('plansOutput', r.data);
+    };
+
+    // ==================== LOGS ====================
+    document.getElementById('btnClearLogs').onclick = () => {
+      requestLogs = [];
+      document.getElementById('requestLog').textContent = '// Log limpiado...';
+    };
+
+    // ==================== INIT ====================
+    updateAuthStatus();
+    supabaseClient.auth.onAuthStateChange(async (event, session) => {
+      currentSession = session;
+      updateAuthStatus();
+    });
+  </script>
+</body>
+</html>

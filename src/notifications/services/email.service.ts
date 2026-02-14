@@ -35,13 +35,20 @@ export interface EmailPayload {
 @Injectable()
 export class EmailService implements OnModuleInit {
   private readonly logger = new Logger(EmailService.name);
-  private resend!: Resend;
+  private resend: Resend | null = null;
   private fromAddress!: string;
 
   constructor(private readonly config: ConfigService) {}
 
   onModuleInit(): void {
-    this.resend = new Resend(this.config.getOrThrow<string>('RESEND_API_KEY'));
+    const apiKey = this.config.get<string>('RESEND_API_KEY');
+
+    if (!apiKey) {
+      this.logger.warn('RESEND_API_KEY not set — email notifications disabled');
+      return;
+    }
+
+    this.resend = new Resend(apiKey);
     this.fromAddress =
       this.config.get<string>('EMAIL_FROM_ADDRESS') ||
       'Arriendo Facil <notificaciones@arriendofacil.co>';
@@ -57,6 +64,11 @@ export class EmailService implements OnModuleInit {
    */
   async send(payload: EmailPayload): Promise<EmailResult> {
     const { to, subject, html, text } = payload;
+
+    if (!this.resend) {
+      this.logger.warn('Email service not configured, skipping email');
+      return { success: false, error: 'Email service not configured' };
+    }
 
     this.logger.debug(`Sending email to ${to}: "${subject}"`);
 

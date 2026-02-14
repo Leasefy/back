@@ -57,7 +57,8 @@ export class EnvironmentVariables {
   /** Resend API key for email delivery */
   @IsString()
   @IsNotEmpty()
-  RESEND_API_KEY!: string;
+  @IsOptional()
+  RESEND_API_KEY?: string;
 
   /** Email from address (defaults to 'notificaciones@arriendofacil.co') */
   @IsString()
@@ -68,18 +69,21 @@ export class EnvironmentVariables {
   /** Firebase project ID */
   @IsString()
   @IsNotEmpty()
-  FIREBASE_PROJECT_ID!: string;
+  @IsOptional()
+  FIREBASE_PROJECT_ID?: string;
 
   /** Firebase service account private key (contains \n escape sequences) */
   @IsString()
   @IsNotEmpty()
-  FIREBASE_PRIVATE_KEY!: string;
+  @IsOptional()
+  FIREBASE_PRIVATE_KEY?: string;
 
   /** Firebase service account client email */
   @IsString()
   @IsNotEmpty()
   @IsEmail()
-  FIREBASE_CLIENT_EMAIL!: string;
+  @IsOptional()
+  FIREBASE_CLIENT_EMAIL?: string;
 
   // ============================================
   // Application

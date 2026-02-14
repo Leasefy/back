@@ -1188,6 +1188,823 @@ model CouponUsage {
   @@map("coupon_usages")
 }
 
+// ============================================
+// INMOBILIARIA ENUMS (Phase 2.2)
+// ============================================
+
+/// Role within an agency team
+enum AgencyMemberRole {
+  ADMIN
+  AGENTE
+  CONTADOR
+  VIEWER
+}
+
+/// Status of an agency team member
+enum AgencyMemberStatus {
+  ACTIVE
+  INVITED
+  INACTIVE
+}
+
+/// Agent internal role within agency hierarchy
+enum AgentRole {
+  AGENT
+  COORDINATOR
+  DIRECTOR
+}
+
+/// Agent availability status
+enum AgentStatus {
+  ACTIVE
+  INACTIVE
+  ON_LEAVE
+}
+
+/// Agent specialization
+enum AgentSpecialization {
+  RESIDENTIAL
+  COMMERCIAL
+  BOTH
+}
+
+/// Status of a property consignment agreement
+enum ConsignacionStatus {
+  ACTIVE
+  TERMINATED
+  EXPIRED
+  PENDING
+}
+
+/// Availability of a consigned property
+enum ConsignacionAvailability {
+  AVAILABLE
+  RENTED
+  IN_PROCESS
+  MAINTENANCE
+}
+
+/// Extended property type for agency (includes commercial)
+enum ConsignacionPropertyType {
+  APARTMENT
+  HOUSE
+  STUDIO
+  COMMERCIAL
+  OFFICE
+  WAREHOUSE
+}
+
+/// Stage in the rental pipeline/sales funnel
+enum PipelineStage {
+  LEAD
+  VISIT_SCHEDULED
+  VISIT_DONE
+  APPLICATION
+  EVALUATION
+  APPROVED
+  CONTRACT
+  HANDOVER
+  COMPLETED
+  LOST
+}
+
+/// Status of a monthly rent collection
+enum CobroStatus {
+  COBRO_PENDING
+  PAID
+  PARTIAL
+  LATE
+  DEFAULTED
+}
+
+/// Status of an owner disbursement
+enum DispersionStatus {
+  DISP_PENDING
+  PROCESSING
+  DISP_COMPLETED
+  FAILED
+}
+
+/// Type of maintenance request
+enum MantenimientoType {
+  PLUMBING
+  ELECTRICAL
+  APPLIANCE
+  STRUCTURAL
+  PAINTING
+  LOCKS
+  OTHER_MAINT
+}
+
+/// Priority of a maintenance request
+enum MantenimientoPriority {
+  LOW
+  MEDIUM
+  HIGH
+  EMERGENCY
+}
+
+/// Status of a maintenance request
+enum MantenimientoStatus {
+  REPORTED
+  QUOTED
+  MAINT_APPROVED
+  IN_PROGRESS
+  MAINT_COMPLETED
+  MAINT_CANCELLED
+}
+
+/// Who pays for maintenance
+enum MantenimientoPaidBy {
+  OWNER
+  TENANT_PAYS
+  SPLIT
+  AGENCY_PAYS
+}
+
+/// Status of a lease renewal process
+enum RenovacionStatus {
+  RENOV_PENDING
+  NOTIFIED
+  NEGOTIATING
+  RENOV_APPROVED
+  RENOV_SIGNED
+  RENOV_COMPLETED
+  RENOV_TERMINATED
+}
+
+/// Type of acta (delivery or return)
+enum ActaType {
+  ENTREGA
+  DEVOLUCION
+}
+
+/// Status of an acta de entrega
+enum ActaStatus {
+  ACTA_DRAFT
+  ACTA_IN_PROGRESS
+  PENDING_SIGNATURES
+  ACTA_COMPLETED
+}
+
+/// Condition assessment for acta items
+enum ItemCondition {
+  EXCELLENT
+  GOOD
+  FAIR
+  POOR
+  DAMAGED
+}
+
+/// Status of a property document in agency context
+enum AgencyDocumentStatus {
+  DOC_DRAFT
+  PENDING_SIGNATURE
+  DOC_SIGNED
+  DOC_EXPIRED
+}
+
+/// Category of document templates
+enum DocumentTemplateCategory {
+  CONTRATO
+  ACTA
+  INVENTARIO
+  POLIZA
+  CARTA
+  OTRO
+}
+
+/// Status of an external integration
+enum IntegrationStatus {
+  INT_ACTIVE
+  INT_INACTIVE
+  INT_PENDING
+  INT_ERROR
+}
+
+/// Category of external integrations
+enum IntegrationCategory {
+  PAYMENTS
+  ACCOUNTING
+  COMMUNICATIONS
+  STORAGE
+}
+
+/// Document type identifier (CC, NIT, etc.)
+enum PropietarioDocumentType {
+  CC
+  CE
+  NIT
+  PASSPORT
+}
+
+// ============================================
+// INMOBILIARIA MODELS (Phase 2.2)
+// ============================================
+
+/// Real estate agency organization
+/// Groups users (agents, admins, accountants) under one entity
+model Agency {
+  id          String  @id @default(uuid()) @db.Uuid
+  name        String  @db.VarChar(200)
+  nit         String? @unique @db.VarChar(20)
+  address     String? @db.VarChar(300)
+  city        String? @db.VarChar(50)
+  phone       String? @db.VarChar(20)
+  email       String? @db.VarChar(255)
+  logoUrl     String? @map("logo_url") @db.VarChar(500)
+
+  // Financial defaults
+  defaultCommissionPercent Float   @default(10) @map("default_commission_percent")
+  defaultLateFeePercent    Float   @default(2) @map("default_late_fee_percent")
+  paymentDueDay            Int     @default(5) @map("payment_due_day")     // Day of month
+  disbursementDay          Int     @default(15) @map("disbursement_day")   // Day of month
+
+  // Reminder config (JSON arrays of days)
+  reminderDaysBefore Json @default("[3, 1]") @map("reminder_days_before")
+  reminderDaysAfter  Json @default("[1, 3, 7, 15]") @map("reminder_days_after")
+
+  // Branding
+  branding Json @default("{}")
+
+  // Legal info
+  legalRepresentative String? @map("legal_representative") @db.VarChar(200)
+  legalDocumentNumber String? @map("legal_document_number") @db.VarChar(20)
+
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  members            AgencyMember[]
+  propietarios       Propietario[]
+  consignaciones     Consignacion[]
+  pipelineItems      PipelineItem[]
+  cobros             Cobro[]
+  dispersiones       Dispersion[]
+  mantenimientos     SolicitudMantenimiento[]
+  renovaciones       Renovacion[]
+  actas              ActaEntrega[]
+  documentTemplates  AgencyDocumentTemplate[]
+  documents          AgencyDocument[]
+  integrations       AgencyIntegration[]
+
+  @@map("agencies")
+}
+
+/// Membership of a user in an agency with role
+model AgencyMember {
+  id       String             @id @default(uuid()) @db.Uuid
+  agencyId String             @map("agency_id") @db.Uuid
+  userId   String             @map("user_id") @db.Uuid
+  role     AgencyMemberRole   @default(AGENTE)
+  status   AgencyMemberStatus @default(ACTIVE)
+
+  // Agent-specific fields (only when role = AGENTE)
+  agentRole       AgentRole?           @map("agent_role")
+  agentStatus     AgentStatus?         @map("agent_status")
+  specialization  AgentSpecialization? @map("specialization")
+  commissionSplit Float?               @map("commission_split") // % of agency commission
+  zone            String?              @db.VarChar(100)
+  hireDate        DateTime?            @map("hire_date") @db.Date
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  agency Agency @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+
+  @@unique([agencyId, userId])
+  @@index([agencyId])
+  @@index([userId])
+  @@map("agency_members")
+}
+
+/// Property owner - client of the agency
+/// Not necessarily a platform User; managed by agency
+model Propietario {
+  id               String                  @id @default(uuid()) @db.Uuid
+  agencyId         String                  @map("agency_id") @db.Uuid
+  name             String                  @db.VarChar(200)
+  email            String?                 @db.VarChar(255)
+  phone            String?                 @db.VarChar(20)
+  documentType     PropietarioDocumentType @default(CC) @map("document_type")
+  documentNumber   String                  @map("document_number") @db.VarChar(30)
+  address          String?                 @db.VarChar(300)
+  city             String?                 @db.VarChar(50)
+
+  // Bank account for disbursements
+  bankName             String?  @map("bank_name") @db.VarChar(100)
+  bankAccountType      String?  @map("bank_account_type") @db.VarChar(20) // savings | checking
+  bankAccountNumber    String?  @map("bank_account_number") @db.VarChar(50)
+  bankAccountHolder    String?  @map("bank_account_holder") @db.VarChar(200)
+
+  notes String? @db.Text
+  tags  String[] @default([])
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  agency         Agency                   @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  consignaciones Consignacion[]
+  dispersiones   Dispersion[]
+  mantenimientos SolicitudMantenimiento[]
+  renovaciones   Renovacion[]
+  actas          ActaEntrega[]
+
+  @@unique([agencyId, documentNumber])
+  @@index([agencyId])
+  @@map("propietarios")
+}
+
+/// Property consignment agreement
+/// Wraps an existing Property with agency-specific data
+model Consignacion {
+  id             String                    @id @default(uuid()) @db.Uuid
+  agencyId       String                    @map("agency_id") @db.Uuid
+  propertyId     String?                   @map("property_id") @db.Uuid
+  propietarioId  String                    @map("propietario_id") @db.Uuid
+  agenteUserId   String?                   @map("agente_user_id") @db.Uuid // User.id of assigned agent
+
+  // Property info (denormalized for agency dashboard)
+  propertyTitle   String  @map("property_title") @db.VarChar(200)
+  propertyAddress String  @map("property_address") @db.VarChar(300)
+  propertyCity    String  @map("property_city") @db.VarChar(50)
+  propertyZone    String? @map("property_zone") @db.VarChar(100)
+  propertyType    ConsignacionPropertyType @default(APARTMENT) @map("property_type")
+  propertyThumbnail String? @map("property_thumbnail") @db.VarChar(500)
+  monthlyRent     Int     @map("monthly_rent")
+  adminFee        Int     @default(0) @map("admin_fee")
+
+  // Consignment terms
+  commissionPercent Float    @map("commission_percent")
+  contractDate      DateTime @map("contract_date") @db.Date
+  contractEndDate   DateTime? @map("contract_end_date") @db.Date
+  minimumTerm       Int?     @map("minimum_term") // months
+
+  // Status
+  status       ConsignacionStatus       @default(ACTIVE)
+  availability ConsignacionAvailability @default(AVAILABLE)
+
+  // Current lease tracking (denormalized)
+  currentLeaseId   String? @map("current_lease_id") @db.Uuid
+  currentTenantName String? @map("current_tenant_name") @db.VarChar(200)
+  leaseEndDate     DateTime? @map("lease_end_date") @db.Date
+
+  // Documents
+  consignmentContractUrl String? @map("consignment_contract_url") @db.VarChar(500)
+  photosUrls             String[] @default([]) @map("photos_urls")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  agency         Agency                   @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  propietario    Propietario              @relation(fields: [propietarioId], references: [id])
+  pipelineItems  PipelineItem[]
+  cobros         Cobro[]
+  mantenimientos SolicitudMantenimiento[]
+  renovaciones   Renovacion[]
+  actas          ActaEntrega[]
+  documents      AgencyDocument[]
+
+  @@index([agencyId])
+  @@index([propietarioId])
+  @@index([agenteUserId])
+  @@index([status])
+  @@index([availability])
+  @@map("consignaciones")
+}
+
+/// Pipeline item tracking a prospect through the rental funnel
+model PipelineItem {
+  id              String  @id @default(uuid()) @db.Uuid
+  agencyId        String  @map("agency_id") @db.Uuid
+  consignacionId  String  @map("consignacion_id") @db.Uuid
+  agenteUserId    String? @map("agente_user_id") @db.Uuid
+
+  // Candidate info (denormalized)
+  candidateName   String  @map("candidate_name") @db.VarChar(200)
+  candidateEmail  String? @map("candidate_email") @db.VarChar(255)
+  candidatePhone  String? @map("candidate_phone") @db.VarChar(20)
+  candidateAvatar String? @map("candidate_avatar") @db.VarChar(500)
+  riskScore       Int?    @map("risk_score")
+  riskLevel       String? @map("risk_level") @db.VarChar(5)
+
+  // Pipeline stage
+  stage           PipelineStage @default(LEAD)
+  enteredStageAt  DateTime      @default(now()) @map("entered_stage_at")
+  daysInStage     Int           @default(0) @map("days_in_stage")
+
+  // Activity
+  nextAction      String?   @map("next_action") @db.VarChar(500)
+  nextActionDate  DateTime? @map("next_action_date") @db.Date
+  lastContactDate DateTime? @map("last_contact_date") @db.Date
+  notes           String?   @db.Text
+
+  // Outcome
+  lostReason       String? @map("lost_reason") @db.VarChar(500)
+  completedLeaseId String? @map("completed_lease_id") @db.Uuid
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  agency       Agency       @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  consignacion Consignacion @relation(fields: [consignacionId], references: [id])
+
+  @@index([agencyId])
+  @@index([consignacionId])
+  @@index([agenteUserId])
+  @@index([stage])
+  @@map("pipeline_items")
+}
+
+/// Monthly rent collection record
+model Cobro {
+  id              String @id @default(uuid()) @db.Uuid
+  agencyId        String @map("agency_id") @db.Uuid
+  consignacionId  String @map("consignacion_id") @db.Uuid
+  leaseId         String? @map("lease_id") @db.Uuid
+  propietarioId   String @map("propietario_id") @db.Uuid
+  agenteUserId    String? @map("agente_user_id") @db.Uuid
+
+  // Tenant info (denormalized)
+  tenantName  String? @map("tenant_name") @db.VarChar(200)
+  tenantEmail String? @map("tenant_email") @db.VarChar(255)
+  tenantPhone String? @map("tenant_phone") @db.VarChar(20)
+
+  // Property info (denormalized)
+  propertyTitle String @map("property_title") @db.VarChar(200)
+
+  // Amounts (COP)
+  month          String @db.VarChar(7) // '2026-02'
+  rentAmount     Int    @map("rent_amount")
+  adminAmount    Int    @default(0) @map("admin_amount")
+  totalAmount    Int    @map("total_amount")
+  lateFee        Int    @default(0) @map("late_fee")
+  totalWithFees  Int    @map("total_with_fees")
+
+  // Payment tracking
+  status           CobroStatus @default(COBRO_PENDING)
+  dueDate          DateTime    @map("due_date") @db.Date
+  paidDate         DateTime?   @map("paid_date") @db.Date
+  paidAmount       Int         @default(0) @map("paid_amount")
+  pendingAmount    Int         @map("pending_amount")
+  paymentMethod    String?     @map("payment_method") @db.VarChar(50)
+  paymentReference String?     @map("payment_reference") @db.VarChar(100)
+
+  // Reminders
+  daysLate         Int @default(0) @map("days_late")
+  remindersSent    Int @default(0) @map("reminders_sent")
+  lastReminderDate DateTime? @map("last_reminder_date")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  agency        Agency         @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  consignacion  Consignacion   @relation(fields: [consignacionId], references: [id])
+  dispersionItems DispersionItem[]
+
+  @@unique([consignacionId, month])
+  @@index([agencyId])
+  @@index([consignacionId])
+  @@index([propietarioId])
+  @@index([month])
+  @@index([status])
+  @@map("cobros")
+}
+
+/// Owner disbursement - aggregates cobros for a month per propietario
+model Dispersion {
+  id              String @id @default(uuid()) @db.Uuid
+  agencyId        String @map("agency_id") @db.Uuid
+  propietarioId   String @map("propietario_id") @db.Uuid
+
+  // Propietario info (denormalized)
+  propietarioName        String @map("propietario_name") @db.VarChar(200)
+  propietarioBankName    String? @map("propietario_bank_name") @db.VarChar(100)
+  propietarioBankAccount String? @map("propietario_bank_account") @db.VarChar(50)
+
+  month              String @db.VarChar(7) // '2026-02'
+  totalCollected     Int    @map("total_collected")
+  totalCommission    Int    @map("total_commission")
+  netToPropietario   Int    @map("net_to_propietario")
+
+  // Status
+  status             DispersionStatus @default(DISP_PENDING)
+  approvedBy         String?          @map("approved_by") @db.Uuid
+  approvedAt         DateTime?        @map("approved_at")
+  processedAt        DateTime?        @map("processed_at")
+  transferReference  String?          @map("transfer_reference") @db.VarChar(100)
+  failureReason      String?          @map("failure_reason") @db.Text
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  agency      Agency           @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  propietario Propietario      @relation(fields: [propietarioId], references: [id])
+  items       DispersionItem[]
+
+  @@unique([propietarioId, month])
+  @@index([agencyId])
+  @@index([propietarioId])
+  @@index([month])
+  @@index([status])
+  @@map("dispersiones")
+}
+
+/// Individual item in a dispersion (one per cobro)
+model DispersionItem {
+  id              String @id @default(uuid()) @db.Uuid
+  dispersionId    String @map("dispersion_id") @db.Uuid
+  cobroId         String @map("cobro_id") @db.Uuid
+  propertyTitle   String @map("property_title") @db.VarChar(200)
+  rentCollected   Int    @map("rent_collected")
+  commissionPercent Float @map("commission_percent")
+  commissionAmount Int   @map("commission_amount")
+  netAmount       Int    @map("net_amount")
+
+  // Relations
+  dispersion Dispersion @relation(fields: [dispersionId], references: [id], onDelete: Cascade)
+  cobro      Cobro      @relation(fields: [cobroId], references: [id])
+
+  @@index([dispersionId])
+  @@index([cobroId])
+  @@map("dispersion_items")
+}
+
+/// Maintenance request for a consigned property
+model SolicitudMantenimiento {
+  id              String  @id @default(uuid()) @db.Uuid
+  agencyId        String  @map("agency_id") @db.Uuid
+  consignacionId  String  @map("consignacion_id") @db.Uuid
+  propietarioId   String  @map("propietario_id") @db.Uuid
+  agenteUserId    String? @map("agente_user_id") @db.Uuid
+
+  // Denormalized info
+  propertyTitle    String @map("property_title") @db.VarChar(200)
+  tenantName       String? @map("tenant_name") @db.VarChar(200)
+  propietarioName  String @map("propietario_name") @db.VarChar(200)
+
+  // Request details
+  type        MantenimientoType
+  priority    MantenimientoPriority @default(MEDIUM)
+  title       String                @db.VarChar(200)
+  description String                @db.Text
+  photoUrls   String[]              @default([]) @map("photo_urls")
+
+  // Process
+  status          MantenimientoStatus @default(REPORTED)
+  selectedQuoteId String?             @map("selected_quote_id") @db.Uuid
+  approvedAmount  Int?                @map("approved_amount")
+  paidBy          MantenimientoPaidBy @default(OWNER)
+
+  // Completion
+  completedAt       DateTime? @map("completed_at")
+  completionNotes   String?   @map("completion_notes") @db.Text
+  completionPhotoUrls String[] @default([]) @map("completion_photo_urls")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  agency       Agency              @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  consignacion Consignacion        @relation(fields: [consignacionId], references: [id])
+  propietario  Propietario         @relation(fields: [propietarioId], references: [id])
+  quotes       MantenimientoQuote[]
+
+  @@index([agencyId])
+  @@index([consignacionId])
+  @@index([status])
+  @@index([priority])
+  @@map("solicitudes_mantenimiento")
+}
+
+/// Vendor quote for a maintenance request
+model MantenimientoQuote {
+  id                String @id @default(uuid()) @db.Uuid
+  solicitudId       String @map("solicitud_id") @db.Uuid
+  providerName      String @map("provider_name") @db.VarChar(200)
+  providerPhone     String? @map("provider_phone") @db.VarChar(20)
+  amount            Int
+  description       String @db.Text
+  estimatedDays     Int    @map("estimated_days")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  solicitud SolicitudMantenimiento @relation(fields: [solicitudId], references: [id], onDelete: Cascade)
+
+  @@index([solicitudId])
+  @@map("mantenimiento_quotes")
+}
+
+/// Lease renewal tracking
+model Renovacion {
+  id              String  @id @default(uuid()) @db.Uuid
+  agencyId        String  @map("agency_id") @db.Uuid
+  consignacionId  String  @map("consignacion_id") @db.Uuid
+  leaseId         String? @map("lease_id") @db.Uuid
+  propietarioId   String  @map("propietario_id") @db.Uuid
+  agenteUserId    String? @map("agente_user_id") @db.Uuid
+
+  // Denormalized info
+  propertyTitle    String @map("property_title") @db.VarChar(200)
+  propertyAddress  String @map("property_address") @db.VarChar(300)
+  tenantName       String? @map("tenant_name") @db.VarChar(200)
+  propietarioName  String @map("propietario_name") @db.VarChar(200)
+
+  // Lease terms
+  currentRent      Int      @map("current_rent")
+  leaseStartDate   DateTime @map("lease_start_date") @db.Date
+  leaseEndDate     DateTime @map("lease_end_date") @db.Date
+  daysUntilExpiry  Int      @map("days_until_expiry")
+
+  // IPC calculation
+  ipcRate          Float?   @map("ipc_rate")
+  proposedRent     Int?     @map("proposed_rent")
+  negotiatedRent   Int?     @map("negotiated_rent")
+
+  // Workflow
+  status           RenovacionStatus @default(RENOV_PENDING)
+  notifiedAt       DateTime?        @map("notified_at")
+  approvedAt       DateTime?        @map("approved_at")
+  signedAt         DateTime?        @map("signed_at")
+  completedAt      DateTime?        @map("completed_at")
+
+  // New lease reference
+  newLeaseId       String?   @map("new_lease_id") @db.Uuid
+  newLeaseStartDate DateTime? @map("new_lease_start_date") @db.Date
+  newLeaseEndDate  DateTime? @map("new_lease_end_date") @db.Date
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  agency       Agency              @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  consignacion Consignacion        @relation(fields: [consignacionId], references: [id])
+  propietario  Propietario         @relation(fields: [propietarioId], references: [id])
+  history      RenovacionHistory[]
+
+  @@index([agencyId])
+  @@index([consignacionId])
+  @@index([status])
+  @@index([leaseEndDate])
+  @@map("renovaciones")
+}
+
+/// Audit trail entry for renewal process
+model RenovacionHistory {
+  id            String @id @default(uuid()) @db.Uuid
+  renovacionId  String @map("renovacion_id") @db.Uuid
+  action        String @db.VarChar(100)
+  description   String @db.Text
+  actorName     String? @map("actor_name") @db.VarChar(200)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  renovacion Renovacion @relation(fields: [renovacionId], references: [id], onDelete: Cascade)
+
+  @@index([renovacionId])
+  @@map("renovacion_history")
+}
+
+/// Property delivery or return act
+model ActaEntrega {
+  id              String   @id @default(uuid()) @db.Uuid
+  agencyId        String   @map("agency_id") @db.Uuid
+  type            ActaType
+  consignacionId  String?  @map("consignacion_id") @db.Uuid
+  leaseId         String?  @map("lease_id") @db.Uuid
+  propietarioId   String   @map("propietario_id") @db.Uuid
+  agenteUserId    String?  @map("agente_user_id") @db.Uuid
+
+  // Denormalized
+  propertyTitle   String  @map("property_title") @db.VarChar(200)
+  propertyAddress String  @map("property_address") @db.VarChar(300)
+  tenantName      String? @map("tenant_name") @db.VarChar(200)
+  propietarioName String  @map("propietario_name") @db.VarChar(200)
+
+  // Inventory (JSON arrays for flexibility)
+  rooms    Json @default("[]") // RoomType[]
+  items    Json @default("[]") // ActaInventoryItem[]
+
+  // Meter readings (JSON)
+  meterReadings Json @default("[]") @map("meter_readings")
+
+  // Keys
+  keysDelivered Json @default("[]") @map("keys_delivered")
+
+  // General condition
+  generalCondition     ItemCondition @default(GOOD) @map("general_condition")
+  generalObservations  String?       @map("general_observations") @db.Text
+
+  // For return acts - deposit handling
+  depositAmount    Int? @map("deposit_amount")
+  deductions       Json @default("[]") // ActaDeduction[]
+  depositToReturn  Int? @map("deposit_to_return")
+
+  // Photo documentation
+  photoUrls String[] @default([]) @map("photo_urls")
+
+  // Workflow
+  status     ActaStatus @default(ACTA_DRAFT)
+  signatures Json       @default("[]") // ActaSignature[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  agency       Agency        @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  consignacion Consignacion? @relation(fields: [consignacionId], references: [id])
+  propietario  Propietario   @relation(fields: [propietarioId], references: [id])
+
+  @@index([agencyId])
+  @@index([consignacionId])
+  @@index([status])
+  @@map("actas_entrega")
+}
+
+/// Document template for agency document generation
+model AgencyDocumentTemplate {
+  id          String                   @id @default(uuid()) @db.Uuid
+  agencyId    String                   @map("agency_id") @db.Uuid
+  name        String                   @db.VarChar(200)
+  category    DocumentTemplateCategory
+  version     String                   @default("1.0") @db.VarChar(20)
+  content     String                   @db.Text // Handlebars template
+  variables   String[]                 @default([])
+  isActive    Boolean                  @default(true) @map("is_active")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  agency    Agency           @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  documents AgencyDocument[]
+
+  @@index([agencyId])
+  @@index([category])
+  @@map("agency_document_templates")
+}
+
+/// Generated document from a template
+model AgencyDocument {
+  id              String              @id @default(uuid()) @db.Uuid
+  agencyId        String              @map("agency_id") @db.Uuid
+  templateId      String?             @map("template_id") @db.Uuid
+  consignacionId  String?             @map("consignacion_id") @db.Uuid
+
+  name            String              @db.VarChar(200)
+  content         String?             @db.Text // Rendered HTML
+  filePath        String?             @map("file_path") @db.VarChar(500)
+  status          AgencyDocumentStatus @default(DOC_DRAFT)
+
+  // Signature tracking (JSON)
+  signatures Json @default("[]")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  agency       Agency                  @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  template     AgencyDocumentTemplate? @relation(fields: [templateId], references: [id])
+  consignacion Consignacion?           @relation(fields: [consignacionId], references: [id])
+
+  @@index([agencyId])
+  @@index([consignacionId])
+  @@index([status])
+  @@map("agency_documents")
+}
+
+/// External integration configuration for an agency
+model AgencyIntegration {
+  id        String              @id @default(uuid()) @db.Uuid
+  agencyId  String              @map("agency_id") @db.Uuid
+  name      String              @db.VarChar(100)
+  category  IntegrationCategory
+  status    IntegrationStatus   @default(INT_INACTIVE)
+  isEnabled Boolean             @default(false) @map("is_enabled")
+
+  // Config (API keys, endpoints, etc.)
+  config Json @default("{}")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  agency Agency @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+
+  @@unique([agencyId, name])
+  @@index([agencyId])
+  @@map("agency_integrations")
+}
+
 /// Unified activity log for user timelines and feeds
 model ActivityLog {
   id           String       @id @default(uuid()) @db.Uuid

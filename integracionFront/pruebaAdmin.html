@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Leasify - Test Admin</title>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    h1 { color: #333; }
+    h2 { color: #555; margin-top: 30px; border-bottom: 2px solid #ddd; padding-bottom: 10px; }
+    h3 { color: #666; margin-top: 20px; }
+    .section {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    button {
+      padding: 10px 20px;
+      margin: 5px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    button:hover { transform: translateY(-1px); }
+    .btn-primary { background: #4285f4; color: white; }
+    .btn-primary:hover { background: #3367d6; }
+    .btn-success { background: #34a853; color: white; }
+    .btn-success:hover { background: #2d8f47; }
+    .btn-warning { background: #fbbc04; color: #333; }
+    .btn-warning:hover { background: #f9a825; }
+    .btn-danger { background: #ea4335; color: white; }
+    .btn-danger:hover { background: #d93025; }
+    .btn-info { background: #6c757d; color: white; }
+    .btn-info:hover { background: #5a6268; }
+    pre {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 15px;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-size: 13px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .status { padding: 10px 15px; border-radius: 6px; margin: 10px 0; font-weight: 500; }
+    .status.success { background: #d4edda; color: #155724; }
+    .status.error { background: #f8d7da; color: #721c24; }
+    .status.info { background: #cce5ff; color: #004085; }
+    input, select, textarea {
+      padding: 10px;
+      margin: 5px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    input { width: 200px; }
+    .form-group { margin: 10px 0; }
+    .form-group label { display: inline-block; width: 150px; font-weight: 500; }
+    .jwt-display {
+      word-break: break-all;
+      font-size: 11px;
+      background: #2d2d2d;
+      padding: 10px;
+      border-radius: 4px;
+      margin-top: 10px;
+      color: #9cdcfe;
+    }
+    .note { background: #fff3cd; padding: 10px; border-radius: 6px; margin-bottom: 15px; font-size: 13px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  </style>
+</head>
+<body>
+  <h1>Leasify - Panel Administrador (ADMIN)</h1>
+
+  <div class="note">
+    <strong>Nota:</strong> El rol ADMIN se asigna manualmente en la base de datos (<code>UPDATE users SET role = 'ADMIN' WHERE email = '...'</code>). No hay endpoint de auto-registro como ADMIN por seguridad.
+  </div>
+
+  <!-- ==================== AUTH ==================== -->
+  <div class="section">
+    <h2>1. Autenticacion</h2>
+    <div style="margin-bottom: 15px;">
+      <button id="btnGoogle" class="btn-primary">Login con Google</button>
+      <button id="btnSession" class="btn-info">Ver Sesion</button>
+      <button id="btnLogout" class="btn-danger">Logout</button>
+    </div>
+    <div id="authStatus"></div>
+    <div id="jwtToken" class="jwt-display" style="display:none;"></div>
+    <button id="btnCopyToken" class="btn-info" style="display:none; margin-top: 10px;">Copiar Token</button>
+  </div>
+
+  <!-- ==================== PERFIL ==================== -->
+  <div class="section">
+    <h2>2. Perfil</h2>
+    <button id="btnGetProfile" class="btn-primary">GET /users/me</button>
+    <pre id="profileOutput">// Resultado...</pre>
+  </div>
+
+  <!-- ==================== HEALTH ==================== -->
+  <div class="section">
+    <h2>3. Health Check</h2>
+    <button id="btnHealth" class="btn-success">GET /health</button>
+    <pre id="healthOutput">// Health...</pre>
+  </div>
+
+  <!-- ==================== NOTIFICATION TEMPLATES ==================== -->
+  <div class="section">
+    <h2>4. Plantillas de Notificacion (ADMIN)</h2>
+
+    <h3>4.1 Crear Plantilla</h3>
+    <div class="form-group">
+      <label>Codigo:</label>
+      <input type="text" id="tmplCode" placeholder="APPLICATION_SUBMITTED" style="width:300px;">
+    </div>
+    <div class="form-group">
+      <label>Nombre:</label>
+      <input type="text" id="tmplName" placeholder="Aplicacion enviada" style="width:300px;">
+    </div>
+    <div class="form-group">
+      <label>Canal:</label>
+      <select id="tmplChannel" style="width:200px;">
+        <option value="EMAIL">Email</option>
+        <option value="PUSH">Push</option>
+        <option value="IN_APP">In-App</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Asunto:</label>
+      <input type="text" id="tmplSubject" placeholder="Nueva aplicacion recibida" style="width:400px;">
+    </div>
+    <div class="form-group">
+      <label>Cuerpo (HTML):</label><br>
+      <textarea id="tmplBody" rows="4" style="width:100%; padding:10px; border-radius:6px; border:1px solid #ddd;"><h1>Hola {{nombre}}</h1><p>Se ha recibido una nueva aplicacion para tu propiedad {{propiedad}}.</p></textarea>
+    </div>
+    <div class="form-group">
+      <label>Variables:</label>
+      <input type="text" id="tmplVars" placeholder="nombre,propiedad,fecha" style="width:300px;">
+    </div>
+    <button id="btnCreateTemplate" class="btn-success">POST /admin/notification-templates</button>
+    <pre id="createTemplateOutput">// Resultado...</pre>
+
+    <h3>4.2 Listar Plantillas</h3>
+    <button id="btnListTemplates" class="btn-primary">GET /admin/notification-templates</button>
+    <pre id="listTemplatesOutput">// Plantillas...</pre>
+
+    <h3>4.3 Buscar por ID / Codigo</h3>
+    <div class="form-group">
+      <label>Template ID:</label>
+      <input type="text" id="tmplId" placeholder="UUID" style="width:300px;">
+    </div>
+    <button id="btnGetTemplateById" class="btn-primary">Buscar por ID</button>
+    <div class="form-group">
+      <label>Template Code:</label>
+      <input type="text" id="tmplCodeSearch" placeholder="APPLICATION_SUBMITTED" style="width:300px;">
+    </div>
+    <button id="btnGetTemplateByCode" class="btn-primary">Buscar por Codigo</button>
+    <pre id="getTemplateOutput">// Plantilla...</pre>
+
+    <h3>4.4 Actualizar Plantilla</h3>
+    <div class="form-group">
+      <label>Template ID:</label>
+      <input type="text" id="updateTmplId" placeholder="UUID" style="width:300px;">
+    </div>
+    <div class="form-group">
+      <label>Nuevo asunto:</label>
+      <input type="text" id="updateTmplSubject" placeholder="Asunto actualizado" style="width:400px;">
+    </div>
+    <div class="form-group">
+      <label>Nuevo cuerpo:</label><br>
+      <textarea id="updateTmplBody" rows="3" style="width:100%; padding:10px; border-radius:6px; border:1px solid #ddd;"></textarea>
+    </div>
+    <button id="btnUpdateTemplate" class="btn-warning">PUT /admin/notification-templates/:id</button>
+    <pre id="updateTemplateOutput">// Resultado...</pre>
+
+    <h3>4.5 Toggle Activo / Eliminar</h3>
+    <div class="form-group">
+      <label>Template ID:</label>
+      <input type="text" id="toggleTmplId" placeholder="UUID" style="width:300px;">
+    </div>
+    <button id="btnToggleTemplate" class="btn-warning">Toggle Activo</button>
+    <button id="btnDeleteTemplate" class="btn-danger">Eliminar</button>
+    <pre id="toggleTemplateOutput">// Resultado...</pre>
+  </div>
+
+  <!-- ==================== SUBSCRIPTION PLANS ==================== -->
+  <div class="section">
+    <h2>5. Planes de Suscripcion</h2>
+
+    <h3>5.1 Listar Planes (Publico)</h3>
+    <button id="btnListPlans" class="btn-primary">GET /subscription-plans</button>
+    <pre id="listPlansOutput">// Planes...</pre>
+
+    <h3>5.2 Detalle de Plan</h3>
+    <div class="form-group">
+      <label>Plan ID:</label>
+      <input type="text" id="planId" placeholder="UUID" style="width:300px;">
+    </div>
+    <button id="btnPlanDetail" class="btn-primary">GET /subscription-plans/:id</button>
+    <pre id="planDetailOutput">// Detalle plan...</pre>
+
+    <h3>5.3 Actualizar Precio de Plan (ADMIN)</h3>
+    <div class="form-group">
+      <label>Plan ID:</label>
+      <input type="text" id="updatePlanId" placeholder="UUID" style="width:300px;">
+    </div>
+    <div class="form-group">
+      <label>Precio mensual:</label>
+      <input type="number" id="planMonthlyPrice" placeholder="29900" style="width:200px;">
+    </div>
+    <div class="form-group">
+      <label>Precio anual:</label>
+      <input type="number" id="planAnnualPrice" placeholder="299000" style="width:200px;">
+    </div>
+    <button id="btnUpdatePlan" class="btn-warning">PATCH /subscription-plans/:id</button>
+    <pre id="updatePlanOutput">// Resultado...</pre>
+  </div>
+
+  <!-- ==================== CUPONES ==================== -->
+  <div class="section">
+    <h2>6. Cupones (ADMIN)</h2>
+
+    <h3>6.1 Crear Cupon</h3>
+    <div class="grid-2">
+      <div class="form-group">
+        <label>Codigo:</label>
+        <input type="text" id="couponCode" placeholder="DESCUENTO20" style="width:100%;">
+      </div>
+      <div class="form-group">
+        <label>Descripcion:</label>
+        <input type="text" id="couponDesc" placeholder="20% descuento primer mes" style="width:100%;">
+      </div>
+      <div class="form-group">
+        <label>Tipo descuento:</label>
+        <select id="couponDiscountType" style="width:100%;">
+          <option value="PERCENTAGE">Porcentaje</option>
+          <option value="FIXED">Monto fijo</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Valor descuento:</label>
+        <input type="number" id="couponDiscountValue" placeholder="20" style="width:100%;">
+      </div>
+      <div class="form-group">
+        <label>Max usos:</label>
+        <input type="number" id="couponMaxUses" placeholder="100" style="width:100%;">
+      </div>
+      <div class="form-group">
+        <label>Fecha expiracion:</label>
+        <input type="date" id="couponExpiry" style="width:100%;">
+      </div>
+    </div>
+    <button id="btnCreateCoupon" class="btn-success">POST /admin/coupons</button>
+    <pre id="createCouponOutput">// Resultado...</pre>
+
+    <h3>6.2 Listar Cupones</h3>
+    <button id="btnListCoupons" class="btn-primary">GET /admin/coupons</button>
+    <pre id="listCouponsOutput">// Cupones...</pre>
+
+    <h3>6.3 Actualizar Cupon</h3>
+    <div class="form-group">
+      <label>Coupon ID:</label>
+      <input type="text" id="updateCouponId" placeholder="UUID" style="width:300px;">
+    </div>
+    <div class="form-group">
+      <label>Max usos nuevo:</label>
+      <input type="number" id="updateCouponMaxUses" placeholder="200" style="width:200px;">
+    </div>
+    <button id="btnUpdateCoupon" class="btn-warning">PATCH /admin/coupons/:id</button>
+    <pre id="updateCouponOutput">// Resultado...</pre>
+
+    <h3>6.4 Desactivar Cupon</h3>
+    <div class="form-group">
+      <label>Coupon ID:</label>
+      <input type="text" id="deleteCouponId" placeholder="UUID" style="width:300px;">
+    </div>
+    <button id="btnDeleteCoupon" class="btn-danger">DELETE /admin/coupons/:id</button>
+    <pre id="deleteCouponOutput">// Resultado...</pre>
+
+    <h3>6.5 Validar Cupon (como usuario)</h3>
+    <div class="form-group">
+      <label>Codigo:</label>
+      <input type="text" id="validateCouponCode" placeholder="DESCUENTO20" style="width:200px;">
+    </div>
+    <button id="btnValidateCoupon" class="btn-primary">POST /coupons/validate</button>
+    <pre id="validateCouponOutput">// Resultado...</pre>
+  </div>
+
+  <!-- ==================== SEGUROS ==================== -->
+  <div class="section">
+    <h2>7. Seguros (Publico)</h2>
+    <button id="btnInsuranceTiers" class="btn-primary">GET /insurance/tiers</button>
+    <pre id="insuranceOutput">// Seguros...</pre>
+    <div class="form-group">
+      <label>Tier:</label>
+      <select id="insuranceTier" style="width:200px;">
+        <option value="BASIC">Basico</option>
+        <option value="STANDARD">Estandar</option>
+        <option value="PREMIUM">Premium</option>
+      </select>
+    </div>
+    <button id="btnInsuranceDetail" class="btn-info">Ver Detalle</button>
+    <pre id="insuranceDetailOutput">// Detalle...</pre>
+  </div>
+
+  <!-- ==================== ENDPOINTS PUBLICOS ==================== -->
+  <div class="section">
+    <h2>8. Endpoints Publicos (verificacion)</h2>
+
+    <h3>8.1 Propiedades Publicas</h3>
+    <button id="btnPublicProperties" class="btn-primary">GET /properties</button>
+    <pre id="publicPropertiesOutput">// Propiedades...</pre>
+
+    <h3>8.2 Detalle Propiedad</h3>
+    <div class="form-group">
+      <label>Property ID:</label>
+      <input type="text" id="viewPropertyId" placeholder="UUID" style="width:300px;">
+    </div>
+    <button id="btnViewProperty" class="btn-primary">GET /properties/:id</button>
+    <pre id="viewPropertyOutput">// Detalle...</pre>
+
+    <h3>8.3 PSE Banks</h3>
+    <button id="btnPSEBanks" class="btn-primary">GET /pse-mock/banks</button>
+    <pre id="pseBanksOutput">// Bancos...</pre>
+  </div>
+
+  <!-- ==================== ACTIVIDAD ==================== -->
+  <div class="section">
+    <h2>9. Actividad</h2>
+    <button id="btnActivities" class="btn-primary">GET /activities</button>
+    <pre id="activitiesOutput">// Actividad...</pre>
+  </div>
+
+  <!-- ==================== LOGS ==================== -->
+  <div class="section">
+    <h2>Log de Peticiones</h2>
+    <button id="btnClearLogs" class="btn-info">Limpiar Logs</button>
+    <pre id="requestLog">// Log de peticiones HTTP...</pre>
+  </div>
+
+  <script>
+    // ==================== CONFIG ====================
+    const SUPABASE_URL = 'https://jraqurdcjwnifzpdqtnm.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_o0rCunkxRvbRrlLTmMekHw_GCpKgvrw';
+    const BACKEND_URL = 'http://localhost:3000';
+    const CLEAN_REDIRECT_URL = window.location.origin + window.location.pathname;
+
+    if (window.location.search.includes('error=') || window.location.hash.includes('error=')) {
+      window.history.replaceState({}, document.title, CLEAN_REDIRECT_URL);
+    }
+
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    let currentSession = null;
+    let requestLogs = [];
+
+    // ==================== UTILS ====================
+    function showStatus(id, msg, type) {
+      document.getElementById(id).innerHTML = '<div class="status ' + type + '">' + msg + '</div>';
+    }
+    function showJson(id, data) {
+      document.getElementById(id).textContent = JSON.stringify(data, null, 2);
+    }
+    function addLog(method, url, status, response) {
+      const ts = new Date().toLocaleTimeString();
+      requestLogs.unshift('[' + ts + '] ' + method + ' ' + url + ' => ' + status + '\n' + JSON.stringify(response, null, 2) + '\n' + '='.repeat(50));
+      document.getElementById('requestLog').textContent = requestLogs.join('\n\n');
+    }
+    function getAuthHeaders() {
+      if (!currentSession) return { 'Content-Type': 'application/json' };
+      return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + currentSession.access_token };
+    }
+    async function makeRequest(method, endpoint, body) {
+      const url = BACKEND_URL + endpoint;
+      const opts = { method, headers: getAuthHeaders() };
+      if (body) opts.body = JSON.stringify(body);
+      try {
+        const r = await fetch(url, opts);
+        const data = await r.json();
+        addLog(method, endpoint, r.status, data);
+        return { status: r.status, data, ok: r.ok };
+      } catch (e) {
+        addLog(method, endpoint, 'ERROR', { error: e.message });
+        return { status: 'ERROR', data: { error: e.message }, ok: false };
+      }
+    }
+    function requireAuth(outputId) {
+      if (!currentSession) { showJson(outputId, { error: 'No autenticado' }); return false; }
+      return true;
+    }
+
+    // ==================== AUTH ====================
+    async function updateAuthStatus() {
+      const { data } = await supabaseClient.auth.getSession();
+      currentSession = data.session;
+      if (currentSession) {
+        showStatus('authStatus', 'Autenticado: ' + currentSession.user.email, 'success');
+        document.getElementById('jwtToken').style.display = 'block';
+        document.getElementById('jwtToken').innerHTML = '<strong>JWT:</strong><br>' + currentSession.access_token;
+        document.getElementById('btnCopyToken').style.display = 'inline-block';
+      } else {
+        showStatus('authStatus', 'No autenticado', 'info');
+        document.getElementById('jwtToken').style.display = 'none';
+        document.getElementById('btnCopyToken').style.display = 'none';
+      }
+    }
+
+    document.getElementById('btnGoogle').onclick = async () => {
+      await supabaseClient.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: CLEAN_REDIRECT_URL } });
+    };
+    document.getElementById('btnSession').onclick = () => updateAuthStatus();
+    document.getElementById('btnLogout').onclick = async () => {
+      await supabaseClient.auth.signOut();
+      currentSession = null;
+      showStatus('authStatus', 'Sesion cerrada', 'info');
+      document.getElementById('jwtToken').style.display = 'none';
+      document.getElementById('btnCopyToken').style.display = 'none';
+    };
+    document.getElementById('btnCopyToken').onclick = async function() {
+      if (currentSession) {
+        await navigator.clipboard.writeText(currentSession.access_token);
+        this.textContent = 'Copiado!';
+        setTimeout(() => { this.textContent = 'Copiar Token'; }, 2000);
+      }
+    };
+
+    // ==================== PERFIL ====================
+    document.getElementById('btnGetProfile').onclick = async () => {
+      if (!requireAuth('profileOutput')) return;
+      const r = await makeRequest('GET', '/users/me');
+      showJson('profileOutput', r.data);
+    };
+
+    // ==================== HEALTH ====================
+    document.getElementById('btnHealth').onclick = async () => {
+      const r = await makeRequest('GET', '/health');
+      showJson('healthOutput', r.data);
+    };
+
+    // ==================== NOTIFICATION TEMPLATES ====================
+    document.getElementById('btnCreateTemplate').onclick = async () => {
+      if (!requireAuth('createTemplateOutput')) return;
+      const vars = document.getElementById('tmplVars').value.split(',').map(s => s.trim()).filter(Boolean);
+      const body = {
+        code: document.getElementById('tmplCode').value || 'TEST_TEMPLATE',
+        name: document.getElementById('tmplName').value || 'Template de prueba',
+        channel: document.getElementById('tmplChannel').value,
+        subject: document.getElementById('tmplSubject').value || 'Asunto de prueba',
+        body: document.getElementById('tmplBody').value || '<p>Hola {{nombre}}</p>',
+        variables: vars.length > 0 ? vars : ['nombre']
+      };
+      const r = await makeRequest('POST', '/admin/notification-templates', body);
+      showJson('createTemplateOutput', r.data);
+    };
+
+    document.getElementById('btnListTemplates').onclick = async () => {
+      if (!requireAuth('listTemplatesOutput')) return;
+      const r = await makeRequest('GET', '/admin/notification-templates');
+      showJson('listTemplatesOutput', r.data);
+    };
+
+    document.getElementById('btnGetTemplateById').onclick = async () => {
+      if (!requireAuth('getTemplateOutput')) return;
+      const id = document.getElementById('tmplId').value;
+      if (!id) { showJson('getTemplateOutput', { error: 'Ingresa Template ID' }); return; }
+      const r = await makeRequest('GET', '/admin/notification-templates/' + id);
+      showJson('getTemplateOutput', r.data);
+    };
+
+    document.getElementById('btnGetTemplateByCode').onclick = async () => {
+      if (!requireAuth('getTemplateOutput')) return;
+      const code = document.getElementById('tmplCodeSearch').value;
+      if (!code) { showJson('getTemplateOutput', { error: 'Ingresa codigo' }); return; }
+      const r = await makeRequest('GET', '/admin/notification-templates/code/' + code);
+      showJson('getTemplateOutput', r.data);
+    };
+
+    document.getElementById('btnUpdateTemplate').onclick = async () => {
+      if (!requireAuth('updateTemplateOutput')) return;
+      const id = document.getElementById('updateTmplId').value;
+      if (!id) { showJson('updateTemplateOutput', { error: 'Ingresa Template ID' }); return; }
+      const body = {};
+      const subject = document.getElementById('updateTmplSubject').value.trim();
+      const bodyText = document.getElementById('updateTmplBody').value.trim();
+      if (subject) body.subject = subject;
+      if (bodyText) body.body = bodyText;
+      const r = await makeRequest('PUT', '/admin/notification-templates/' + id, body);
+      showJson('updateTemplateOutput', r.data);
+    };
+
+    document.getElementById('btnToggleTemplate').onclick = async () => {
+      if (!requireAuth('toggleTemplateOutput')) return;
+      const id = document.getElementById('toggleTmplId').value;
+      if (!id) { showJson('toggleTemplateOutput', { error: 'Ingresa Template ID' }); return; }
+      const r = await makeRequest('PATCH', '/admin/notification-templates/' + id + '/toggle-active');
+      showJson('toggleTemplateOutput', r.data);
+    };
+
+    document.getElementById('btnDeleteTemplate').onclick = async () => {
+      if (!requireAuth('toggleTemplateOutput')) return;
+      const id = document.getElementById('toggleTmplId').value;
+      if (!id) { showJson('toggleTemplateOutput', { error: 'Ingresa Template ID' }); return; }
+      const r = await makeRequest('DELETE', '/admin/notification-templates/' + id);
+      showJson('toggleTemplateOutput', r.data);
+    };
+
+    // ==================== SUBSCRIPTION PLANS ====================
+    document.getElementById('btnListPlans').onclick = async () => {
+      const r = await makeRequest('GET', '/subscription-plans');
+      showJson('listPlansOutput', r.data);
+    };
+
+    document.getElementById('btnPlanDetail').onclick = async () => {
+      const id = document.getElementById('planId').value;
+      if (!id) { showJson('planDetailOutput', { error: 'Ingresa Plan ID' }); return; }
+      const r = await makeRequest('GET', '/subscription-plans/' + id);
+      showJson('planDetailOutput', r.data);
+    };
+
+    document.getElementById('btnUpdatePlan').onclick = async () => {
+      if (!requireAuth('updatePlanOutput')) return;
+      const id = document.getElementById('updatePlanId').value;
+      if (!id) { showJson('updatePlanOutput', { error: 'Ingresa Plan ID' }); return; }
+      const body = {};
+      const monthly = document.getElementById('planMonthlyPrice').value;
+      const annual = document.getElementById('planAnnualPrice').value;
+      if (monthly) body.monthlyPrice = parseInt(monthly);
+      if (annual) body.annualPrice = parseInt(annual);
+      const r = await makeRequest('PATCH', '/subscription-plans/' + id, body);
+      showJson('updatePlanOutput', r.data);
+    };
+
+    // ==================== CUPONES ====================
+    document.getElementById('btnCreateCoupon').onclick = async () => {
+      if (!requireAuth('createCouponOutput')) return;
+      const body = {
+        code: document.getElementById('couponCode').value || 'TEST' + Date.now(),
+        description: document.getElementById('couponDesc').value || 'Cupon de prueba',
+        discountType: document.getElementById('couponDiscountType').value,
+        discountValue: parseInt(document.getElementById('couponDiscountValue').value) || 10,
+        maxUses: parseInt(document.getElementById('couponMaxUses').value) || 100
+      };
+      const expiry = document.getElementById('couponExpiry').value;
+      if (expiry) body.expiresAt = new Date(expiry).toISOString();
+      const r = await makeRequest('POST', '/admin/coupons', body);
+      showJson('createCouponOutput', r.data);
+    };
+
+    document.getElementById('btnListCoupons').onclick = async () => {
+      if (!requireAuth('listCouponsOutput')) return;
+      const r = await makeRequest('GET', '/admin/coupons');
+      showJson('listCouponsOutput', r.data);
+    };
+
+    document.getElementById('btnUpdateCoupon').onclick = async () => {
+      if (!requireAuth('updateCouponOutput')) return;
+      const id = document.getElementById('updateCouponId').value;
+      if (!id) { showJson('updateCouponOutput', { error: 'Ingresa Coupon ID' }); return; }
+      const body = {};
+      const maxUses = document.getElementById('updateCouponMaxUses').value;
+      if (maxUses) body.maxUses = parseInt(maxUses);
+      const r = await makeRequest('PATCH', '/admin/coupons/' + id, body);
+      showJson('updateCouponOutput', r.data);
+    };
+
+    document.getElementById('btnDeleteCoupon').onclick = async () => {
+      if (!requireAuth('deleteCouponOutput')) return;
+      const id = document.getElementById('deleteCouponId').value;
+      if (!id) { showJson('deleteCouponOutput', { error: 'Ingresa Coupon ID' }); return; }
+      const r = await makeRequest('DELETE', '/admin/coupons/' + id);
+      showJson('deleteCouponOutput', r.data);
+    };
+
+    document.getElementById('btnValidateCoupon').onclick = async () => {
+      if (!requireAuth('validateCouponOutput')) return;
+      const code = document.getElementById('validateCouponCode').value;
+      if (!code) { showJson('validateCouponOutput', { error: 'Ingresa codigo' }); return; }
+      const r = await makeRequest('POST', '/coupons/validate', { code });
+      showJson('validateCouponOutput', r.data);
+    };
+
+    // ==================== SEGUROS ====================
+    document.getElementById('btnInsuranceTiers').onclick = async () => {
+      const r = await makeRequest('GET', '/insurance/tiers');
+      showJson('insuranceOutput', r.data);
+    };
+    document.getElementById('btnInsuranceDetail').onclick = async () => {
+      const tier = document.getElementById('insuranceTier').value;
+      const r = await makeRequest('GET', '/insurance/tiers/' + tier);
+      showJson('insuranceDetailOutput', r.data);
+    };
+
+    // ==================== ENDPOINTS PUBLICOS ====================
+    document.getElementById('btnPublicProperties').onclick = async () => {
+      const r = await makeRequest('GET', '/properties');
+      showJson('publicPropertiesOutput', r.data);
+    };
+    document.getElementById('btnViewProperty').onclick = async () => {
+      const id = document.getElementById('viewPropertyId').value;
+      if (!id) { showJson('viewPropertyOutput', { error: 'Ingresa Property ID' }); return; }
+      const r = await makeRequest('GET', '/properties/' + id);
+      showJson('viewPropertyOutput', r.data);
+    };
+    document.getElementById('btnPSEBanks').onclick = async () => {
+      const r = await makeRequest('GET', '/pse-mock/banks');
+      showJson('pseBanksOutput', r.data);
+    };
+
+    // ==================== ACTIVIDAD ====================
+    document.getElementById('btnActivities').onclick = async () => {
+      if (!requireAuth('activitiesOutput')) return;
+      const r = await makeRequest('GET', '/activities');
+      showJson('activitiesOutput', r.data);
+    };
+
+    // ==================== LOGS ====================
+    document.getElementById('btnClearLogs').onclick = () => {
+      requestLogs = [];
+      document.getElementById('requestLog').textContent = '// Log limpiado...';
+    };
+
+    // ==================== INIT ====================
+    updateAuthStatus();
+    supabaseClient.auth.onAuthStateChange(async (event, session) => {
+      currentSession = session;
+      updateAuthStatus();
+    });
+  </script>
+</body>
+</html>
