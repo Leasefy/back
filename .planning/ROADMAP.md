@@ -25,7 +25,7 @@ Backend API en NestJS para el marketplace de arriendos "Arriendo Facil". Provee 
 - [x] **Phase 1: Foundation** - Project scaffold, Prisma, Supabase config
 - [x] **Phase 2: Auth & Users** - Supabase Auth, guards, user management
 - [x] **Phase 2.1: User Roles & Property Agents** - AGENT role, property delegation, application chat (INSERTED)
-- [ ] **Phase 2.2: Inmobiliaria Backend** - Full agency management: propietarios, consignaciones, pipeline, cobros, dispersiones, mantenimiento, renovaciones, actas, reports, analytics (INSERTED)
+- [x] **Phase 2.2: Inmobiliaria Backend** - Full agency management: propietarios, consignaciones, pipeline, cobros, dispersiones, mantenimiento, renovaciones, actas, reports, analytics (INSERTED)
 - [x] **Phase 3: Properties** - CRUD, filtering, image upload, plans
 - [x] **Phase 3.1: Property Visits Scheduling** - Visit requests, availability, accept/reject (INSERTED)
 - [x] **Phase 3.2: Natural Language Search** - Smart property search with keyword parsing (INSERTED)
@@ -154,14 +154,14 @@ with Socket.io instead of Supabase Realtime. This is free but more complex to im
 **Plans**: 8 plans
 
 Plans:
-- [ ] 2.2-01-PLAN.md - Database schema: 18 new models, 15 enums, Agency + Propietario + Consignacion + Pipeline + Cobro + Dispersion + Mantenimiento + Renovacion + Acta + config models
-- [ ] 2.2-02-PLAN.md - Agency core: AgencyModule, config CRUD, team management (invite, roles, status), agency guard/decorator
-- [ ] 2.2-03-PLAN.md - Propietarios + Consignaciones: Owner CRUD with bank accounts, consignment CRUD with agent assignment, portfolio endpoints
-- [ ] 2.2-04-PLAN.md - Pipeline: PipelineModule with 10-stage funnel, stage transitions, filtering, statistics, Kanban-ready API
-- [ ] 2.2-05-PLAN.md - Cobros + Dispersiones: Monthly collection generation, payment registration, late fees, reminder sending, disbursement aggregation, approval, transfer processing
-- [ ] 2.2-06-PLAN.md - Mantenimiento + Renovaciones: Maintenance requests with quotes/approval/completion, lease renewal detection with IPC calculation and negotiation workflow
-- [ ] 2.2-07-PLAN.md - Documents + Actas de entrega: Document templates with variable substitution, acta creation with inventory/meters/keys/signatures, photo uploads
-- [ ] 2.2-08-PLAN.md - Reports + Analytics + Dashboard: 7 report types, KPIs with sparklines, trend analysis, forecast scenarios, dashboard aggregation
+- [x] 2.2-01-PLAN.md - Database schema: 17 models, 21 enums, migration deployed
+- [x] 2.2-02-PLAN.md - Agency core: AgencyModule, config CRUD, team management, AgencyMemberGuard/CurrentAgency decorator
+- [x] 2.2-03-PLAN.md - Propietarios + Consignaciones: Owner CRUD with bank accounts, consignment CRUD with agent assignment, portfolio endpoints
+- [x] 2.2-04-PLAN.md - Pipeline: PipelineModule with 10-stage funnel, stage transitions, filtering, statistics, Kanban-ready API
+- [x] 2.2-05-PLAN.md - Cobros + Dispersiones: Monthly collection generation, payment registration, late fees, reminder sending, disbursement aggregation, approval, transfer processing
+- [x] 2.2-06-PLAN.md - Mantenimiento + Renovaciones: Maintenance requests with quotes/approval/completion, lease renewal detection with IPC calculation and negotiation workflow
+- [x] 2.2-07-PLAN.md - Documents + Actas de entrega: Document templates with variable substitution, acta creation with inventory/meters/keys/signatures
+- [x] 2.2-08-PLAN.md - Reports + Analytics + Dashboard: 7 report types, KPIs, trend analysis, forecasts, agency dashboard
 
 **Wave Structure:**
 - Wave 1: 2.2-01 (database schema foundation)
@@ -992,7 +992,7 @@ Note: Phase 2.2 depends on Phases 3, 7, 8 (already complete), so it can execute 
 | 1. Foundation | 3/3 | Complete | 2026-01-25 |
 | 2. Auth & Users | 3/3 | Complete | 2026-01-26 |
 | **2.1. User Roles & Agents** | 4/4 | Complete | 2026-02-05 |
-| **2.2. Inmobiliaria Backend** | 0/8 | Planning complete | - |
+| **2.2. Inmobiliaria Backend** | 8/8 | Complete | 2026-02-13 |
 | 3. Properties | 4/4 | Complete | 2026-01-29 |
 | 3.1. Property Visits | 4/4 | Complete | 2026-02-03 |
 | 3.2. Natural Search | 1/1 | Complete | 2026-02-03 |
@@ -1100,4 +1100,4 @@ Note: Phase 2.2 depends on Phases 3, 7, 8 (already complete), so it can execute 
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-02-13 - Phase 2.2 (Inmobiliaria Backend) planning complete: 8 plans written*
+*Last updated: 2026-02-13 - Phase 2.2 (Inmobiliaria Backend) COMPLETE: 8/8 plans executed*
