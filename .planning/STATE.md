@@ -2,12 +2,12 @@
 
 ## Current Status
 
-**Phase:** 2.2 (Inmobiliaria Backend)
-**Plan:** 8 of 8
-**Status:** Phase Complete
-**Last activity:** 2026-02-13 - Completed 2.2-08-PLAN.md (Reports, Analytics & Dashboard)
+**Phase:** 21 (Explainability)
+**Plan:** 1 of 1
+**Status:** Plan Complete
+**Last activity:** 2026-02-15 - Completed 21-01 (Explainability Core Services)
 
-**Progress:** [########################################] 100% (78/78 plans)
+**Progress:** [########################################] 100% (80/80 plans)
 
 ## Project Reference
 
@@ -15,7 +15,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 **Core value:** Ejecutar el Risk Score con analisis inteligente de documentos para que propietarios tomen decisiones informadas en minutos, con explicabilidad total.
 
-**Current focus:** Phase 2.2 COMPLETE (8/8 plans). All inmobiliaria modules registered. Next: Phase 20 (AI Document Analysis).
+**Current focus:** Phase 21 Plan 01 COMPLETE. Explainability core services with Cohere narratives. Next: Phase 21 Plan 02 (Endpoints).
 
 ## Quick Context
 
@@ -51,8 +51,8 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 18. Dashboard & Activity Log | COMPLETE | All 3 plans - ActivityLog model (18-01), Dashboard endpoints (18-02), Activity event listeners (18-03) |
 | 19. Property Recommendations | COMPLETE | All 2 plans - Scoring engine (19-01), Service+Endpoints (19-02) |
 | 2.2 Inmobiliaria Backend | COMPLETE | All 8 plans - Schema, Agency, Propietarios, Pipeline, Cobros/Dispersiones, Mantenimiento/Renovaciones, Documentos/Actas, Reports/Analytics/Dashboard |
-| 20. AI Document Analysis (IA) | Pending | PRO+ tier - Claude integration |
-| 21. Explainability (IA) | Pending | PRO+ tier - AI explanations |
+| 20. AI Document Analysis (IA) | COMPLETE | PRO+ tier - Cohere + OCR pipeline |
+| 21. Explainability (IA) | In Progress | PRO+ tier - AI explanations (1/1 plan complete) |
 | 22. ML Persistence (IA) | Pending | Data for ML training |
 
 ## Roadmap Evolution
@@ -387,6 +387,11 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 1. Run: `npx prisma db push`
 2. Verify ActivityType enum and activity_logs table created in database
 
+**AI Document Analysis (Phase 20) setup:**
+1. Add `COHERE_API_KEY` to `.env` (from: Cohere Dashboard > API Keys)
+2. Run: `node scripts/run-migration-ai.mjs` (creates document_analysis_results table)
+3. Run: `npx prisma db push` (sync Prisma schema)
+
 **Phase 2.1 Role/Agent schema migration:** ✓ COMPLETED
 - Executed via `node scripts/run-migration-2.1.mjs` on 2026-02-05
 - Dropped active_role column, added AGENT to Role enum
@@ -394,20 +399,19 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 ## Next Action
 
-Phase 2.2 COMPLETE (all 8 plans). Inmobiliaria Backend fully operational with 13 modules, ~60 endpoints. Next: Phase 20 (AI Document Analysis).
+Phase 20 COMPLETE. AI Document Analysis pipeline with Cohere Command R+ and Tesseract.js OCR. Next: Phase 21 (Explainability).
 
-**Inmobiliaria Backend (Phase 2.2): COMPLETE**
-- 2.2-01: Schema & Migration
-- 2.2-02: AgencyModule
-- 2.2-03: Propietarios & Consignaciones
-- 2.2-04: Pipeline
-- 2.2-05: Cobros & Dispersiones
-- 2.2-06: Mantenimiento & Renovaciones
-- 2.2-07: Documentos & Actas
-- 2.2-08: Reports, Analytics & Dashboard
+**AI Document Analysis (Phase 20): COMPLETE**
+- AiModule: 14 files (module, controller, 4 services, processor, 4 prompts, interfaces, DTO, system prompt)
+- OCR Pipeline: Tesseract.js (images/scanned PDFs) + pdf-parse (native PDFs)
+- Cohere LLM: Command R+ with JSON response format
+- Cross-Validation: Name, salary, company matching across documents
+- Scoring Integration: DocumentVerificationModel (0-15 bonus pts) in scoring pipeline
+- Subscription Gating: PRO/BUSINESS only (FREE → 403)
+- API: 4 endpoints (analyze app, analyze doc, get results, get doc result)
+- Migration: 00006_document_analysis.sql + run-migration-ai.mjs
 
-**PRO+ AI (Phases 20-22) - NEXT:**
-- Phase 20: AI Document Analysis (Claude integration)
+**PRO+ AI (Phases 21-22) - NEXT:**
 - Phase 21: Explainability (AI explanations)
 - Phase 22: ML Persistence (Data for ML training)
 
@@ -491,6 +495,7 @@ Phase 2.2 COMPLETE (all 8 plans). Inmobiliaria Backend fully operational with 13
 | 2026-02-08 | Executed 19-01-PLAN.md | MatchResult interface, 4 scoring sub-models (Affordability/RiskFit/ProfileStrength/Preferences), RecommendationScorer aggregator |
 | 2026-02-08 | Executed 19-02-PLAN.md | RecommendationsService (3 methods), RecommendationsController (3 TENANT endpoints), RecommendationsModule, AppModule integration |
 | 2026-02-08 | Phase 19 verified | 11/11 must-haves passed. Frontend Parity phases (14-19) ALL COMPLETE |
+| 2026-02-15 | Executed Phase 20 | AI Document Analysis: 14 files in src/ai/, scoring model, migration, Cohere+OCR pipeline |
 | 2026-02-13 | 2.2-01 | Enum value prefixing for PostgreSQL | COBRO_PENDING, DISP_PENDING, MAINT_APPROVED avoid same-value-different-enum conflicts |
 | 2026-02-13 | 2.2-01 | ActivityType enum added to migration | Required by ActivityLog model, missing from previous migrations |
 | 2026-02-13 | 2.2-02 | AgencyMemberGuard exported from AgencyModule | Downstream modules need guard for agency-level authorization |
@@ -520,12 +525,18 @@ Phase 2.2 COMPLETE (all 8 plans). Inmobiliaria Backend fully operational with 13
 | 2026-02-13 | Executed 2.2-07-PLAN.md | DocumentosModule + ActasModule registered |
 | 2026-02-13 | 2.2-08 | InmobiliariaDashboardModule naming to avoid Phase 18 collision |
 | 2026-02-13 | Executed 2.2-08-PLAN.md | ReportsModule (7 endpoints) + AnalyticsModule (4 endpoints) + InmobiliariaDashboardModule (3 endpoints), Phase 2.2 COMPLETE |
+| 2026-02-15 | 21-01 | Category inference from signal codes | RTI/DTI/INCOME → financial, EMPLOYMENT/TENURE → stability, REFERENCE → history, PAYMENT_HISTORY → paymentHistory, DOC_VERIFICATION → documentVerification, default → integrity |
+| 2026-02-15 | 21-01 | Icon logic for drivers | Positive → trending_up, negative+integrity → warning, other negatives → trending_down |
+| 2026-02-15 | 21-01 | Spanish prompts with Colombian context | Financial explainability prompts for Cohere Command R+ |
+| 2026-02-15 | 21-01 | AI-first with template fallback | Try Cohere narrative generation, catch errors, fallback to template |
+| 2026-02-15 | 21-01 | Cache narratives in RiskScoreResult.explanation | Fire-and-forget caching for performance, check cache first on retrieval |
+| 2026-02-15 | Executed 21-01-PLAN.md | ExplainabilityService, DriverFormatterService, NarrativeGeneratorService, TemplateGeneratorService created |
 
 ## Session Continuity
 
-**Last session:** 2026-02-13
-**Stopped at:** Phase 2.2 complete (8/8 plans)
-**Resume file:** .planning/phases/2.2-inmobiliaria-backend/2.2-08-SUMMARY.md
+**Last session:** 2026-02-15
+**Stopped at:** Phase 21 Plan 01 complete (Explainability Core Services)
+**Resume file:** .planning/phases/21-explainability/21-01-SUMMARY.md
 
 ---
-*Last updated: 2026-02-13*
+*Last updated: 2026-02-15*
