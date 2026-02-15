@@ -45,7 +45,7 @@ Backend API en NestJS para el marketplace de arriendos "Arriendo Facil". Provee 
 - [x] **Phase 17: Coupons & Discounts** - Coupon codes for subscription discounts (FRONTEND PARITY)
 - [x] **Phase 18: Dashboard & Activity Log** - Aggregated dashboard endpoints and activity feed (FRONTEND PARITY)
 - [x] **Phase 19: Property Recommendations** - Personalized property matching and recommendations (FRONTEND PARITY)
-- [ ] **Phase 20: AI Document Analysis** - Claude integration, document analyzers (PRO+) (REORDERED)
+- [x] **Phase 20: AI Document Analysis** - Cohere integration, OCR pipeline, document analyzers, cross-validation, scoring bonus (PRO+) (REORDERED)
 - [ ] **Phase 21: Explainability** - Drivers, flags, AI explanation (PRO+) (REORDERED)
 - [ ] **Phase 22: ML Persistence** - Feature logging, outcome tracking (REORDERED)
 
@@ -964,9 +964,23 @@ GET /recommendations/property/:propertyId/match-score   // Get match score for s
   3. Suggested conditions generated based on risk
   4. AI-generated conversational explanation
   5. Subscores visible in response
-**Research**: Likely (explanation generation patterns)
-**Research topics**: LLM prompts for explanations
-**Plans**: TBD
+**Research**: Complete (21-RESEARCH.md)
+**Plans**: 2 plans
+
+Plans:
+- [ ] 21-01-PLAN.md -- Core explainability services (DriverFormatter, NarrativeGenerator, TemplateGenerator, ExplainabilityService) + DTOs
+- [ ] 21-02-PLAN.md -- REST endpoint, ScoringModule wiring, scoring processor narrative generation integration
+
+**Wave Structure:**
+- Wave 1: 21-01 (core services + DTOs)
+- Wave 2: 21-02 (endpoint + module wiring + processor integration, depends on 01)
+
+**Key Architectural Decisions:**
+- 4 services: DriverFormatterService, NarrativeGeneratorService, TemplateGeneratorService, ExplainabilityService
+- AI narrative via Cohere Command R+ (free tier, already integrated from Phase 20)
+- Template-based fallback when Cohere unavailable
+- Narrative generated async during scoring, cached in RiskScoreResult.explanation field
+- Subscription gating via existing hasPremiumScoring flag
 
 ### Phase 22: ML Persistence (REORDERED - era Phase 16)
 **Goal**: Data infrastructure for future ML model training
@@ -1012,8 +1026,8 @@ Note: Phase 2.2 depends on Phases 3, 7, 8 (already complete), so it can execute 
 | **17. Coupons & Discounts** | 2/2 | Complete | 2026-02-08 |
 | **18. Dashboard & Activity Log** | 3/3 | Complete | 2026-02-08 |
 | **19. Property Recommendations** | 2/2 | Complete | 2026-02-08 |
-| 20. AI Document Analysis (IA) | 0/0 | Not started | - |
-| 21. Explainability (IA) | 0/0 | Not started | - |
+| 20. AI Document Analysis (IA) | 1/1 | Complete | 2026-02-15 |
+| 21. Explainability (IA) | 0/2 | Planned | - |
 | 22. ML Persistence (IA) | 0/0 | Not started | - |
 
 ## Notes
