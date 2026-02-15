@@ -4,6 +4,7 @@ import { DriverFormatterService } from './driver-formatter.service.js';
 import { NarrativeGeneratorService } from './narrative-generator.service.js';
 import { TemplateGeneratorService } from './template-generator.service.js';
 import type { RiskScoreResultData, Driver, Flag, Condition } from '../aggregator/risk-score-result.interface.js';
+import { RiskLevel } from '../../common/enums/index.js';
 import type { Signal } from '../models/model-result.interface.js';
 import {
   ExplainabilityResponseDto,
@@ -52,7 +53,7 @@ export class ExplainabilityService {
     // Build RiskScoreResultData for internal use
     const resultData: RiskScoreResultData = {
       total: scoreResult.totalScore,
-      level: scoreResult.level,
+      level: scoreResult.level as RiskLevel,
       categories: {
         financial: scoreResult.financialScore,
         stability: scoreResult.stabilityScore,
@@ -155,7 +156,7 @@ export class ExplainabilityService {
     // Build result data
     const resultData: RiskScoreResultData = {
       total: scoreResult.totalScore,
-      level: scoreResult.level,
+      level: scoreResult.level as RiskLevel,
       categories: {
         financial: scoreResult.financialScore,
         stability: scoreResult.stabilityScore,

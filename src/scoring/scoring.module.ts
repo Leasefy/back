@@ -18,6 +18,9 @@ import { ScoreAggregator } from './aggregator/score-aggregator.js';
 import { PaymentHistoryService } from './services/payment-history.service.js';
 import { PaymentHistoryModel } from './models/payment-history-model.js';
 
+// Document verification scoring
+import { DocumentVerificationModel } from './models/document-verification-model.js';
+
 // Processor, service, and controller
 import { ScoringProcessor } from './processors/scoring.processor.js';
 import { ScoringService } from './scoring.service.js';
@@ -25,6 +28,15 @@ import { ScoringController } from './scoring.controller.js';
 
 // Subscriptions for plan enforcement
 import { SubscriptionsModule } from '../subscriptions/subscriptions.module.js';
+
+// AI module (Cohere service for narrative generation)
+import { AiModule } from '../ai/ai.module.js';
+
+// Explainability services
+import { DriverFormatterService } from './explainability/driver-formatter.service.js';
+import { NarrativeGeneratorService } from './explainability/narrative-generator.service.js';
+import { TemplateGeneratorService } from './explainability/template-generator.service.js';
+import { ExplainabilityService } from './explainability/explainability.service.js';
 
 /**
  * ScoringModule
@@ -47,11 +59,13 @@ import { SubscriptionsModule } from '../subscriptions/subscriptions.module.js';
  * - HistoryModel (15): landlord, employment, personal references
  * - IntegrityEngine (25): data consistency checks
  * - PaymentHistoryModel (+0-15 bonus): platform payment track record
+ * - DocumentVerificationModel (+0-15 bonus): AI document analysis verification
  *
  * Complete provider list:
  * - FeatureBuilder: Extract scoring features from application data
  * - FinancialModel, StabilityModel, HistoryModel, IntegrityEngine: Base scoring models
  * - PaymentHistoryService, PaymentHistoryModel: Payment history bonus scoring
+ * - DocumentVerificationModel: AI document verification bonus scoring
  * - ScoreAggregator: Combine subscores into final result (capped at 100)
  * - ScoringProcessor: BullMQ worker for async job processing
  * - ScoringService: Queue job creation interface
@@ -60,6 +74,7 @@ import { SubscriptionsModule } from '../subscriptions/subscriptions.module.js';
   controllers: [ScoringController],
   imports: [
     SubscriptionsModule,
+    AiModule,
     // Configure BullMQ with Redis connection from environment
     BullModule.forRootAsync({
       imports: [ConfigModule],
@@ -100,8 +115,15 @@ import { SubscriptionsModule } from '../subscriptions/subscriptions.module.js';
     // Payment history scoring
     PaymentHistoryService,
     PaymentHistoryModel,
+    // Document verification scoring
+    DocumentVerificationModel,
     // Score aggregation
     ScoreAggregator,
+    // Explainability services
+    DriverFormatterService,
+    NarrativeGeneratorService,
+    TemplateGeneratorService,
+    ExplainabilityService,
     // Async processing
     ScoringProcessor,
     ScoringService,
@@ -112,6 +134,8 @@ import { SubscriptionsModule } from '../subscriptions/subscriptions.module.js';
     // Export PaymentHistoryService for controller use
     PaymentHistoryService,
     PaymentHistoryModel,
+    // Explainability for other modules
+    ExplainabilityService,
   ],
 })
 export class ScoringModule {}

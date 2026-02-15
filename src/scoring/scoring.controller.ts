@@ -26,6 +26,8 @@ import {
 } from './dto/payment-reputation.dto.js';
 import { PlanEnforcementService } from '../subscriptions/services/plan-enforcement.service.js';
 import { SubscriptionsService } from '../subscriptions/services/subscriptions.service.js';
+import { ExplainabilityService } from './explainability/explainability.service.js';
+import { ExplainabilityResponseDto } from './explainability/dto/index.js';
 
 /**
  * ScoringController
@@ -44,6 +46,7 @@ export class ScoringController {
     private readonly paymentHistoryModel: PaymentHistoryModel,
     private readonly planEnforcement: PlanEnforcementService,
     private readonly subscriptionsService: SubscriptionsService,
+    private readonly explainabilityService: ExplainabilityService,
   ) {}
 
   /**
@@ -112,6 +115,75 @@ export class ScoringController {
     if (score >= 8) return 'SILVER'; // 53%+ of max bonus
     if (score >= 4) return 'BRONZE'; // 27%+ of max bonus
     return 'NEW';
+  }
+
+  /**
+   * Get detailed score explanation with AI narrative.
+   * PRO/BUSINESS subscription required.
+   */
+  @Get(':applicationId/explanation')
+  @ApiOperation({
+    summary: 'Get detailed score explanation (PRO/BUSINESS only)',
+    description:
+      'Returns AI-generated narrative, enhanced drivers with category metadata, risk flags, suggested conditions, and subscore breakdown',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Explanation generated',
+    type: ExplainabilityResponseDto,
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Premium scoring required or not authorized',
+  })
+  @ApiResponse({ status: 404, description: 'Score not found' })
+  async getExplanation(
+    @CurrentUser() user: User,
+    @Param('applicationId', ParseUUIDPipe) applicationId: string,
+  ): Promise<ExplainabilityResponseDto> {
+    // 1. Permission check: must be tenant owner OR property landlord
+    const application = await this.prisma.application.findUnique({
+      where: { id: applicationId },
+      include: {
+        property: { select: { landlordId: true } },
+      },
+    });
+
+    if (!application) {
+      throw new NotFoundException('Aplicacion no encontrada');
+    }
+
+    const isTenantOwner = application.tenantId === user.id;
+    const isLandlord = application.property.landlordId === user.id;
+
+    if (!isTenantOwner && !isLandlord) {
+      throw new ForbiddenException(
+        'No tienes permiso para ver esta explicacion. Solo el aplicante o el propietario pueden acceder.',
+      );
+    }
+
+    // 2. Check premium scoring access
+    const planConfig = await this.subscriptionsService.getUserPlanConfig(
+      user.id,
+    );
+    if (!planConfig.hasPremiumScoring) {
+      throw new ForbiddenException({
+        message:
+          'Tu plan no incluye explicaciones detalladas de scoring. Actualiza a PRO o BUSINESS.',
+        requiredPlan: 'PRO',
+      });
+    }
+
+    // 3. Get score result
+    const result = await this.scoringService.getScoreResult(applicationId);
+    if (!result) {
+      throw new NotFoundException(
+        'Score no encontrado. El scoring puede estar en progreso o la aplicacion no fue enviada.',
+      );
+    }
+
+    // 4. Generate or retrieve explanation
+    return this.explainabilityService.getExplanation(result, application);
   }
 
   /**
