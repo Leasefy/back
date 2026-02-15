@@ -3,11 +3,11 @@
 ## Current Status
 
 **Phase:** 21 (Explainability)
-**Plan:** 1 of 1
-**Status:** Plan Complete
-**Last activity:** 2026-02-15 - Completed 21-01 (Explainability Core Services)
+**Plan:** 2 of 2
+**Status:** Phase Complete
+**Last activity:** 2026-02-15 - Completed 21-02 (REST Endpoint, Module Wiring, Processor Integration)
 
-**Progress:** [########################################] 100% (80/80 plans)
+**Progress:** [########################################] 100% (81/81 plans)
 
 ## Project Reference
 
@@ -15,7 +15,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 **Core value:** Ejecutar el Risk Score con analisis inteligente de documentos para que propietarios tomen decisiones informadas en minutos, con explicabilidad total.
 
-**Current focus:** Phase 21 Plan 01 COMPLETE. Explainability core services with Cohere narratives. Next: Phase 21 Plan 02 (Endpoints).
+**Current focus:** Phase 21 COMPLETE. Explainability with REST endpoint, subscription gating, and async narrative pre-generation. Next: Phase 22 (ML Persistence).
 
 ## Quick Context
 
@@ -52,7 +52,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 19. Property Recommendations | COMPLETE | All 2 plans - Scoring engine (19-01), Service+Endpoints (19-02) |
 | 2.2 Inmobiliaria Backend | COMPLETE | All 8 plans - Schema, Agency, Propietarios, Pipeline, Cobros/Dispersiones, Mantenimiento/Renovaciones, Documentos/Actas, Reports/Analytics/Dashboard |
 | 20. AI Document Analysis (IA) | COMPLETE | PRO+ tier - Cohere + OCR pipeline |
-| 21. Explainability (IA) | In Progress | PRO+ tier - AI explanations (1/1 plan complete) |
+| 21. Explainability (IA) | COMPLETE | All 2 plans - core services (21-01), endpoint + processor integration (21-02) |
 | 22. ML Persistence (IA) | Pending | Data for ML training |
 
 ## Roadmap Evolution
@@ -399,20 +399,16 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 ## Next Action
 
-Phase 20 COMPLETE. AI Document Analysis pipeline with Cohere Command R+ and Tesseract.js OCR. Next: Phase 21 (Explainability).
+Phase 21 COMPLETE. Explainability with REST endpoint, module wiring, and processor integration. Next: Phase 22 (ML Persistence).
 
-**AI Document Analysis (Phase 20): COMPLETE**
-- AiModule: 14 files (module, controller, 4 services, processor, 4 prompts, interfaces, DTO, system prompt)
-- OCR Pipeline: Tesseract.js (images/scanned PDFs) + pdf-parse (native PDFs)
-- Cohere LLM: Command R+ with JSON response format
-- Cross-Validation: Name, salary, company matching across documents
-- Scoring Integration: DocumentVerificationModel (0-15 bonus pts) in scoring pipeline
-- Subscription Gating: PRO/BUSINESS only (FREE → 403)
-- API: 4 endpoints (analyze app, analyze doc, get results, get doc result)
-- Migration: 00006_document_analysis.sql + run-migration-ai.mjs
+**Explainability (Phase 21): COMPLETE**
+- Plan 01: Core services (ExplainabilityService, DriverFormatterService, NarrativeGeneratorService, TemplateGeneratorService, DTOs)
+- Plan 02: GET /scoring/:applicationId/explanation endpoint, ScoringModule wiring (AiModule import, 4 providers), processor integration (async narrative pre-gen), algorithmVersion 2.1
+- Cohere Command R+ for Spanish narrative generation
+- Template fallback when Cohere unavailable
+- Subscription gated: PRO/BUSINESS only
 
-**PRO+ AI (Phases 21-22) - NEXT:**
-- Phase 21: Explainability (AI explanations)
+**PRO+ AI (Phase 22) - NEXT:**
 - Phase 22: ML Persistence (Data for ML training)
 
 ## Session History
@@ -531,12 +527,16 @@ Phase 20 COMPLETE. AI Document Analysis pipeline with Cohere Command R+ and Tess
 | 2026-02-15 | 21-01 | AI-first with template fallback | Try Cohere narrative generation, catch errors, fallback to template |
 | 2026-02-15 | 21-01 | Cache narratives in RiskScoreResult.explanation | Fire-and-forget caching for performance, check cache first on retrieval |
 | 2026-02-15 | Executed 21-01-PLAN.md | ExplainabilityService, DriverFormatterService, NarrativeGeneratorService, TemplateGeneratorService created |
+| 2026-02-15 | 21-02 | Non-blocking narrative in processor | try/catch wrapping - narrative failure cannot fail scoring job |
+| 2026-02-15 | 21-02 | Route ordering for explanation endpoint | :applicationId/explanation before :applicationId to avoid route shadowing |
+| 2026-02-15 | 21-02 | Pre-generate narrative only for premium users | Check both tenant and landlord plan configs via Promise.all |
+| 2026-02-15 | Executed 21-02-PLAN.md | GET /scoring/:applicationId/explanation endpoint, ScoringModule wiring, processor integration, algorithmVersion 2.1 |
 
 ## Session Continuity
 
 **Last session:** 2026-02-15
-**Stopped at:** Phase 21 Plan 01 complete (Explainability Core Services)
-**Resume file:** .planning/phases/21-explainability/21-01-SUMMARY.md
+**Stopped at:** Phase 21 Plan 02 complete (REST Endpoint, Module Wiring, Processor Integration)
+**Resume file:** .planning/phases/21-explainability/21-02-SUMMARY.md
 
 ---
 *Last updated: 2026-02-15*
