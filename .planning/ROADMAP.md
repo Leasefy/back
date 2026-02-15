@@ -46,7 +46,7 @@ Backend API en NestJS para el marketplace de arriendos "Arriendo Facil". Provee 
 - [x] **Phase 18: Dashboard & Activity Log** - Aggregated dashboard endpoints and activity feed (FRONTEND PARITY)
 - [x] **Phase 19: Property Recommendations** - Personalized property matching and recommendations (FRONTEND PARITY)
 - [x] **Phase 20: AI Document Analysis** - Cohere integration, OCR pipeline, document analyzers, cross-validation, scoring bonus (PRO+) (REORDERED)
-- [ ] **Phase 21: Explainability** - Drivers, flags, AI explanation (PRO+) (REORDERED)
+- [x] **Phase 21: Explainability** - Drivers, flags, AI explanation (PRO+) (REORDERED)
 - [ ] **Phase 22: ML Persistence** - Feature logging, outcome tracking (REORDERED)
 
 ## Phase Details
@@ -968,8 +968,8 @@ GET /recommendations/property/:propertyId/match-score   // Get match score for s
 **Plans**: 2 plans
 
 Plans:
-- [ ] 21-01-PLAN.md -- Core explainability services (DriverFormatter, NarrativeGenerator, TemplateGenerator, ExplainabilityService) + DTOs
-- [ ] 21-02-PLAN.md -- REST endpoint, ScoringModule wiring, scoring processor narrative generation integration
+- [x] 21-01-PLAN.md -- Core explainability services (DriverFormatter, NarrativeGenerator, TemplateGenerator, ExplainabilityService) + DTOs
+- [x] 21-02-PLAN.md -- REST endpoint, ScoringModule wiring, scoring processor narrative generation integration
 
 **Wave Structure:**
 - Wave 1: 21-01 (core services + DTOs)
@@ -991,8 +991,32 @@ Plans:
   2. Application outcomes trackable (approved -> paid/defaulted)
   3. Score predictions vs actuals logged
   4. Data exportable for ML training
-**Research**: Unlikely (data modeling)
-**Plans**: TBD
+**Research**: Complete (22-RESEARCH.md)
+**Plans**: 2 plans
+
+Plans:
+- [ ] 22-01-PLAN.md -- Database models (ApplicationFeatureSnapshot, PredictionLog), MlPersistenceModule, scoring processor integration
+- [ ] 22-02-PLAN.md -- Outcome tracking (event listeners, daily cron scheduler), ADMIN-only CSV/JSON export endpoint
+
+**Wave Structure:**
+- Wave 1: 22-01 (database models + service + scoring processor wiring)
+- Wave 2: 22-02 (outcome tracking + export, depends on 01)
+
+**Key Architectural Decisions:**
+- ApplicationFeatureSnapshot: Immutable point-in-time feature capture on every scoring run
+- PredictionLog: Predicted score/level vs actual outcome (evolves over lease lifetime)
+- Outcomes: APPROVED_PENDING -> APPROVED_PAID_ON_TIME | APPROVED_LATE_PAYMENTS | APPROVED_DEFAULTED | REJECTED | WITHDRAWN
+- Daily cron job updates outcomes from lease payment data (3mo/6mo/12mo milestones)
+- 5-day grace period for late payment classification (matching Phase 9 convention)
+- CSV export with point-in-time correct queries (never joins mutable Application data)
+- No new dependencies (PostgreSQL JSON + Prisma sufficient)
+- All ML tracking wrapped in try/catch (never blocks business flows)
+
+**Expected Endpoints:**
+```
+GET /ml/export?format=csv&algorithmVersion=2.1&minMonthsTracked=6  // ADMIN only
+GET /ml/stats                                                        // ADMIN only
+```
 
 ## Progress
 
@@ -1027,8 +1051,8 @@ Note: Phase 2.2 depends on Phases 3, 7, 8 (already complete), so it can execute 
 | **18. Dashboard & Activity Log** | 3/3 | Complete | 2026-02-08 |
 | **19. Property Recommendations** | 2/2 | Complete | 2026-02-08 |
 | 20. AI Document Analysis (IA) | 1/1 | Complete | 2026-02-15 |
-| 21. Explainability (IA) | 0/2 | Planned | - |
-| 22. ML Persistence (IA) | 0/0 | Not started | - |
+| 21. Explainability (IA) | 2/2 | Complete | 2026-02-15 |
+| 22. ML Persistence (IA) | 0/2 | Planned | - |
 
 ## Notes
 
@@ -1114,4 +1138,4 @@ Note: Phase 2.2 depends on Phases 3, 7, 8 (already complete), so it can execute 
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-02-13 - Phase 2.2 (Inmobiliaria Backend) COMPLETE: 8/8 plans executed*
+*Last updated: 2026-02-15 - Phase 22 (ML Persistence) planned: 2 plans*
