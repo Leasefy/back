@@ -10,8 +10,11 @@ import { StabilityModel } from '../models/stability-model.js';
 import { HistoryModel } from '../models/history-model.js';
 import { IntegrityEngine } from '../models/integrity-engine.js';
 import { PaymentHistoryModel } from '../models/payment-history-model.js';
+import { DocumentVerificationModel } from '../models/document-verification-model.js';
 import { ScoreAggregator } from '../aggregator/score-aggregator.js';
 import { PaymentHistoryService } from '../services/payment-history.service.js';
+import { ExplainabilityService } from '../explainability/explainability.service.js';
+import { SubscriptionsService } from '../../subscriptions/services/subscriptions.service.js';
 import { ScoringJobData } from '../dto/scoring-job.dto.js';
 
 /**
@@ -41,6 +44,9 @@ export class ScoringProcessor extends WorkerHost {
     private readonly scoreAggregator: ScoreAggregator,
     private readonly paymentHistoryService: PaymentHistoryService,
     private readonly paymentHistoryModel: PaymentHistoryModel,
+    private readonly documentVerificationModel: DocumentVerificationModel,
+    private readonly explainabilityService: ExplainabilityService,
+    private readonly subscriptionsService: SubscriptionsService,
   ) {
     super();
   }
@@ -82,13 +88,18 @@ export class ScoringProcessor extends WorkerHost {
     // IntegrityEngine uses analyze() which requires the full application for context
     const integrityResult = this.integrityEngine.analyze(application, features);
 
-    // 5. Aggregate scores into final result (including payment history bonus)
+    // 4b. Get document verification bonus (if AI analysis has been run)
+    const documentVerificationResult =
+      await this.documentVerificationModel.calculate(applicationId);
+
+    // 5. Aggregate scores into final result (including payment history + doc verification bonus)
     const result = this.scoreAggregator.combine({
       financial: financialResult,
       stability: stabilityResult,
       history: historyResult,
       integrity: integrityResult,
       paymentHistory: paymentHistoryResult,
+      documentVerification: documentVerificationResult,
     });
 
     // Collect all raw signals for debugging and analysis
@@ -98,6 +109,7 @@ export class ScoringProcessor extends WorkerHost {
       ...historyResult.signals,
       ...integrityResult.signals,
       ...paymentHistoryResult.signals,
+      ...documentVerificationResult.signals,
     ];
 
     // 6. Persist result to database
@@ -116,9 +128,44 @@ export class ScoringProcessor extends WorkerHost {
         drivers: result.drivers as unknown as Prisma.InputJsonValue,
         flags: result.flags as unknown as Prisma.InputJsonValue,
         conditions: result.conditions as unknown as Prisma.InputJsonValue,
-        algorithmVersion: '1.1',
+        algorithmVersion: '2.1',
       },
     });
+
+    // 6b. Generate AI narrative if any viewer might have premium access
+    try {
+      const [tenantPlan, landlordPlan] = await Promise.all([
+        this.subscriptionsService.getUserPlanConfig(application.tenantId),
+        this.subscriptionsService.getUserPlanConfig(
+          application.property.landlordId,
+        ),
+      ]);
+
+      if (tenantPlan.hasPremiumScoring || landlordPlan.hasPremiumScoring) {
+        const scoreResult = await this.prisma.riskScoreResult.findUnique({
+          where: { applicationId },
+          select: { id: true },
+        });
+
+        if (scoreResult) {
+          await this.explainabilityService.generateAndCacheNarrative(
+            scoreResult.id,
+          );
+          this.logger.log(
+            `AI narrative generated for application ${applicationId}`,
+          );
+        }
+      }
+    } catch (narrativeError) {
+      // Narrative generation failure should NOT fail the scoring job
+      this.logger.warn(
+        `Failed to generate AI narrative for application ${applicationId}: ${
+          narrativeError instanceof Error
+            ? narrativeError.message
+            : 'Unknown error'
+        }`,
+      );
+    }
 
     // 7. Update application status to UNDER_REVIEW
     // Scoring runs async via BullMQ
