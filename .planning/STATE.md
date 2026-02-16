@@ -3,11 +3,11 @@
 ## Current Status
 
 **Phase:** 22 (ML Persistence)
-**Plan:** 1 of 2
-**Status:** In Progress
-**Last activity:** 2026-02-16 - Completed 22-01 (Database Models and ML Persistence Service)
+**Plan:** 2 of 2
+**Status:** Phase Complete
+**Last activity:** 2026-02-16 - Completed 22-02 (Outcome Tracking & Export)
 
-**Progress:** [########################################] 100% (82/82 plans)
+**Progress:** [########################################] 100% (83/83 plans)
 
 ## Project Reference
 
@@ -15,7 +15,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 **Core value:** Ejecutar el Risk Score con analisis inteligente de documentos para que propietarios tomen decisiones informadas en minutos, con explicabilidad total.
 
-**Current focus:** Phase 22 in progress (1/2). ML persistence with immutable feature snapshots and prediction logs for model reproducibility. Next: 22-02 (Model Retraining Dataset).
+**Current focus:** All 22 phases COMPLETE. Full ML persistence pipeline: feature snapshots, prediction logs, automated outcome tracking, training data export.
 
 ## Quick Context
 
@@ -53,7 +53,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 2.2 Inmobiliaria Backend | COMPLETE | All 8 plans - Schema, Agency, Propietarios, Pipeline, Cobros/Dispersiones, Mantenimiento/Renovaciones, Documentos/Actas, Reports/Analytics/Dashboard |
 | 20. AI Document Analysis (IA) | COMPLETE | PRO+ tier - Cohere + OCR pipeline |
 | 21. Explainability (IA) | COMPLETE | All 2 plans - core services (21-01), endpoint + processor integration (21-02) |
-| 22. ML Persistence (IA) | In Progress | 1 of 2 plans - feature snapshots + prediction logs (22-01) |
+| 22. ML Persistence (IA) | COMPLETE | All 2 plans - feature snapshots, prediction logs (22-01), outcome tracking + export (22-02) |
 
 ## Roadmap Evolution
 
@@ -399,17 +399,13 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 ## Next Action
 
-Phase 21 COMPLETE. Explainability with REST endpoint, module wiring, and processor integration. Next: Phase 22 (ML Persistence).
+ALL 22 PHASES COMPLETE. The entire backend is implemented.
 
-**Explainability (Phase 21): COMPLETE**
-- Plan 01: Core services (ExplainabilityService, DriverFormatterService, NarrativeGeneratorService, TemplateGeneratorService, DTOs)
-- Plan 02: GET /scoring/:applicationId/explanation endpoint, ScoringModule wiring (AiModule import, 4 providers), processor integration (async narrative pre-gen), algorithmVersion 2.1
-- Cohere Command R+ for Spanish narrative generation
-- Template fallback when Cohere unavailable
-- Subscription gated: PRO/BUSINESS only
-
-**PRO+ AI (Phase 22) - NEXT:**
-- Phase 22: ML Persistence (Data for ML training)
+**ML Persistence (Phase 22): COMPLETE**
+- Plan 01: ApplicationFeatureSnapshot + PredictionLog models, MlPersistenceService, wired into ScoringProcessor
+- Plan 02: Outcome tracking via dedicated event listeners (application.statusChanged, contract.activated), daily cron scheduler for lease payment evaluation, ADMIN-only training data export (CSV/JSON)
+- Full prediction-vs-actual feedback loop closed
+- Training data exportable for external ML model retraining
 
 ## Session History
 
@@ -537,12 +533,18 @@ Phase 21 COMPLETE. Explainability with REST endpoint, module wiring, and process
 | 2026-02-16 | 22-01 | Synchronous ML persistence with try/catch | Runs in scoring job but never fails scoring on ML persistence errors |
 | 2026-02-16 | 22-01 | Idempotent prediction log upsert | Allows re-scoring without duplicates using applicationId unique constraint |
 | 2026-02-16 | Executed 22-01-PLAN.md | ApplicationFeatureSnapshot and PredictionLog models, MlPersistenceService, wired into ScoringProcessor step 6a |
+| 2026-02-16 | 22-02 | APPROVED_* granular outcomes added | APPROVED_PENDING/PAID_ON_TIME/LATE_PAYMENTS/DEFAULTED for ML training granularity, legacy values kept |
+| 2026-02-16 | 22-02 | Dedicated ML event listeners | Separate from notification listeners to avoid cross-module coupling |
+| 2026-02-16 | 22-02 | ContractOutcomeListener resolves applicationId from Contract | ContractActivatedEvent does not carry applicationId, query needed |
+| 2026-02-16 | 22-02 | Raw SQL for point-in-time export | Joins immutable snapshots + predictions + outcomes, never mutable Application data |
+| 2026-02-16 | 22-02 | 5-day grace period for late payment classification | Matches Phase 9 convention for Colombian rent payment standard |
+| 2026-02-16 | Executed 22-02-PLAN.md | Outcome tracking listeners, daily scheduler, ADMIN export endpoint, Phase 22 COMPLETE |
 
 ## Session Continuity
 
 **Last session:** 2026-02-16
-**Stopped at:** Phase 22 Plan 01 complete (Database Models and ML Persistence Service)
-**Resume file:** .planning/phases/22-ml-persistence/22-01-SUMMARY.md
+**Stopped at:** Phase 22 Plan 02 complete (Outcome Tracking & Export) - ALL PHASES COMPLETE
+**Resume file:** .planning/phases/22-ml-persistence/22-02-SUMMARY.md
 
 ---
-*Last updated: 2026-02-15*
+*Last updated: 2026-02-16*
