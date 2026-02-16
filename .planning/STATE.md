@@ -2,12 +2,12 @@
 
 ## Current Status
 
-**Phase:** 21 (Explainability)
-**Plan:** 2 of 2
-**Status:** Phase Complete
-**Last activity:** 2026-02-15 - Completed 21-02 (REST Endpoint, Module Wiring, Processor Integration)
+**Phase:** 22 (ML Persistence)
+**Plan:** 1 of 2
+**Status:** In Progress
+**Last activity:** 2026-02-16 - Completed 22-01 (Database Models and ML Persistence Service)
 
-**Progress:** [########################################] 100% (81/81 plans)
+**Progress:** [########################################] 100% (82/82 plans)
 
 ## Project Reference
 
@@ -15,7 +15,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 **Core value:** Ejecutar el Risk Score con analisis inteligente de documentos para que propietarios tomen decisiones informadas en minutos, con explicabilidad total.
 
-**Current focus:** Phase 21 COMPLETE. Explainability with REST endpoint, subscription gating, and async narrative pre-generation. Next: Phase 22 (ML Persistence).
+**Current focus:** Phase 22 in progress (1/2). ML persistence with immutable feature snapshots and prediction logs for model reproducibility. Next: 22-02 (Model Retraining Dataset).
 
 ## Quick Context
 
@@ -53,7 +53,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 | 2.2 Inmobiliaria Backend | COMPLETE | All 8 plans - Schema, Agency, Propietarios, Pipeline, Cobros/Dispersiones, Mantenimiento/Renovaciones, Documentos/Actas, Reports/Analytics/Dashboard |
 | 20. AI Document Analysis (IA) | COMPLETE | PRO+ tier - Cohere + OCR pipeline |
 | 21. Explainability (IA) | COMPLETE | All 2 plans - core services (21-01), endpoint + processor integration (21-02) |
-| 22. ML Persistence (IA) | Pending | Data for ML training |
+| 22. ML Persistence (IA) | In Progress | 1 of 2 plans - feature snapshots + prediction logs (22-01) |
 
 ## Roadmap Evolution
 
@@ -531,12 +531,18 @@ Phase 21 COMPLETE. Explainability with REST endpoint, module wiring, and process
 | 2026-02-15 | 21-02 | Route ordering for explanation endpoint | :applicationId/explanation before :applicationId to avoid route shadowing |
 | 2026-02-15 | 21-02 | Pre-generate narrative only for premium users | Check both tenant and landlord plan configs via Promise.all |
 | 2026-02-15 | Executed 21-02-PLAN.md | GET /scoring/:applicationId/explanation endpoint, ScoringModule wiring, processor integration, algorithmVersion 2.1 |
+| 2026-02-16 | 22-01 | PredictionOutcome as TypeScript enum | Stored as VARCHAR(30) for flexibility, not Prisma enum to avoid migration overhead |
+| 2026-02-16 | 22-01 | Features as JSONB | Complete ScoringFeatures interface stored as JSON for immutability and decoupling |
+| 2026-02-16 | 22-01 | Algorithm version '2.1' hardcoded | Consistency across feature snapshot, prediction log, and risk score result |
+| 2026-02-16 | 22-01 | Synchronous ML persistence with try/catch | Runs in scoring job but never fails scoring on ML persistence errors |
+| 2026-02-16 | 22-01 | Idempotent prediction log upsert | Allows re-scoring without duplicates using applicationId unique constraint |
+| 2026-02-16 | Executed 22-01-PLAN.md | ApplicationFeatureSnapshot and PredictionLog models, MlPersistenceService, wired into ScoringProcessor step 6a |
 
 ## Session Continuity
 
-**Last session:** 2026-02-15
-**Stopped at:** Phase 21 Plan 02 complete (REST Endpoint, Module Wiring, Processor Integration)
-**Resume file:** .planning/phases/21-explainability/21-02-SUMMARY.md
+**Last session:** 2026-02-16
+**Stopped at:** Phase 22 Plan 01 complete (Database Models and ML Persistence Service)
+**Resume file:** .planning/phases/22-ml-persistence/22-01-SUMMARY.md
 
 ---
 *Last updated: 2026-02-15*
