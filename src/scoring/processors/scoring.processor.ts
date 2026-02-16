@@ -15,6 +15,7 @@ import { ScoreAggregator } from '../aggregator/score-aggregator.js';
 import { PaymentHistoryService } from '../services/payment-history.service.js';
 import { ExplainabilityService } from '../explainability/explainability.service.js';
 import { SubscriptionsService } from '../../subscriptions/services/subscriptions.service.js';
+import { MlPersistenceService } from '../../ml-persistence/ml-persistence.service.js';
 import { ScoringJobData } from '../dto/scoring-job.dto.js';
 
 /**
@@ -47,6 +48,7 @@ export class ScoringProcessor extends WorkerHost {
     private readonly documentVerificationModel: DocumentVerificationModel,
     private readonly explainabilityService: ExplainabilityService,
     private readonly subscriptionsService: SubscriptionsService,
+    private readonly mlPersistenceService: MlPersistenceService,
   ) {
     super();
   }
@@ -131,6 +133,31 @@ export class ScoringProcessor extends WorkerHost {
         algorithmVersion: '2.1',
       },
     });
+
+    // 6a. Persist ML snapshot and prediction log (must not block scoring)
+    try {
+      // Create immutable feature snapshot
+      await this.mlPersistenceService.createSnapshot(
+        applicationId,
+        features,
+        '2.1',
+      );
+
+      // Create prediction log with predicted score and level
+      await this.mlPersistenceService.createPredictionLog(
+        applicationId,
+        result.total,
+        result.level,
+        '2.1',
+      );
+    } catch (mlError) {
+      // ML persistence failure should NOT fail the scoring job
+      this.logger.warn(
+        `Failed to persist ML data for application ${applicationId}: ${
+          mlError instanceof Error ? mlError.message : 'Unknown error'
+        }`,
+      );
+    }
 
     // 6b. Generate AI narrative if any viewer might have premium access
     try {

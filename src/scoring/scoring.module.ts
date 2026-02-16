@@ -32,6 +32,9 @@ import { SubscriptionsModule } from '../subscriptions/subscriptions.module.js';
 // AI module (Cohere service for narrative generation)
 import { AiModule } from '../ai/ai.module.js';
 
+// ML persistence for predictions
+import { MlPersistenceModule } from '../ml-persistence/ml-persistence.module.js';
+
 // Explainability services
 import { DriverFormatterService } from './explainability/driver-formatter.service.js';
 import { NarrativeGeneratorService } from './explainability/narrative-generator.service.js';
@@ -75,6 +78,7 @@ import { ExplainabilityService } from './explainability/explainability.service.j
   imports: [
     SubscriptionsModule,
     AiModule,
+    MlPersistenceModule,
     // Configure BullMQ with Redis connection from environment
     BullModule.forRootAsync({
       imports: [ConfigModule],
