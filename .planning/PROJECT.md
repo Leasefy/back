@@ -1,223 +1,122 @@
-# Arriendo Fácil - Backend API
+# Arriendo Facil - Backend API
 
 ## What This Is
 
-API backend en NestJS para el marketplace de arriendos "Arriendo Fácil" en Colombia. Proporciona las APIs REST, Risk Score Engine con análisis de documentos por IA, autenticación via Supabase, y toda la lógica de negocio que consume el frontend Next.js ya construido.
+API backend completo en NestJS para el marketplace de arriendos "Arriendo Facil" en Colombia. Proporciona APIs REST, Risk Score Engine con analisis de documentos por IA (Cohere Command R+), autenticacion via Supabase, flujo contractual con firmas digitales, sistema de pagos simulado, subscripciones, y persistencia ML. Consume el frontend Next.js existente.
 
 ## Core Value
 
-**Ejecutar el Risk Score con análisis inteligente de documentos para que propietarios tomen decisiones informadas en minutos, con explicabilidad total.**
+**Ejecutar el Risk Score con analisis inteligente de documentos para que propietarios tomen decisiones informadas en minutos, con explicabilidad total.**
 
-El scoring debe ser rápido (<5 segundos), explicable (drivers claros), y preciso (IA analiza documentos reales, no solo datos self-reported).
+El scoring es asincrono (BullMQ), explicable (drivers, flags, condiciones, narrativa IA), y preciso (IA analiza documentos reales via OCR + Cohere, no solo datos self-reported).
+
+## Current State (v1.0 SHIPPED)
+
+**v1.0 Backend MVP** — Shipped 2026-02-16
+
+- 416 archivos TypeScript, 37,537 LOC + 2,140 Prisma schema
+- 26 fases, 81 plans, 364 commits, 25 dias
+- 176/176 requisitos satisfechos
+- Stack: NestJS 11 + Prisma 7 + Supabase (PostgreSQL + Auth + Storage) + BullMQ + Cohere + Tesseract.js
+- Tier system: FREE (Phases 1-19), PRO+ (Phases 20-22)
+
+### Capacidades Implementadas
+
+| Dominio | Descripcion |
+|---------|-------------|
+| Auth & Roles | Supabase OAuth, JWT JWKS, TENANT/LANDLORD/AGENT/ADMIN, PropertyAccessService |
+| Propiedades | CRUD, imagenes, busqueda con NLP, visitas con scheduling |
+| Aplicaciones | Wizard 6 pasos, documentos, state machine, chat |
+| Scoring | 4 modelos + payment history bonus + document verification bonus |
+| IA (PRO+) | OCR (Tesseract.js) + Cohere Command R+ para 4 tipos de documento |
+| Explicabilidad (PRO+) | Drivers, flags, condiciones, narrativa IA en espanol |
+| ML Persistence (PRO+) | Feature snapshots, prediction logs, outcome tracking, CSV export |
+| Contratos | Templates Handlebars, firmas digitales Ley 527, PDF |
+| Leases & Pagos | Creacion automatica, pagos simulados, validacion, disputas, PSE mock |
+| Notificaciones | Email (Resend) + Push (Firebase), 22+ templates, event-driven |
+| Subscripciones | FREE/PRO/BUSINESS, cupones, micropagos, enforcement |
+| Inmobiliaria | Agencias, propietarios, consignaciones, pipeline, cobros, dispersiones |
+| Frontend Parity | Wishlist, document vault, preferences, coupons, dashboard, recommendations |
 
 ## Requirements
 
-### Validated
+### Validated (v1.0)
 
-(None yet — ship to validate)
+- FUND-01 to FUND-06 — v1.0 (Foundation)
+- AUTH-01 to AUTH-06 — v1.0 (Authentication)
+- USER-01 to USER-04 — v1.0 (Users)
+- PROP-01 to PROP-16 — v1.0 (Properties)
+- ROLE-01 to ROLE-05 — v1.0 (User Roles)
+- AGENT-01 to AGENT-06 — v1.0 (Property Agents)
+- CHAT-01 to CHAT-05 — v1.0 (Application Chat)
+- VISIT-01 to VISIT-12 — v1.0 (Property Visits)
+- APPL-01 to APPL-13 — v1.0 (Applications)
+- DOCS-01 to DOCS-08 — v1.0 (Documents)
+- SCOR-01 to SCOR-09 — v1.0 (Scoring Engine)
+- AIDOC-01 to AIDOC-08 — v1.0 (AI Document Analysis)
+- EXPL-01 to EXPL-05 — v1.0 (Explainability)
+- LAND-01 to LAND-10 — v1.0 (Landlord Features)
+- NOTF-01 to NOTF-11 — v1.0 (Notifications)
+- MLPR-01 to MLPR-04 — v1.0 (ML Persistence)
+- SUBS-01 to SUBS-08 — v1.0 (Subscriptions)
+- CONT-01 to CONT-10 — v1.0 (Contracts)
+- LEAS-01 to LEAS-08 — v1.0 (Leases & Payments)
+- PHSC-01 to PHSC-06 — v1.0 (Payment History Scoring)
+- TPAY-01 to TPAY-12 — v1.0 (Tenant Payment Simulation)
+- INSU-01 to INSU-04 — v1.0 (Insurance)
+
+**Total validated: 176 requirements**
 
 ### Active
 
-#### APIs Core
-- [ ] CRUD de propiedades (crear, listar, filtrar, detalle)
-- [ ] CRUD de aplicaciones (wizard 6 pasos, submit, estado)
-- [ ] Gestión de candidatos (listar, detalle, decisión)
-- [ ] Upload y gestión de documentos
-- [ ] Timeline/eventos de aplicaciones
-
-#### Risk Score Engine
-- [ ] FeatureBuilder: extraer features de aplicación
-- [ ] IntegrityEngine: detectar fraude/inconsistencias
-- [ ] FinancialModel: ratio canon/ingreso + deudas
-- [ ] StabilityModel: tenure laboral, tipo contrato
-- [ ] HistoryModel: referencias, historial
-- [ ] **DocumentAnalyzer: IA para analizar documentos** (cédulas, cartas laborales, extractos)
-- [ ] Aggregator: pesos configurables → score 0-100
-- [ ] Niveles A/B/C/D con recomendación textual
-- [ ] Drivers explicativos (3-6 por candidato)
-- [ ] Flags de riesgo
-- [ ] Condiciones sugeridas
-
-#### Autenticación & Usuarios
-- [ ] Supabase Auth integration
-- [ ] Roles: TENANT / LANDLORD / BOTH
-- [ ] Guards y decoradores para proteger rutas
-- [ ] Perfil de usuario
-
-#### Notificaciones
-- [ ] Email transaccional (aplicación recibida, aprobada, rechazada)
-- [ ] Templates de email
-- [ ] Queue para envío async
-
-#### Background Jobs
-- [ ] Cola para scoring (no bloquear request)
-- [ ] Cola para notificaciones
-- [ ] Retry logic y dead letter queue
-
-#### Storage
-- [ ] Supabase Storage para documentos
-- [ ] Signed URLs para acceso seguro
-- [ ] Validación de tipos de archivo
+(Pending — defined with next milestone via `/gsd:new-milestone`)
 
 ### Out of Scope
 
-- **Pagos/contratos reales** — MVP valida flujo, transacciones después
-- **Chat real-time** — Mensajes async por ahora
-- **Integraciones buró reales (Datacrédito)** — Solo scoring interno + IA
-- **Multi-país** — Solo Colombia (COP)
-- **Frontend changes** — Solo backend, frontend se adapta después
-- **ML real para scoring** — Reglas + IA para docs, guardar datos para futuro ML
+- **Pagos reales** — MVP valida flujo con PSE mock, integracion real despues
+- **Integraciones buro (Datacredito)** — Solo scoring interno + IA
+- **Multi-pais** — Solo Colombia (COP, documentos colombianos)
+- **Frontend changes** — Solo backend, frontend se adapta despues
+- **ML real para scoring** — Reglas + IA, datos guardados para futuro ML
 
 ## Context
 
-### Arquitectura General
+### Tech Stack (v1.0)
 
-```
-┌─────────────────┐     ┌─────────────────────────────────────┐
-│   Frontend      │     │           Backend (NestJS)          │
-│   (Next.js)     │────▶│                                     │
-│   Clerk Auth    │     │  ┌─────────┐  ┌──────────────────┐  │
-└─────────────────┘     │  │ REST    │  │ Risk Score       │  │
-                        │  │ APIs    │  │ Engine           │  │
-                        │  └────┬────┘  │  ┌────────────┐  │  │
-                        │       │       │  │ Document   │  │  │
-                        │       ▼       │  │ Analyzer   │  │  │
-                        │  ┌─────────┐  │  │ (Claude?)  │  │  │
-                        │  │ Prisma  │  │  └────────────┘  │  │
-                        │  └────┬────┘  └──────────────────┘  │
-                        │       │                              │
-                        └───────┼──────────────────────────────┘
-                                │
-                        ┌───────▼───────┐
-                        │   Supabase    │
-                        │ ┌───────────┐ │
-                        │ │ PostgreSQL│ │
-                        │ ├───────────┤ │
-                        │ │ Auth      │ │
-                        │ ├───────────┤ │
-                        │ │ Storage   │ │
-                        │ ├───────────┤ │
-                        │ │ Realtime  │ │
-                        │ └───────────┘ │
-                        └───────────────┘
-```
+- **Framework:** NestJS 11 + TypeScript strict
+- **ORM:** Prisma 7 con adapter-pg
+- **Database:** PostgreSQL via Supabase
+- **Auth:** Supabase Auth (Google OAuth → JWT → JWKS validation)
+- **Storage:** Supabase Storage (property-images, application-documents, contracts)
+- **Queue:** BullMQ con Upstash Redis
+- **AI:** Cohere Command R+ (analisis documentos, narrativas)
+- **OCR:** Tesseract.js (local, gratis) + pdf-parse
+- **Email:** Resend
+- **Push:** Firebase Cloud Messaging
+- **PDF:** Puppeteer + Handlebars templates
 
-### Frontend Existente
+### Known Tech Debt (v1.0)
 
-El frontend en `../front/` ya está construido con:
-- Next.js 14 App Router
-- 100+ componentes React
-- Prisma schema definido
-- TypeScript types para todas las entidades
-- Mock data realista
-
-**Contrato implícito:** El backend debe responder con estructuras que el frontend ya espera.
-
-### Risk Score Algorithm
-
-Pesos (Total: 100):
-| Categoría | Peso |
-|-----------|------|
-| Integridad/Antifraude | 15 |
-| Capacidad de pago | 35 |
-| Estabilidad | 25 |
-| Historial arriendo | 15 |
-| **Documentos (IA)** | 10 |
-
-Niveles:
-| Nivel | Rango | Recomendación |
-|-------|-------|---------------|
-| A | 85-100 | Recomendado |
-| B | 70-84 | Recomendado con condiciones menores |
-| C | 55-69 | Condicional (codeudor/depósito) |
-| D | <55 | No recomendado |
-
-### Document Analysis (IA)
-
-Documentos a analizar:
-- **Cédula de ciudadanía** — Extraer datos, verificar consistencia
-- **Carta laboral** — Extraer cargo, salario, antigüedad
-- **Desprendibles de nómina** — Extraer ingresos, deducciones
-- **Extractos bancarios** — Detectar ingresos recurrentes, saldo promedio
-- **Referencias** — Analizar texto para sentiment/red flags
-
-Opciones a investigar:
-- Claude API (Anthropic) — Visión + análisis
-- GPT-4 Vision (OpenAI)
-- AWS Textract + LLM
-- Google Document AI
-
-## Constraints
-
-- **Framework**: NestJS 10+ con TypeScript strict
-- **ORM**: Prisma (consistente con frontend)
-- **Database**: PostgreSQL via Supabase
-- **Auth**: Supabase Auth
-- **Storage**: Supabase Storage
-- **Queue**: Bull/BullMQ con Redis (o Supabase Edge Functions)
-- **Email**: Resend o SendGrid
-- **Deploy**: Railway / Render / Fly.io (compatible con NestJS)
-- **API Style**: REST (GraphQL fuera de scope para MVP)
-
-## Data Model
-
-Basado en `../front/prisma/schema.prisma` pero adaptado:
-
-### User
-```
-id, supabaseId, email, role (TENANT|LANDLORD|BOTH),
-name, phone, createdAt, updatedAt
-```
-
-### Property
-```
-id, ownerId, title, description, address, city, neighborhood,
-priceMonthly, adminFee, bedrooms, bathrooms, area,
-furnished, petFriendly, parking, availableFrom,
-status (ACTIVE|RENTED|INACTIVE), createdAt
-```
-
-### PropertyImage
-```
-id, propertyId, url, order, createdAt
-```
-
-### Application
-```
-id, propertyId, applicantId, status, currentStep,
-personalInfo (JSON), employmentInfo (JSON),
-incomeInfo (JSON), referencesInfo (JSON),
-createdAt, submittedAt
-```
-
-### ApplicationDocument
-```
-id, applicationId, type (ID|INCOME_PROOF|EMPLOYMENT_LETTER|BANK_STATEMENT),
-filename, url, analyzedAt, analysisResult (JSON)
-```
-
-### RiskScoreResult
-```
-id, applicationId, totalScore, level (A|B|C|D),
-recommendation, subscores (JSON), drivers (JSON),
-flags (JSON), conditions (JSON),
-documentAnalysis (JSON), createdAt
-```
-
-### ApplicationEvent
-```
-id, applicationId, type, actorId, message, metadata (JSON), createdAt
-```
+- BullMQ forRootAsync() duplicado en ScoringModule y AiModule
+- No hay E2E integration tests para flujos cross-phase
+- No hay catalogo de eventos documentado
+- 4 fases sin VERIFICATION.md formal (2.2, 3.2, 12, 20)
 
 ## Key Decisions
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| NestJS sobre Express puro | Estructura, DI, decoradores, ecosystem maduro | — Pending |
-| Supabase todo-en-uno | Simplifica infra: DB + Auth + Storage + Realtime | — Pending |
-| Prisma sobre TypeORM | Type-safe, consistente con frontend, mejor DX | — Pending |
-| IA para documentos | Diferenciador real vs competencia, datos verificados | — Pending |
-| REST sobre GraphQL | Simplicidad para MVP, frontend ya espera REST | — Pending |
+| NestJS sobre Express puro | Estructura, DI, decoradores, ecosystem maduro | Good |
+| Supabase todo-en-uno | Simplifica infra: DB + Auth + Storage + Realtime | Good |
+| Prisma 7 sobre TypeORM | Type-safe, consistente con frontend, mejor DX | Good |
+| Cohere sobre Claude/GPT | Free tier, suficiente para MVP, pagos reservados para futuro | Good |
+| REST sobre GraphQL | Simplicidad para MVP, frontend ya espera REST | Good |
+| BullMQ para scoring async | Industry standard, retries, Redis-backed | Good |
+| Event-driven architecture | Desacopla modulos, multiple listeners por evento | Good |
+| Tier system FREE/PRO+ | IA features solo para pagos, reglas gratis para todos | Good |
+| PropertyAccessService | Punto unico de autorizacion para landlord/agent | Good |
+| Firmas digitales Ley 527 | Compliance colombiano para contratos | Good |
 
 ---
-*Last updated: 2026-01-22 after initialization*
+*Created: 2026-01-22*
+*Last updated: 2026-02-16 after v1.0 milestone*
