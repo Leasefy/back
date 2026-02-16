@@ -2087,6 +2087,9 @@ model ApplicationFeatureSnapshot {
   // Complete feature vector as JSON (ScoringFeatures interface)
   features Json
 
+  // Rent amount at scoring time (for ML export convenience)
+  propertyRent Int? @map("property_rent")
+
   // Algorithm metadata
   algorithmVersion String @default("2.1") @map("algorithm_version")
 
@@ -2113,6 +2116,12 @@ model PredictionLog {
   // Actual outcome (updated later)
   actualOutcome     String?   @map("actual_outcome") @db.VarChar(30) // PredictionOutcome enum value
   outcomeRecordedAt DateTime? @map("outcome_recorded_at")
+
+  // Lease tracking (populated when contract activates, updated by scheduler)
+  leaseId          String? @map("lease_id") @db.Uuid
+  monthsTracked    Int?    @map("months_tracked")
+  latePaymentCount Int?    @map("late_payment_count")
+  defaulted        Boolean @default(false)
 
   // Model performance metrics (calculated when outcome is known)
   predictionCorrect Boolean? @map("prediction_correct") // Did level match outcome?

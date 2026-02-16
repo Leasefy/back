@@ -104,15 +104,16 @@ export class MlPersistenceService {
   }
 
   /**
-   * Record actual outcome when application is rejected or withdrawn.
-   * Called by application state transitions.
+   * Record actual outcome for a prediction log.
+   * Called by event listeners when application status changes or contract activates.
+   * Only updates if current outcome is PENDING (terminal outcomes are not overwritten).
    *
    * @param applicationId - Application UUID
-   * @param outcome - Actual outcome (REJECTED | WITHDRAWN)
+   * @param outcome - Actual outcome (any PredictionOutcome value)
    */
   async recordOutcome(
     applicationId: string,
-    outcome: PredictionOutcome.REJECTED | PredictionOutcome.WITHDRAWN,
+    outcome: PredictionOutcome,
   ): Promise<void> {
     try {
       const result = await this.prisma.predictionLog.updateMany({
@@ -141,35 +142,48 @@ export class MlPersistenceService {
   }
 
   /**
-   * Record lease outcome when lease ends.
-   * Called by lease lifecycle events.
+   * Record lease outcome with detailed payment performance data.
+   * Called by OutcomeTrackerScheduler to update predictions from lease payment history.
+   * Updates APPROVED_PENDING predictions to a final outcome category.
    *
    * @param applicationId - Application UUID
-   * @param successful - Whether lease completed successfully
+   * @param leaseId - Lease UUID
+   * @param outcome - Outcome category (APPROVED_PAID_ON_TIME, APPROVED_LATE_PAYMENTS, etc.)
+   * @param monthsTracked - Number of months since lease start
+   * @param latePaymentCount - Number of late payments detected
    */
   async recordLeaseOutcome(
     applicationId: string,
-    successful: boolean,
+    leaseId: string,
+    outcome: PredictionOutcome,
+    monthsTracked: number,
+    latePaymentCount: number,
   ): Promise<void> {
-    const outcome = successful
-      ? PredictionOutcome.LEASE_SUCCESSFUL
-      : PredictionOutcome.LEASE_PROBLEMATIC;
-
     try {
+      const defaulted =
+        outcome === PredictionOutcome.APPROVED_DEFAULTED;
+
       const result = await this.prisma.predictionLog.updateMany({
         where: {
           applicationId,
-          actualOutcome: PredictionOutcome.PENDING,
+          // Allow updating from PENDING or APPROVED_PENDING
+          actualOutcome: {
+            in: [PredictionOutcome.PENDING, PredictionOutcome.APPROVED_PENDING],
+          },
         },
         data: {
           actualOutcome: outcome,
           outcomeRecordedAt: new Date(),
+          leaseId,
+          monthsTracked,
+          latePaymentCount,
+          defaulted,
         },
       });
 
       if (result.count > 0) {
         this.logger.log(
-          `Lease outcome recorded for application ${applicationId}: ${outcome}`,
+          `Lease outcome recorded for application ${applicationId}: ${outcome} (months=${monthsTracked}, late=${latePaymentCount})`,
         );
       }
     } catch (error) {
