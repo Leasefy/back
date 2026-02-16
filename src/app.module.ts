@@ -40,6 +40,8 @@ import { ActasModule } from './inmobiliaria/actas/actas.module.js';
 import { ReportsModule } from './inmobiliaria/reports/reports.module.js';
 import { AnalyticsModule } from './inmobiliaria/analytics/analytics.module.js';
 import { InmobiliariaDashboardModule } from './inmobiliaria/dashboard/dashboard.module.js';
+import { AiModule } from './ai/ai.module.js';
+import { MlPersistenceModule } from './ml-persistence/ml-persistence.module.js';
 import { SupabaseAuthGuard } from './auth/guards/supabase-auth.guard.js';
 import { RolesGuard } from './auth/guards/roles.guard.js';
 import { AppController } from './app.controller.js';
@@ -92,6 +94,8 @@ import { AppService } from './app.service.js';
     ReportsModule,
     AnalyticsModule,
     InmobiliariaDashboardModule,
+    AiModule,
+    MlPersistenceModule,
   ],
   controllers: [AppController],
   providers: [

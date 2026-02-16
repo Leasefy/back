@@ -100,7 +100,9 @@ enum DocumentType {
   ID_DOCUMENT
   EMPLOYMENT_LETTER
   PAY_STUB
+  INCOME_PROOF
   BANK_STATEMENT
+  CREDIT_REPORT
   OTHER
 }
 
@@ -457,14 +459,16 @@ model Application {
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
   // Relations
-  property     Property              @relation(fields: [propertyId], references: [id])
-  tenant       User                  @relation("TenantApplications", fields: [tenantId], references: [id])
-  documents    ApplicationDocument[]
-  events       ApplicationEvent[]
-  riskScore    RiskScoreResult?
-  notes        LandlordNote[]
-  contract     Contract?
-  conversation ApplicationConversation?
+  property        Property                    @relation(fields: [propertyId], references: [id])
+  tenant          User                        @relation("TenantApplications", fields: [tenantId], references: [id])
+  documents       ApplicationDocument[]
+  events          ApplicationEvent[]
+  riskScore       RiskScoreResult?
+  notes           LandlordNote[]
+  contract        Contract?
+  conversation    ApplicationConversation?
+  featureSnapshot ApplicationFeatureSnapshot?
+  predictionLog   PredictionLog?
 
   @@index([propertyId])
   @@index([tenantId])
@@ -484,7 +488,8 @@ model ApplicationDocument {
   createdAt     DateTime     @default(now()) @map("created_at")
 
   // Relations
-  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  application    Application             @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  analysisResult DocumentAnalysisResult?
 
   @@index([applicationId])
   @@index([type])
@@ -2005,6 +2010,50 @@ model AgencyIntegration {
   @@map("agency_integrations")
 }
 
+/// AI document analysis result from OCR + Cohere pipeline
+/// One result per document, linked to ApplicationDocument
+model DocumentAnalysisResult {
+  id            String       @id @default(uuid()) @db.Uuid
+  documentId    String       @unique @map("document_id") @db.Uuid
+  applicationId String       @map("application_id") @db.Uuid
+  documentType  DocumentType @map("document_type")
+
+  // Extracted data (JSON structure depends on document type)
+  extractedData Json @map("extracted_data")
+
+  // Scoring and evaluation
+  confidence    Float  @default(0) // 0.0-1.0
+  scoreFinal    Int?   @map("score_final") // 0-100
+  nivelRiesgo   String? @map("nivel_riesgo") @db.VarChar(10) // BAJO|MEDIO|ALTO
+  justificacion String? @db.Text
+  recomendacion String? @db.Text
+
+  // Inconsistencies and flags
+  inconsistencies Json @default("[]")
+  flags           Json @default("[]")
+
+  // OCR metadata
+  ocrText       String? @map("ocr_text") @db.Text
+  ocrConfidence Float?  @map("ocr_confidence")
+
+  // AI metadata
+  modelUsed       String @map("model_used") @db.VarChar(50)
+  tokensUsed      Int?   @map("tokens_used")
+  processingTimeMs Int?  @map("processing_time_ms")
+
+  status       String @default("PENDING") @db.VarChar(20) // PENDING|PROCESSING|COMPLETED|FAILED
+  errorMessage String? @map("error_message") @db.Text
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  document ApplicationDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([applicationId])
+  @@index([status])
+  @@map("document_analysis_results")
+}
+
 /// Unified activity log for user timelines and feeds
 model ActivityLog {
   id           String       @id @default(uuid()) @db.Uuid
@@ -2023,4 +2072,60 @@ model ActivityLog {
   @@index([resourceType, resourceId])
   @@index([createdAt(sort: Desc)])
   @@map("activity_logs")
+}
+
+// ============================================
+// ML PERSISTENCE MODELS (Phase 22)
+// ============================================
+
+/// Immutable snapshot of features at prediction time
+/// Decoupled from mutable Application data to ensure reproducibility
+model ApplicationFeatureSnapshot {
+  id            String   @id @default(uuid()) @db.Uuid
+  applicationId String   @unique @map("application_id") @db.Uuid
+
+  // Complete feature vector as JSON (ScoringFeatures interface)
+  features Json
+
+  // Algorithm metadata
+  algorithmVersion String @default("2.1") @map("algorithm_version")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@index([applicationId])
+  @@map("application_feature_snapshots")
+}
+
+/// Prediction log tracking model predictions vs actual outcomes
+/// Enables model performance tracking and retraining
+model PredictionLog {
+  id            String @id @default(uuid()) @db.Uuid
+  applicationId String @unique @map("application_id") @db.Uuid
+
+  // Prediction at scoring time
+  predictedScore Int       @map("predicted_score") // 0-100
+  predictedLevel RiskLevel @map("predicted_level") // A, B, C, D
+  algorithmVersion String @default("2.1") @map("algorithm_version")
+
+  // Actual outcome (updated later)
+  actualOutcome     String?   @map("actual_outcome") @db.VarChar(30) // PredictionOutcome enum value
+  outcomeRecordedAt DateTime? @map("outcome_recorded_at")
+
+  // Model performance metrics (calculated when outcome is known)
+  predictionCorrect Boolean? @map("prediction_correct") // Did level match outcome?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@index([applicationId])
+  @@index([predictedLevel])
+  @@index([actualOutcome])
+  @@index([createdAt])
+  @@map("prediction_logs")
 }
