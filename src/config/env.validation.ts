@@ -94,6 +94,11 @@ export class EnvironmentVariables {
   // Application
   // ============================================
 
+  /** Comma-separated list of allowed CORS origins (e.g. "https://app.render.com,https://arriendofacil.com") */
+  @IsString()
+  @IsOptional()
+  CORS_ORIGINS?: string;
+
   @IsNumber()
   @Min(1)
   @Max(65535)

@@ -48,10 +48,13 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document);
 
   // CORS for frontend
+  const corsOrigins = configService.get<string>('CORS_ORIGINS');
   app.enableCors({
     origin:
       nodeEnv === 'production'
-        ? ['https://arriendofacil.com', 'https://www.arriendofacil.com']
+        ? corsOrigins
+          ? corsOrigins.split(',').map((o) => o.trim())
+          : ['https://arriendofacil.com', 'https://www.arriendofacil.com']
         : true,
     credentials: true,
   });

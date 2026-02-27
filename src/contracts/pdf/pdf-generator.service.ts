@@ -169,13 +169,18 @@ export class PdfGeneratorService implements OnModuleInit, OnModuleDestroy {
   private async getBrowser(): Promise<Browser> {
     if (!this.browser || !this.browser.connected) {
       this.logger.log('Launching Puppeteer browser...');
+      const executablePath = this.configService.get<string>(
+        'PUPPETEER_EXECUTABLE_PATH',
+      );
       this.browser = await puppeteer.launch({
         headless: true,
+        ...(executablePath ? { executablePath } : {}),
         args: [
           '--no-sandbox',
           '--disable-setuid-sandbox',
           '--disable-dev-shm-usage',
           '--disable-gpu',
+          '--single-process',
         ],
       });
       this.logger.log('Puppeteer browser launched');
