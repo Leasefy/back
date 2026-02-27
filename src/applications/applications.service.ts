@@ -17,6 +17,7 @@ import { ApplicationStateMachine } from './state-machine/application-state-machi
 import { ApplicationEventService } from './events/application-event.service.js';
 import {
   CreateApplicationDto,
+  CreateCompleteApplicationDto,
   PersonalInfoDto,
   EmploymentInfoDto,
   IncomeInfoDto,
@@ -48,6 +49,69 @@ export class ApplicationsService {
     private readonly eventEmitter: EventEmitter2,
     private readonly chatService: ChatService,
   ) {}
+
+  /**
+   * Flatten a Prisma Application into the shape the frontend expects.
+   * Extracts fields from personalInfo, employmentInfo, incomeInfo, referencesInfo
+   * JSON blobs and puts them at the root level.
+   */
+  private flattenApplication(app: any) {
+    const personal = (app.personalInfo as Record<string, any>) ?? {};
+    const employment = (app.employmentInfo as Record<string, any>) ?? {};
+    const income = (app.incomeInfo as Record<string, any>) ?? {};
+    const refs = (app.referencesInfo as Record<string, any>) ?? {};
+
+    return {
+      id: app.id,
+      propertyId: app.propertyId,
+      tenantId: app.tenantId,
+      status: app.status,
+      // Personal
+      fullName: personal.fullName ?? null,
+      documentType: personal.documentType ?? null,
+      documentNumber: personal.documentNumber ?? null,
+      dateOfBirth: personal.dateOfBirth ?? null,
+      phone: personal.phone ?? null,
+      email: personal.email ?? null,
+      currentAddress: personal.currentAddress ?? null,
+      timeAtCurrentAddress: personal.timeAtCurrentAddress ?? null,
+      maritalStatus: personal.maritalStatus ?? null,
+      dependents: personal.dependents ?? null,
+      // Employment
+      employmentStatus: employment.employmentStatus ?? null,
+      companyName: employment.companyName ?? null,
+      industry: employment.industry ?? null,
+      position: employment.position ?? null,
+      contractType: employment.contractType ?? null,
+      timeAtJob: employment.timeAtJob ?? null,
+      employerPhone: employment.employerPhone ?? null,
+      employerAddress: employment.employerAddress ?? null,
+      // Income
+      monthlySalary: income.monthlySalary ?? null,
+      additionalIncome: income.additionalIncome ?? null,
+      additionalIncomeSource: income.additionalIncomeSource ?? null,
+      totalMonthlyIncome: income.totalMonthlyIncome ?? null,
+      monthlyObligations: income.monthlyObligations ?? null,
+      availableForRent: income.availableForRent ?? null,
+      // References
+      references: {
+        previousLandlords: refs.previousLandlords ?? [],
+        employmentReferences: refs.employmentReferences ?? [],
+        personalReferences: refs.personalReferences ?? [],
+      },
+      hasCoSigner: refs.hasCoSigner ?? false,
+      coSigner: refs.coSigner ?? null,
+      // Agent
+      agentCode: personal.agentCode ?? null,
+      linkCode: personal.linkCode ?? null,
+      // Timestamps
+      createdAt: app.createdAt,
+      updatedAt: app.updatedAt,
+      // Relations (pass through if present)
+      ...(app.documents !== undefined && { documents: app.documents }),
+      ...(app.property !== undefined && { property: app.property }),
+    };
+  }
 
   /**
    * Create a new application for a property.
@@ -108,6 +172,147 @@ export class ApplicationsService {
     await this.eventService.logCreated(application.id, tenantId);
 
     return application;
+  }
+
+  /**
+   * Create an application with all wizard steps filled in one request.
+   * Returns a flat response matching the frontend BackendApplication shape.
+   */
+  async createComplete(
+    tenantId: string,
+    dto: CreateCompleteApplicationDto,
+  ) {
+    // Verify property exists and is available
+    const property = await this.prisma.property.findUnique({
+      where: { id: dto.propertyId },
+    });
+
+    if (!property) {
+      throw new NotFoundException(
+        `Property with ID ${dto.propertyId} not found`,
+      );
+    }
+
+    if (property.status !== 'AVAILABLE') {
+      throw new BadRequestException(
+        'Property is not available for applications',
+      );
+    }
+
+    // Check for existing active application
+    const existingApplication = await this.prisma.application.findFirst({
+      where: {
+        propertyId: dto.propertyId,
+        tenantId,
+        status: {
+          notIn: [ApplicationStatus.WITHDRAWN, ApplicationStatus.REJECTED],
+        },
+      },
+    });
+
+    if (existingApplication) {
+      throw new ConflictException(
+        'You already have an active application for this property',
+      );
+    }
+
+    // Map flat DTO into the step JSON fields for DB storage
+    const personalInfo = {
+      fullName: dto.fullName,
+      documentType: dto.documentType,
+      documentNumber: dto.documentNumber,
+      dateOfBirth: dto.dateOfBirth,
+      phone: dto.phone,
+      email: dto.email,
+      currentAddress: dto.currentAddress,
+      timeAtCurrentAddress: dto.timeAtCurrentAddress,
+      maritalStatus: dto.maritalStatus,
+      dependents: dto.dependents,
+    };
+
+    const employmentInfo = {
+      employmentStatus: dto.employmentStatus,
+      companyName: dto.companyName,
+      industry: dto.industry,
+      position: dto.position,
+      contractType: dto.contractType,
+      timeAtJob: dto.timeAtJob,
+      employerPhone: dto.employerPhone,
+      employerAddress: dto.employerAddress,
+    };
+
+    const incomeInfo = {
+      monthlySalary: dto.monthlySalary,
+      additionalIncome: dto.additionalIncome,
+      additionalIncomeSource: dto.additionalIncomeSource,
+      totalMonthlyIncome: dto.totalMonthlyIncome,
+      monthlyObligations: dto.monthlyObligations,
+      availableForRent: dto.availableForRent,
+    };
+
+    const referencesInfo = JSON.parse(JSON.stringify({
+      ...(dto.references ?? {}),
+      hasCoSigner: dto.hasCoSigner,
+      coSigner: dto.coSigner,
+    }));
+
+    // Create application as SUBMITTED with all data filled
+    const application = await this.prisma.application.create({
+      data: {
+        propertyId: dto.propertyId,
+        tenantId,
+        status: ApplicationStatus.SUBMITTED,
+        currentStep: 6,
+        personalInfo,
+        employmentInfo,
+        incomeInfo,
+        referencesInfo,
+        submittedAt: new Date(),
+      },
+      include: {
+        property: true,
+        documents: true,
+      },
+    });
+
+    // Log creation + submission events
+    await this.eventService.logCreated(application.id, tenantId);
+    await this.eventService.logSubmitted(application.id, tenantId);
+    await this.eventService.logStatusChanged(
+      application.id,
+      tenantId,
+      ApplicationStatus.DRAFT,
+      ApplicationStatus.SUBMITTED,
+    );
+
+    // Queue scoring job (runs async, doesn't block response)
+    await this.scoringService.addScoringJob(application.id, tenantId);
+
+    // Emit notification to landlord
+    const tenant = await this.prisma.user.findUnique({
+      where: { id: tenantId },
+    });
+
+    if (property && tenant) {
+      this.eventEmitter.emit(
+        'application.submitted',
+        new ApplicationSubmittedEvent(
+          application.id,
+          application.propertyId,
+          tenantId,
+          property.landlordId,
+          property.title,
+          property.address,
+          [tenant.firstName, tenant.lastName].filter(Boolean).join(' ') ||
+            tenant.email,
+        ),
+      );
+    }
+
+    // Create chat conversation
+    await this.chatService.getOrCreateConversation(application.id);
+
+    return this.flattenApplication(application);
   }
 
   /**
@@ -199,7 +404,7 @@ export class ApplicationsService {
   async findByIdWithDetails(
     applicationId: string,
     userId: string,
-  ): Promise<Application> {
+  ) {
     const application = await this.prisma.application.findUnique({
       where: { id: applicationId },
       include: {
@@ -250,7 +455,7 @@ export class ApplicationsService {
       );
     }
 
-    return application;
+    return this.flattenApplication(application);
   }
 
   /**
@@ -428,15 +633,15 @@ export class ApplicationsService {
   /**
    * Get all applications for a tenant.
    */
-  async findByTenant(tenantId: string): Promise<Application[]> {
-    return this.prisma.application.findMany({
+  async findByTenant(tenantId: string) {
+    const applications = await this.prisma.application.findMany({
       where: { tenantId },
       include: {
         property: {
           include: {
             images: {
               orderBy: { order: 'asc' },
-              take: 1, // Only thumbnail
+              take: 1,
             },
           },
         },
@@ -451,6 +656,7 @@ export class ApplicationsService {
       },
       orderBy: { createdAt: 'desc' },
     });
+    return applications.map((app) => this.flattenApplication(app));
   }
 
   /**

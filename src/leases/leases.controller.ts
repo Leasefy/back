@@ -53,18 +53,22 @@ export class LeasesController {
 
   /**
    * GET /leases
-   * List all leases for the authenticated landlord.
+   * List leases for the authenticated user.
+   * Landlords see their leases; tenants see theirs with enriched data.
    *
    * Requirements: LEAS-08
    */
   @Get()
-  @Roles(Role.LANDLORD)
-  @ApiOperation({ summary: 'List all leases (landlord)' })
+  @Roles(Role.LANDLORD, Role.TENANT)
+  @ApiOperation({ summary: 'List leases for authenticated user' })
   @ApiResponse({
     status: 200,
-    description: 'List of leases with payment counts',
+    description: 'List of leases',
   })
   async listLeases(@CurrentUser() user: User) {
+    if (user.role === Role.TENANT) {
+      return this.leasesService.listForTenant(user.id);
+    }
     return this.leasesService.listForLandlord(user.id);
   }
 

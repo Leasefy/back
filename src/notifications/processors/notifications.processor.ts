@@ -28,7 +28,10 @@ import type { NotificationJobData } from '../dto/notification-job.dto.js';
  * - pushNotificationsEnabled: Skip push if false
  * - fcmToken: Skip push if null
  */
-@Processor('notifications')
+@Processor('notifications', {
+  drainDelay: 300_000,       // 5min entre polls cuando la cola esta vacia
+  stalledInterval: 600_000,  // 10min check de stalled jobs
+})
 export class NotificationsProcessor extends WorkerHost {
   private readonly logger = new Logger(NotificationsProcessor.name);
 

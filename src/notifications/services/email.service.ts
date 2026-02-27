@@ -1,6 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Resend } from 'resend';
+import { createTransport, type Transporter } from 'nodemailer';
 
 /**
  * Result of an email send attempt
@@ -24,40 +24,52 @@ export interface EmailPayload {
 /**
  * EmailService
  *
- * Handles email delivery via Resend API.
+ * Handles email delivery via Brevo (formerly Sendinblue) SMTP relay.
  * Used by NotificationsProcessor to send notification emails.
  *
- * Features:
- * - Resend API integration
- * - Error handling with detailed logging
- * - Returns success/failure status for logging
+ * Env vars required:
+ * - BREVO_SMTP_USER: SMTP login (e.g. a2a941001@smtp-brevo.com)
+ * - BREVO_SMTP_PASS: API key (xkeysib-...)
+ * - EMAIL_FROM_ADDRESS: Verified sender (e.g. "Leasefy <spacewolf1902@gmail.com>")
  */
 @Injectable()
 export class EmailService implements OnModuleInit {
   private readonly logger = new Logger(EmailService.name);
-  private resend: Resend | null = null;
+  private transporter: Transporter | null = null;
   private fromAddress!: string;
 
   constructor(private readonly config: ConfigService) {}
 
   onModuleInit(): void {
-    const apiKey = this.config.get<string>('RESEND_API_KEY');
+    const smtpUser = this.config.get<string>('BREVO_SMTP_USER');
+    const smtpPass = this.config.get<string>('BREVO_SMTP_PASS');
 
-    if (!apiKey) {
-      this.logger.warn('RESEND_API_KEY not set — email notifications disabled');
+    if (!smtpUser || !smtpPass) {
+      this.logger.warn(
+        'BREVO_SMTP_USER/BREVO_SMTP_PASS not set — email notifications disabled',
+      );
       return;
     }
 
-    this.resend = new Resend(apiKey);
+    this.transporter = createTransport({
+      host: 'smtp-relay.brevo.com',
+      port: 587,
+      secure: false, // STARTTLS
+      auth: {
+        user: smtpUser,
+        pass: smtpPass,
+      },
+    });
+
     this.fromAddress =
       this.config.get<string>('EMAIL_FROM_ADDRESS') ||
-      'Arriendo Facil <notificaciones@arriendofacil.co>';
+      'Leasefy <spacewolf1902@gmail.com>';
 
-    this.logger.log(`EmailService initialized with from: ${this.fromAddress}`);
+    this.logger.log(`EmailService initialized (Brevo SMTP) with from: ${this.fromAddress}`);
   }
 
   /**
-   * Send an email via Resend.
+   * Send an email via Brevo SMTP.
    *
    * @param payload - Email details (to, subject, html, text)
    * @returns EmailResult with success status and messageId or error
@@ -65,7 +77,7 @@ export class EmailService implements OnModuleInit {
   async send(payload: EmailPayload): Promise<EmailResult> {
     const { to, subject, html, text } = payload;
 
-    if (!this.resend) {
+    if (!this.transporter) {
       this.logger.warn('Email service not configured, skipping email');
       return { success: false, error: 'Email service not configured' };
     }
@@ -73,7 +85,7 @@ export class EmailService implements OnModuleInit {
     this.logger.debug(`Sending email to ${to}: "${subject}"`);
 
     try {
-      const response = await this.resend.emails.send({
+      const info = await this.transporter.sendMail({
         from: this.fromAddress,
         to,
         subject,
@@ -81,19 +93,10 @@ export class EmailService implements OnModuleInit {
         text: text || this.stripHtml(html),
       });
 
-      // Resend returns { data: { id }, error: null } on success
-      if (response.error) {
-        this.logger.error(`Resend error for ${to}: ${response.error.message}`);
-        return {
-          success: false,
-          error: response.error.message,
-        };
-      }
-
-      this.logger.log(`Email sent to ${to}, messageId: ${response.data?.id}`);
+      this.logger.log(`Email sent to ${to}, messageId: ${info.messageId}`);
       return {
         success: true,
-        messageId: response.data?.id,
+        messageId: info.messageId,
       };
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
@@ -107,7 +110,6 @@ export class EmailService implements OnModuleInit {
 
   /**
    * Strip HTML tags to create plain text fallback.
-   * Simple implementation - just removes tags.
    */
   private stripHtml(html: string): string {
     return html

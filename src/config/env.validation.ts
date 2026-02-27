@@ -54,16 +54,21 @@ export class EnvironmentVariables {
   // Notifications (Phase 11)
   // ============================================
 
-  /** Resend API key for email delivery */
+  /** Brevo SMTP login (e.g. a2a941001@smtp-brevo.com) */
   @IsString()
   @IsNotEmpty()
   @IsOptional()
-  RESEND_API_KEY?: string;
+  BREVO_SMTP_USER?: string;
 
-  /** Email from address (defaults to 'notificaciones@arriendofacil.co') */
+  /** Brevo SMTP password / API key */
+  @IsString()
+  @IsNotEmpty()
+  @IsOptional()
+  BREVO_SMTP_PASS?: string;
+
+  /** Email from address (e.g. "Leasefy <user@gmail.com>") */
   @IsString()
   @IsOptional()
-  @IsEmail()
   EMAIL_FROM_ADDRESS?: string;
 
   /** Firebase project ID */
@@ -98,6 +103,21 @@ export class EnvironmentVariables {
   @IsString()
   @IsOptional()
   NODE_ENV: string = 'development';
+
+  // ============================================
+  // AI / Cohere (Phase 20)
+  // ============================================
+
+  /** Cohere API key for document analysis */
+  @IsString()
+  @IsNotEmpty()
+  @IsOptional()
+  COHERE_API_KEY?: string;
+
+  /** AI model to use (default: command-r-plus) */
+  @IsString()
+  @IsOptional()
+  AI_MODEL: string = 'command-r-plus';
 }
 
 export function validate(config: Record<string, unknown>) {

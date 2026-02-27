@@ -31,7 +31,10 @@ import { ScoringJobData } from '../dto/scoring-job.dto.js';
  * 6. Persist result to RiskScoreResult table
  * 7. Update application status to UNDER_REVIEW
  */
-@Processor('scoring')
+@Processor('scoring', {
+  drainDelay: 300_000,       // 5min entre polls cuando la cola esta vacia (on-demand)
+  stalledInterval: 600_000,  // 10min check de stalled jobs
+})
 export class ScoringProcessor extends WorkerHost {
   private readonly logger = new Logger(ScoringProcessor.name);
 

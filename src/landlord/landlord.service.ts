@@ -8,6 +8,7 @@ import { PrismaService } from '../database/prisma.service.js';
 import { ApplicationEventService } from '../applications/events/application-event.service.js';
 import { ApplicationStateMachine } from '../applications/state-machine/application-state-machine.js';
 import { DocumentsService } from '../documents/documents.service.js';
+import { PropertiesService } from '../properties/properties.service.js';
 import {
   ApplicationStatus,
   RiskLevel,
@@ -47,6 +48,7 @@ export class LandlordService {
     private readonly stateMachine: ApplicationStateMachine,
     private readonly eventService: ApplicationEventService,
     private readonly documentsService: DocumentsService,
+    private readonly propertiesService: PropertiesService,
     private readonly eventEmitter: EventEmitter2,
     private readonly propertyAccessService: PropertyAccessService,
     private readonly chatService: ChatService,
@@ -140,12 +142,14 @@ export class LandlordService {
   ): Promise<CandidateCardDto[]> {
     await this.verifyPropertyAccess(propertyId, userId);
 
-    // Reviewable states: applications landlord/agent can take action on
+    // All visible states: reviewable + decided (so landlord sees full history)
     const reviewableStatuses = [
       ApplicationStatus.SUBMITTED,
       ApplicationStatus.UNDER_REVIEW,
       ApplicationStatus.NEEDS_INFO,
       ApplicationStatus.PREAPPROVED,
+      ApplicationStatus.APPROVED,
+      ApplicationStatus.REJECTED,
     ];
 
     const applications = await this.prisma.application.findMany({
@@ -195,6 +199,102 @@ export class LandlordService {
           }
         : undefined,
     }));
+  }
+
+  /**
+   * Get ALL candidates across all landlord properties.
+   * Used by the /panel/candidatos page to show a global list.
+   * Includes property title for display context.
+   */
+  async getAllCandidates(userId: string): Promise<{
+    candidates: (CandidateCardDto & { propertyId: string; propertyTitle: string })[];
+    total: number;
+    stats: { total: number; pending: number; approved: number; rejected: number };
+  }> {
+    // Get all properties owned by this landlord
+    const propertyIds = await this.prisma.property.findMany({
+      where: { landlordId: userId },
+      select: { id: true },
+    });
+
+    if (propertyIds.length === 0) {
+      return { candidates: [], total: 0, stats: { total: 0, pending: 0, approved: 0, rejected: 0 } };
+    }
+
+    const ids = propertyIds.map((p) => p.id);
+
+    // All reviewable + decided statuses for a complete view
+    const allStatuses = [
+      ApplicationStatus.SUBMITTED,
+      ApplicationStatus.UNDER_REVIEW,
+      ApplicationStatus.NEEDS_INFO,
+      ApplicationStatus.PREAPPROVED,
+      ApplicationStatus.APPROVED,
+      ApplicationStatus.REJECTED,
+    ];
+
+    const applications = await this.prisma.application.findMany({
+      where: {
+        propertyId: { in: ids },
+        status: { in: allStatuses },
+      },
+      include: {
+        tenant: {
+          select: { id: true, firstName: true, lastName: true, email: true },
+        },
+        property: {
+          select: { id: true, title: true },
+        },
+        riskScore: {
+          select: { totalScore: true, level: true },
+        },
+        notes: {
+          where: { landlordId: userId },
+          select: { id: true, content: true, updatedAt: true },
+        },
+      },
+      orderBy: [
+        { riskScore: { totalScore: 'desc' } },
+        { submittedAt: 'asc' },
+      ],
+    });
+
+    const candidates = applications.map((app) => ({
+      id: app.id,
+      tenantName:
+        [app.tenant.firstName, app.tenant.lastName].filter(Boolean).join(' ') ||
+        'Unknown',
+      tenantEmail: app.tenant.email,
+      status: app.status as ApplicationStatus,
+      submittedAt: app.submittedAt!,
+      propertyId: app.property.id,
+      propertyTitle: app.property.title,
+      riskScore: app.riskScore
+        ? {
+            totalScore: app.riskScore.totalScore,
+            level: app.riskScore.level as RiskLevel,
+          }
+        : undefined,
+      note: app.notes[0]
+        ? {
+            id: app.notes[0].id,
+            content: app.notes[0].content,
+            updatedAt: app.notes[0].updatedAt,
+          }
+        : undefined,
+    }));
+
+    const pending = candidates.filter((c) =>
+      [ApplicationStatus.SUBMITTED, ApplicationStatus.UNDER_REVIEW, ApplicationStatus.NEEDS_INFO, ApplicationStatus.PREAPPROVED].includes(c.status),
+    ).length;
+    const approved = candidates.filter((c) => c.status === ApplicationStatus.APPROVED).length;
+    const rejected = candidates.filter((c) => c.status === ApplicationStatus.REJECTED).length;
+
+    return {
+      candidates,
+      total: candidates.length,
+      stats: { total: candidates.length, pending, approved, rejected },
+    };
   }
 
   /**
@@ -553,5 +653,108 @@ export class LandlordService {
         landlordId: userId,
       },
     });
+  }
+
+  /**
+   * Get all properties for the authenticated landlord with candidate counts.
+   * Returns properties + a summary object for the frontend dashboard.
+   */
+  async getMyProperties(landlordId: string) {
+    const properties = await this.propertiesService.findByLandlord(landlordId);
+
+    // Count applications per property
+    const propertiesWithCounts = await Promise.all(
+      properties.map(async (property) => {
+        const counts = await this.prisma.application.groupBy({
+          by: ['status'],
+          where: { propertyId: property.id },
+          _count: true,
+        });
+
+        const statusCounts = counts.reduce(
+          (acc, c) => {
+            acc[c.status] = c._count;
+            return acc;
+          },
+          {} as Record<string, number>,
+        );
+
+        const candidateCount = counts.reduce((sum, c) => sum + c._count, 0);
+        const pendingCount =
+          (statusCounts[ApplicationStatus.SUBMITTED] ?? 0) +
+          (statusCounts[ApplicationStatus.UNDER_REVIEW] ?? 0) +
+          (statusCounts[ApplicationStatus.NEEDS_INFO] ?? 0);
+        const preApprovedCount =
+          statusCounts[ApplicationStatus.PREAPPROVED] ?? 0;
+        const approvedCount = statusCounts[ApplicationStatus.APPROVED] ?? 0;
+
+        return {
+          ...property,
+          candidateCount,
+          pendingCount,
+          preApprovedCount,
+          approvedCount,
+        };
+      }),
+    );
+
+    const summary = {
+      totalProperties: properties.length,
+      activeLeases: 0,
+      pendingApplications: propertiesWithCounts.reduce(
+        (sum, p) => sum + p.pendingCount,
+        0,
+      ),
+      monthlyRevenue: 0,
+    };
+
+    return { properties: propertiesWithCounts, summary };
+  }
+
+  /**
+   * Get a single property for the authenticated landlord with candidate counts.
+   */
+  async getMyProperty(propertyId: string, landlordId: string) {
+    const property = await this.prisma.property.findUnique({
+      where: { id: propertyId },
+      include: {
+        images: { orderBy: { order: 'asc' } },
+      },
+    });
+
+    if (!property) {
+      throw new NotFoundException(
+        `Property with ID ${propertyId} not found`,
+      );
+    }
+
+    if (property.landlordId !== landlordId) {
+      throw new ForbiddenException('You do not own this property');
+    }
+
+    const counts = await this.prisma.application.groupBy({
+      by: ['status'],
+      where: { propertyId },
+      _count: true,
+    });
+
+    const statusCounts = counts.reduce(
+      (acc, c) => {
+        acc[c.status] = c._count;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
+
+    return {
+      ...property,
+      candidateCount: counts.reduce((sum, c) => sum + c._count, 0),
+      pendingCount:
+        (statusCounts[ApplicationStatus.SUBMITTED] ?? 0) +
+        (statusCounts[ApplicationStatus.UNDER_REVIEW] ?? 0) +
+        (statusCounts[ApplicationStatus.NEEDS_INFO] ?? 0),
+      preApprovedCount: statusCounts[ApplicationStatus.PREAPPROVED] ?? 0,
+      approvedCount: statusCounts[ApplicationStatus.APPROVED] ?? 0,
+    };
   }
 }

@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { BullModule } from '@nestjs/bullmq';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
+import { NotificationsController } from './notifications.controller.js';
 import { EmailService } from './services/email.service.js';
 import { PushService } from './services/push.service.js';
 import { TemplateService } from './services/template.service.js';
@@ -22,26 +24,26 @@ import { NotificationsScheduler } from './scheduled/notifications-scheduler.js';
  * - PushService: Firebase FCM for push notifications
  * - TemplateService: Markdown template rendering
  * - NotificationsService: Main interface for queuing notifications
- * - NotificationsProcessor: BullMQ worker for async delivery
+ * - NotificationsProcessor: BullMQ worker for async delivery (polls every 5 min)
  * - Event listeners: Respond to application, payment, visit, contract events
  * - Scheduler: Cron jobs for reminders and overdue checks
  *
- * Events handled:
- * - application.submitted, application.statusChanged
- * - payment.receiptUploaded, payment.validated, payment.disputeOpened
- * - visit.requested, visit.statusChanged
- * - contract.ready, contract.signed
- *
- * Scheduled tasks:
- * - Visit reminders (24h before, hourly check)
- * - Payment reminders (3 days before, daily at 9 AM)
- * - Overdue payment checks (daily at 10 AM)
- * - Lease expiring checks (30 days before, daily at 8 AM)
- * - Lease expired checks (daily at 8 AM)
+ * This is the ONLY module that uses BullMQ/Redis.
+ * Scoring and document-analysis process on-demand without queues.
  */
 @Module({
   imports: [
     ScheduleModule.forRoot(),
+    // Redis connection for BullMQ (only used by notifications)
+    BullModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        connection: {
+          url: config.getOrThrow<string>('REDIS_URL'),
+        },
+      }),
+    }),
     BullModule.registerQueue({
       name: 'notifications',
       defaultJobOptions: {
@@ -55,6 +57,7 @@ import { NotificationsScheduler } from './scheduled/notifications-scheduler.js';
       },
     }),
   ],
+  controllers: [NotificationsController],
   providers: [
     // Delivery services
     EmailService,

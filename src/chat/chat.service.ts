@@ -170,6 +170,136 @@ export class ChatService {
   }
 
   /**
+   * Get all conversations for a user (inbox view).
+   * Returns conversations where user is tenant or landlord, ordered by last activity.
+   */
+  async getMyConversations(userId: string) {
+    // Find all applications where user is tenant or property landlord
+    const applications = await this.prisma.application.findMany({
+      where: {
+        OR: [
+          { tenantId: userId },
+          { property: { landlordId: userId } },
+        ],
+        conversation: { isNot: null },
+      },
+      include: {
+        property: {
+          select: { id: true, title: true, landlordId: true },
+        },
+        tenant: {
+          select: { id: true, firstName: true, lastName: true, role: true, email: true },
+        },
+        conversation: {
+          include: {
+            messages: {
+              orderBy: { createdAt: 'desc' },
+              take: 1,
+              include: {
+                sender: {
+                  select: { id: true, firstName: true, lastName: true, role: true },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    // Also fetch landlord info for each property
+    const propertyIds = [...new Set(applications.map(a => a.property.id))];
+    const properties = await this.prisma.property.findMany({
+      where: { id: { in: propertyIds } },
+      select: {
+        id: true,
+        landlord: {
+          select: { id: true, firstName: true, lastName: true, role: true, email: true },
+        },
+      },
+    });
+    const landlordByPropertyId = new Map(
+      properties.map(p => [p.id, p.landlord]),
+    );
+
+    // Build conversations with unread counts
+    const conversations = await Promise.all(
+      applications
+        .filter(a => a.conversation)
+        .map(async (app) => {
+          const conv = app.conversation!;
+          const lastMessage = conv.messages[0] ?? null;
+          const landlord = landlordByPropertyId.get(app.property.id)!;
+          const isTenant = app.tenantId === userId;
+          const otherParticipant = isTenant ? landlord : app.tenant;
+
+          const unreadCount = await this.prisma.chatMessage.count({
+            where: {
+              conversationId: conv.id,
+              senderId: { not: userId },
+              readAt: null,
+            },
+          });
+
+          return {
+            id: conv.id,
+            applicationId: app.id,
+            property: { id: app.property.id, title: app.property.title },
+            otherParticipant,
+            lastMessage: lastMessage
+              ? {
+                  id: lastMessage.id,
+                  content: lastMessage.content,
+                  senderId: lastMessage.senderId,
+                  createdAt: lastMessage.createdAt,
+                  sender: lastMessage.sender,
+                }
+              : null,
+            unreadCount,
+            updatedAt: conv.updatedAt,
+          };
+        }),
+    );
+
+    // Sort by most recent activity
+    conversations.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
+
+    return conversations;
+  }
+
+  /**
+   * Get total unread message count across all conversations for a user.
+   */
+  async getTotalUnreadCount(userId: string): Promise<number> {
+    // Find all conversation IDs where user participates
+    const applications = await this.prisma.application.findMany({
+      where: {
+        OR: [
+          { tenantId: userId },
+          { property: { landlordId: userId } },
+        ],
+        conversation: { isNot: null },
+      },
+      select: {
+        conversation: { select: { id: true } },
+      },
+    });
+
+    const conversationIds = applications
+      .map(a => a.conversation?.id)
+      .filter((id): id is string => !!id);
+
+    if (conversationIds.length === 0) return 0;
+
+    return this.prisma.chatMessage.count({
+      where: {
+        conversationId: { in: conversationIds },
+        senderId: { not: userId },
+        readAt: null,
+      },
+    });
+  }
+
+  /**
    * Delete conversation for an application.
    * Called when application is withdrawn or rejected.
    */

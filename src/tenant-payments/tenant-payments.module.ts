@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { LandlordPaymentMethodsController } from './landlord-payment-methods/landlord-payment-methods.controller.js';
 import { LandlordPaymentMethodsService } from './landlord-payment-methods/landlord-payment-methods.service.js';
 import { TenantPaymentsController } from './tenant-payments.controller.js';
+import { TenantPaymentsQueryController } from './tenant-payments-query.controller.js';
 import { TenantPaymentsService } from './tenant-payments.service.js';
 import { ReceiptStorageService } from './receipt-storage/receipt-storage.service.js';
 import { PseMockService } from './pse-mock/pse-mock.service.js';
@@ -32,6 +33,7 @@ import { LeasesModule } from '../leases/leases.module.js';
   controllers: [
     LandlordPaymentMethodsController,
     TenantPaymentsController,
+    TenantPaymentsQueryController,
     PseMockController,
     PaymentValidationController,
     DisputesController,

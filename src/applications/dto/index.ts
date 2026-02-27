@@ -1,4 +1,5 @@
 export * from './create-application.dto.js';
+export * from './create-complete-application.dto.js';
 export * from './personal-info.dto.js';
 export * from './employment-info.dto.js';
 export * from './income-info.dto.js';

@@ -66,6 +66,8 @@ export interface RiskScoreResultData {
     history: number;
     /** Payment history bonus (0-15): Platform payment track record */
     paymentHistory?: number;
+    /** Document verification bonus (0-15): AI document analysis */
+    documentVerification?: number;
   };
   /** Key factors that drove the score (3-6 explanations) */
   drivers: Driver[];

@@ -291,6 +291,11 @@ model User {
   emailNotificationsEnabled Boolean @default(true) @map("email_notifications_enabled")
   pushNotificationsEnabled  Boolean @default(true) @map("push_notifications_enabled")
   fcmToken                  String? @map("fcm_token")  // Firebase Cloud Messaging device token
+  notificationSettings      Json?   @map("notification_settings") // Granular notification preferences
+
+  // Account status (soft-delete)
+  isActive  Boolean   @default(true) @map("is_active")
+  deletedAt DateTime? @map("deleted_at")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -341,7 +346,33 @@ model User {
   userActivities         ActivityLog[] @relation("UserActivities")
   actorActivities        ActivityLog[] @relation("ActorActivities")
 
+  // Team member relations
+  teamMembers            TeamMember[] @relation("TeamOwner")
+
   @@map("users")
+}
+
+/// Team member for landlord account collaboration
+/// Allows landlords to invite other users to manage their properties
+model TeamMember {
+  id         String   @id @default(uuid()) @db.Uuid
+  ownerId    String   @map("owner_id") @db.Uuid
+  name       String?  @db.VarChar(100)
+  email      String   @db.VarChar(255)
+  role       String   @default("viewer") @db.VarChar(20) // admin, manager, accountant, viewer
+  status     String   @default("pending") @db.VarChar(20) // pending, accepted, expired, revoked
+  invitedAt  DateTime @default(now()) @map("invited_at")
+  acceptedAt DateTime? @map("accepted_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  owner User @relation("TeamOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@unique([ownerId, email])
+  @@index([ownerId])
+  @@map("team_members")
 }
 
 /// Property listing owned by a landlord

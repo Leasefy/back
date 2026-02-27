@@ -1,10 +1,11 @@
-import { Body, Controller, Get, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
   ApiResponse,
+  ApiParam,
 } from '@nestjs/swagger';
 import type { User } from '@prisma/client';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
@@ -14,6 +15,10 @@ import { TenantProfileDto } from './dto/tenant-profile.dto.js';
 import { UpdateProfileDto } from './dto/update-profile.dto.js';
 import { CompleteOnboardingDto } from './dto/complete-onboarding.dto.js';
 import { UpdatePreferencesDto } from './dto/update-preferences.dto.js';
+import { RegisterFcmTokenDto } from './dto/register-fcm-token.dto.js';
+import { UpdateNotificationSettingsDto } from './dto/update-notification-settings.dto.js';
+import { CreateTeamMemberDto } from './dto/create-team-member.dto.js';
+import { UpdateTeamMemberDto } from './dto/update-team-member.dto.js';
 import { UsersService } from './users.service.js';
 
 /**
@@ -127,6 +132,33 @@ export class UsersController {
   }
 
   /**
+   * Register FCM token for push notifications.
+   */
+  @Patch('me/fcm-token')
+  @ApiOperation({ summary: 'Register FCM token for push notifications' })
+  @ApiOkResponse({ description: 'FCM token registered successfully' })
+  async registerFcmToken(
+    @CurrentUser('id') userId: string,
+    @Body() dto: RegisterFcmTokenDto,
+  ): Promise<{ success: boolean }> {
+    await this.usersService.registerFcmToken(userId, dto.fcmToken);
+    return { success: true };
+  }
+
+  /**
+   * Remove FCM token (disable push notifications).
+   */
+  @Delete('me/fcm-token')
+  @ApiOperation({ summary: 'Remove FCM token (disable push notifications)' })
+  @ApiOkResponse({ description: 'FCM token removed successfully' })
+  async removeFcmToken(
+    @CurrentUser('id') userId: string,
+  ): Promise<{ success: boolean }> {
+    await this.usersService.removeFcmToken(userId);
+    return { success: true };
+  }
+
+  /**
    * Update the authenticated user's profile.
    */
   @Patch('me')
@@ -184,5 +216,116 @@ export class UsersController {
   ): Promise<{ complete: boolean }> {
     const complete = await this.usersService.isOnboardingComplete(userId);
     return { complete };
+  }
+
+  // =========================================================================
+  // Notification Settings
+  // =========================================================================
+
+  /**
+   * Get the user's notification settings.
+   */
+  @Get('me/notification-settings')
+  @ApiOperation({ summary: 'Get notification settings' })
+  @ApiOkResponse({ description: 'Notification settings retrieved' })
+  async getNotificationSettings(@CurrentUser('id') userId: string) {
+    return this.usersService.getNotificationSettings(userId);
+  }
+
+  /**
+   * Update notification settings.
+   */
+  @Patch('me/notification-settings')
+  @ApiOperation({ summary: 'Update notification settings' })
+  @ApiOkResponse({ description: 'Notification settings updated' })
+  async updateNotificationSettings(
+    @CurrentUser('id') userId: string,
+    @Body() dto: UpdateNotificationSettingsDto,
+  ) {
+    return this.usersService.updateNotificationSettings(userId, dto);
+  }
+
+  // =========================================================================
+  // Data Export & Account Deletion
+  // =========================================================================
+
+  /**
+   * Export all user data as JSON.
+   */
+  @Post('me/data-export')
+  @ApiOperation({ summary: 'Export all user data' })
+  @ApiOkResponse({ description: 'User data exported as JSON' })
+  async exportData(@CurrentUser('id') userId: string) {
+    return this.usersService.exportUserData(userId);
+  }
+
+  /**
+   * Soft-delete the user's account.
+   */
+  @Delete('me/account')
+  @ApiOperation({ summary: 'Delete user account (soft-delete)' })
+  @ApiOkResponse({ description: 'Account deletion initiated' })
+  async deleteAccount(@CurrentUser('id') userId: string) {
+    return this.usersService.deleteAccount(userId);
+  }
+
+  // =========================================================================
+  // Team Management
+  // =========================================================================
+
+  /**
+   * List all team members for the authenticated landlord.
+   */
+  @Get('me/team')
+  @Roles(Role.LANDLORD)
+  @ApiOperation({ summary: 'List team members' })
+  @ApiOkResponse({ description: 'Team members list' })
+  async getTeamMembers(@CurrentUser('id') userId: string) {
+    return this.usersService.getTeamMembers(userId);
+  }
+
+  /**
+   * Invite a new team member.
+   */
+  @Post('me/team')
+  @Roles(Role.LANDLORD)
+  @ApiOperation({ summary: 'Invite a team member' })
+  @ApiOkResponse({ description: 'Team member invited' })
+  async createTeamMember(
+    @CurrentUser('id') userId: string,
+    @Body() dto: CreateTeamMemberDto,
+  ) {
+    return this.usersService.createTeamMember(userId, dto);
+  }
+
+  /**
+   * Update a team member's name or role.
+   */
+  @Patch('me/team/:memberId')
+  @Roles(Role.LANDLORD)
+  @ApiOperation({ summary: 'Update team member' })
+  @ApiParam({ name: 'memberId', description: 'Team member UUID' })
+  @ApiOkResponse({ description: 'Team member updated' })
+  async updateTeamMember(
+    @CurrentUser('id') userId: string,
+    @Param('memberId') memberId: string,
+    @Body() dto: UpdateTeamMemberDto,
+  ) {
+    return this.usersService.updateTeamMember(userId, memberId, dto);
+  }
+
+  /**
+   * Remove a team member.
+   */
+  @Delete('me/team/:memberId')
+  @Roles(Role.LANDLORD)
+  @ApiOperation({ summary: 'Remove team member' })
+  @ApiParam({ name: 'memberId', description: 'Team member UUID' })
+  @ApiOkResponse({ description: 'Team member removed' })
+  async removeTeamMember(
+    @CurrentUser('id') userId: string,
+    @Param('memberId') memberId: string,
+  ) {
+    return this.usersService.removeTeamMember(userId, memberId);
   }
 }

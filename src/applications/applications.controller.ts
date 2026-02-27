@@ -21,6 +21,7 @@ import { Role } from '../common/enums/role.enum.js';
 import type { User } from '@prisma/client';
 import {
   CreateApplicationDto,
+  CreateCompleteApplicationDto,
   PersonalInfoDto,
   EmploymentInfoDto,
   IncomeInfoDto,
@@ -38,13 +39,16 @@ export class ApplicationsController {
 
   @Post()
   @Roles(Role.TENANT)
-  @ApiOperation({ summary: 'Create a new application for a property' })
-  @ApiResponse({ status: 201, description: 'Application created' })
+  @ApiOperation({ summary: 'Create a complete application with all steps' })
+  @ApiResponse({ status: 201, description: 'Application created with all steps filled' })
   @ApiResponse({ status: 400, description: 'Property not available' })
   @ApiResponse({ status: 404, description: 'Property not found' })
   @ApiResponse({ status: 409, description: 'Already have active application' })
-  async create(@CurrentUser() user: User, @Body() dto: CreateApplicationDto) {
-    return this.applicationsService.create(user.id, dto);
+  async create(
+    @CurrentUser() user: User,
+    @Body() dto: CreateCompleteApplicationDto,
+  ) {
+    return this.applicationsService.createComplete(user.id, dto);
   }
 
   @Patch(':id/steps/1')

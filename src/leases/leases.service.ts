@@ -50,6 +50,80 @@ export class LeasesService {
   }
 
   /**
+   * List all leases for a tenant with enriched property/contact data.
+   * Returns the format expected by the frontend tenant dashboard.
+   */
+  async listForTenant(tenantId: string) {
+    const leases = await this.prisma.lease.findMany({
+      where: { tenantId },
+      include: {
+        property: {
+          include: {
+            images: {
+              where: { order: 0 },
+              take: 1,
+            },
+          },
+        },
+        contract: true,
+        landlord: { select: { phone: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return Promise.all(
+      leases.map(async (lease) => {
+        let currentStatus = lease.status as LeaseStatus;
+
+        // Lazy status update
+        if (currentStatus === LeaseStatus.ACTIVE) {
+          const daysUntilEnd = this.getDaysUntilEnd(lease.endDate);
+          if (daysUntilEnd <= 30 && daysUntilEnd > 0) {
+            await this.prisma.lease.update({
+              where: { id: lease.id },
+              data: { status: LeaseStatus.ENDING_SOON },
+            });
+            currentStatus = LeaseStatus.ENDING_SOON;
+          } else if (daysUntilEnd <= 0) {
+            await this.prisma.lease.update({
+              where: { id: lease.id },
+              data: { status: LeaseStatus.ENDED },
+            });
+            currentStatus = LeaseStatus.ENDED;
+          }
+        }
+
+        return {
+          id: lease.id,
+          contractId: lease.contractId,
+          propertyId: lease.propertyId,
+          landlordId: lease.landlordId,
+          tenantId: lease.tenantId,
+          status: currentStatus,
+          monthlyRent: lease.monthlyRent,
+          adminFee: lease.property?.adminFee ?? 0,
+          startDate: lease.startDate,
+          endDate: lease.endDate,
+          paymentDueDay: lease.paymentDay,
+          propertyTitle: lease.property?.title ?? lease.propertyAddress,
+          propertyAddress: lease.propertyAddress,
+          propertyCity: lease.propertyCity,
+          propertyThumbnail: lease.property?.images?.[0]?.url ?? null,
+          tenantName: lease.tenantName,
+          tenantEmail: lease.tenantEmail,
+          tenantPhone: lease.tenantPhone ?? null,
+          landlordName: lease.landlordName,
+          landlordEmail: lease.landlordEmail,
+          landlordPhone: lease.landlord?.phone ?? null,
+          contractUrl: lease.contract?.signedPdfPath ?? null,
+          createdAt: lease.createdAt,
+          updatedAt: lease.updatedAt,
+        };
+      }),
+    );
+  }
+
+  /**
    * List all leases for a landlord with payment counts.
    *
    * Requirements: LEAS-08

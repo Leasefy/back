@@ -80,26 +80,59 @@ export class SubscriptionsService {
    * If no active subscription, returns the FREE plan config matching user's role.
    */
   async getUserPlanConfig(userId: string): Promise<SubscriptionPlanConfig> {
-    const subscription = await this.getActiveSubscription(userId);
+    try {
+      const subscription = await this.getActiveSubscription(userId);
 
-    if (subscription) {
-      return subscription.plan;
+      if (subscription) {
+        return subscription.plan;
+      }
+
+      // No active subscription - return FREE plan for user's role
+      const user = await this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { role: true },
+      });
+
+      if (!user) {
+        throw new NotFoundException(`Usuario con ID ${userId} no encontrado`);
+      }
+
+      // Determine plan type based on user's role
+      const planType = this.getUserPlanType(user.role);
+
+      return this.plansService.findByTypeAndTier(
+        planType,
+        SubscriptionPlan.FREE,
+      );
+    } catch (error) {
+      // If subscription tables don't exist yet, return a default free config
+      if (
+        error instanceof Error &&
+        error.message.includes('does not exist in the current database')
+      ) {
+        this.logger.warn(
+          'Subscription tables not yet migrated - returning default free plan config',
+        );
+        return {
+          id: 'default-free',
+          planType: PlanType.LANDLORD,
+          tier: SubscriptionPlan.FREE,
+          name: 'Gratis (default)',
+          description: 'Plan gratuito por defecto',
+          monthlyPrice: 0,
+          annualPrice: 0,
+          maxProperties: 3,
+          maxScoringViews: 5,
+          scoringViewPrice: 0,
+          hasPremiumScoring: false,
+          hasApiAccess: false,
+          isActive: true,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        } as SubscriptionPlanConfig;
+      }
+      throw error;
     }
-
-    // No active subscription - return FREE plan for user's role
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      select: { role: true },
-    });
-
-    if (!user) {
-      throw new NotFoundException(`Usuario con ID ${userId} no encontrado`);
-    }
-
-    // Determine plan type based on user's role
-    const planType = this.getUserPlanType(user.role);
-
-    return this.plansService.findByTypeAndTier(planType, SubscriptionPlan.FREE);
   }
 
   /**

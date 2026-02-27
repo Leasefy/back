@@ -49,6 +49,7 @@ export class ScoreAggregator {
     history: ModelResult;
     integrity: ModelResult;
     paymentHistory?: ModelResult; // Optional for backward compatibility
+    documentVerification?: ModelResult; // AI document analysis bonus
   }): RiskScoreResultData {
     // Sum base scores (max 100)
     const baseTotal =
@@ -60,8 +61,11 @@ export class ScoreAggregator {
     // Add payment history bonus if available (up to +15)
     const paymentBonus = results.paymentHistory?.score ?? 0;
 
-    // Total with bonus, capped at 100 to maintain risk level calibration
-    const total = Math.min(100, baseTotal + paymentBonus);
+    // Add document verification bonus if available (up to +15)
+    const docVerificationBonus = results.documentVerification?.score ?? 0;
+
+    // Total with bonuses, capped at 100 to maintain risk level calibration
+    const total = Math.min(100, baseTotal + paymentBonus + docVerificationBonus);
 
     // Bound total to 0-100 range (redundant with min above, but explicit)
     const boundedTotal = Math.max(0, total);
@@ -76,6 +80,7 @@ export class ScoreAggregator {
       ...results.history.signals,
       ...results.integrity.signals,
       ...(results.paymentHistory?.signals ?? []),
+      ...(results.documentVerification?.signals ?? []),
     ];
 
     const drivers: Driver[] = allSignals.map((s) => ({
@@ -104,6 +109,7 @@ export class ScoreAggregator {
         stability: results.stability.score,
         history: results.history.score,
         paymentHistory: paymentBonus,
+        documentVerification: docVerificationBonus,
       },
       drivers,
       flags,

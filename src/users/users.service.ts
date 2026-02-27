@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import type { User } from '@prisma/client';
 import { Role as PrismaRole, ContractStatus, ApplicationStatus } from '@prisma/client';
 import { PrismaService } from '../database/prisma.service.js';
@@ -7,6 +7,9 @@ import { LeaseDocumentType } from '../common/enums/index.js';
 import type { UpdateProfileDto } from './dto/update-profile.dto.js';
 import type { CompleteOnboardingDto } from './dto/complete-onboarding.dto.js';
 import type { UpdatePreferencesDto } from './dto/update-preferences.dto.js';
+import type { UpdateNotificationSettingsDto } from './dto/update-notification-settings.dto.js';
+import type { CreateTeamMemberDto } from './dto/create-team-member.dto.js';
+import type { UpdateTeamMemberDto } from './dto/update-team-member.dto.js';
 
 /**
  * Unified document structure for tenant vault.
@@ -109,6 +112,29 @@ export class UsersService {
         phone: dto.phone,
         role: role as unknown as PrismaRole,
       },
+    });
+  }
+
+  /**
+   * Register an FCM token for push notifications.
+   * @param userId - User UUID
+   * @param fcmToken - Firebase Cloud Messaging device token
+   */
+  async registerFcmToken(userId: string, fcmToken: string): Promise<void> {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { fcmToken },
+    });
+  }
+
+  /**
+   * Remove the FCM token (disable push notifications).
+   * @param userId - User UUID
+   */
+  async removeFcmToken(userId: string): Promise<void> {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { fcmToken: null },
     });
   }
 
@@ -384,6 +410,230 @@ export class UsersService {
       stats,
     };
   }
+
+  // ===========================================================================
+  // Notification Settings
+  // ===========================================================================
+
+  /**
+   * Default notification settings for new users.
+   */
+  private readonly defaultNotificationSettings = {
+    emailApplications: true,
+    emailVisits: true,
+    emailContracts: true,
+    emailPayments: true,
+    emailMessages: true,
+    emailMarketing: false,
+    pushAll: true,
+    pushUrgent: true,
+  };
+
+  /**
+   * Get user's notification settings.
+   * Returns stored settings merged with defaults.
+   */
+  async getNotificationSettings(userId: string) {
+    const user = await this.findById(userId);
+    const stored = (user.notificationSettings as Record<string, boolean>) || {};
+    return { ...this.defaultNotificationSettings, ...stored };
+  }
+
+  /**
+   * Update user's notification settings.
+   * Merges provided fields with existing settings.
+   */
+  async updateNotificationSettings(userId: string, dto: UpdateNotificationSettingsDto) {
+    const user = await this.findById(userId);
+    const current = (user.notificationSettings as Record<string, boolean>) || {};
+    const updates: Record<string, boolean> = {};
+
+    // Only include explicitly provided fields
+    for (const [key, value] of Object.entries(dto)) {
+      if (value !== undefined) {
+        updates[key] = value;
+      }
+    }
+
+    const merged = { ...this.defaultNotificationSettings, ...current, ...updates };
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { notificationSettings: merged },
+    });
+
+    return merged;
+  }
+
+  // ===========================================================================
+  // Data Export
+  // ===========================================================================
+
+  /**
+   * Export all user data as JSON.
+   * Aggregates profile, properties, applications, contracts, payments, leases.
+   */
+  async exportUserData(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        properties: {
+          include: { images: true },
+        },
+        applications: true,
+        landlordContracts: true,
+        tenantContracts: true,
+        landlordLeases: true,
+        tenantLeases: {
+          include: { payments: true },
+        },
+        recordedPayments: true,
+        wishlistItems: true,
+        tenantPreference: true,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    // Strip internal fields
+    const { fcmToken, notificationSettings, ...safeUser } = user;
+
+    return {
+      exportedAt: new Date().toISOString(),
+      user: {
+        id: safeUser.id,
+        email: safeUser.email,
+        firstName: safeUser.firstName,
+        lastName: safeUser.lastName,
+        phone: safeUser.phone,
+        role: safeUser.role,
+        subscriptionPlan: safeUser.subscriptionPlan,
+        createdAt: safeUser.createdAt,
+      },
+      properties: safeUser.properties,
+      applications: safeUser.applications,
+      contracts: [...safeUser.landlordContracts, ...safeUser.tenantContracts],
+      leases: [...safeUser.landlordLeases, ...safeUser.tenantLeases],
+      payments: safeUser.recordedPayments,
+      wishlist: safeUser.wishlistItems,
+      preferences: safeUser.tenantPreference,
+    };
+  }
+
+  // ===========================================================================
+  // Account Deletion (soft-delete)
+  // ===========================================================================
+
+  /**
+   * Soft-delete user account.
+   * Sets isActive=false and deletedAt=now().
+   */
+  async deleteAccount(userId: string) {
+    const user = await this.findById(userId);
+
+    // Check for active leases (block deletion)
+    const activeLeases = await this.prisma.lease.count({
+      where: {
+        OR: [
+          { landlordId: userId },
+          { tenantId: userId },
+        ],
+        status: 'ACTIVE',
+      },
+    });
+
+    if (activeLeases > 0) {
+      throw new ForbiddenException(
+        'Cannot delete account with active leases. Please terminate all leases first.',
+      );
+    }
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        isActive: false,
+        deletedAt: new Date(),
+      },
+    });
+
+    return { success: true, message: 'Account scheduled for deletion' };
+  }
+
+  // ===========================================================================
+  // Team Management
+  // ===========================================================================
+
+  /**
+   * List all team members for a landlord.
+   */
+  async getTeamMembers(ownerId: string) {
+    return this.prisma.teamMember.findMany({
+      where: { ownerId },
+      orderBy: { invitedAt: 'desc' },
+    });
+  }
+
+  /**
+   * Invite a new team member.
+   */
+  async createTeamMember(ownerId: string, dto: CreateTeamMemberDto) {
+    return this.prisma.teamMember.create({
+      data: {
+        ownerId,
+        email: dto.email,
+        role: dto.role ?? 'viewer',
+        name: dto.name,
+        status: 'pending',
+      },
+    });
+  }
+
+  /**
+   * Update an existing team member (name, role).
+   */
+  async updateTeamMember(ownerId: string, memberId: string, dto: UpdateTeamMemberDto) {
+    const member = await this.prisma.teamMember.findFirst({
+      where: { id: memberId, ownerId },
+    });
+
+    if (!member) {
+      throw new NotFoundException('Team member not found');
+    }
+
+    const data: Record<string, unknown> = {};
+    if (dto.name !== undefined) data.name = dto.name;
+    if (dto.role !== undefined) data.role = dto.role;
+
+    return this.prisma.teamMember.update({
+      where: { id: memberId },
+      data,
+    });
+  }
+
+  /**
+   * Remove a team member.
+   */
+  async removeTeamMember(ownerId: string, memberId: string) {
+    const member = await this.prisma.teamMember.findFirst({
+      where: { id: memberId, ownerId },
+    });
+
+    if (!member) {
+      throw new NotFoundException('Team member not found');
+    }
+
+    await this.prisma.teamMember.delete({
+      where: { id: memberId },
+    });
+
+    return { success: true };
+  }
+
+  // ===========================================================================
+  // Private helpers
+  // ===========================================================================
 
   /**
    * Map DocumentType (application) to frontend types.

@@ -65,9 +65,10 @@ export class DocumentsService {
       throw new ForbiddenException('You do not own this application');
     }
 
-    // Allow upload in DRAFT (initial wizard) or NEEDS_INFO (landlord requested more docs)
+    // Allow upload in DRAFT, SUBMITTED (docs come after creation), or NEEDS_INFO
     const allowedStatuses: string[] = [
       ApplicationStatus.DRAFT,
+      ApplicationStatus.SUBMITTED,
       ApplicationStatus.NEEDS_INFO,
     ];
     if (!allowedStatuses.includes(application.status)) {
@@ -256,6 +257,29 @@ export class DocumentsService {
       url: data.signedUrl,
       expiresAt,
     };
+  }
+
+  /**
+   * Find the latest DRAFT application for a tenant.
+   * Used by the convenience /documents/upload endpoint.
+   */
+  async findLatestDraftApplicationId(tenantId: string): Promise<string> {
+    const application = await this.prisma.application.findFirst({
+      where: {
+        tenantId,
+        status: ApplicationStatus.DRAFT,
+      },
+      orderBy: { createdAt: 'desc' },
+      select: { id: true },
+    });
+
+    if (!application) {
+      throw new NotFoundException(
+        'No active draft application found. Create an application first.',
+      );
+    }
+
+    return application.id;
   }
 
   /**

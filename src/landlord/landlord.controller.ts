@@ -30,13 +30,6 @@ import {
 } from './dto/index.js';
 import type { User, Application, LandlordNote } from '@prisma/client';
 
-/**
- * LandlordController
- *
- * Endpoints for landlord candidate management.
- * All endpoints require LANDLORD role (AGENT gets access via RolesGuard).
- * All endpoints verify property ownership before access.
- */
 @ApiTags('Landlord')
 @ApiBearerAuth()
 @Controller('landlord')
@@ -45,10 +38,51 @@ export class LandlordController {
   constructor(private readonly landlordService: LandlordService) {}
 
   /**
+   * Get ALL candidates across all landlord properties.
+   * Used by /panel/candidatos to show a global candidates list.
+   */
+  @Get('candidates')
+  @ApiOperation({
+    summary: 'Get all candidates across all properties',
+    description:
+      'Returns all applications across all landlord properties with stats, sorted by risk score.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'All candidates with stats',
+  })
+  async getAllCandidates(@CurrentUser() user: User) {
+    return this.landlordService.getAllCandidates(user.id);
+  }
+
+  /**
+   * Get all properties for the authenticated landlord with candidate counts.
+   */
+  @Get('properties')
+  @ApiOperation({ summary: 'Get my properties with candidate counts' })
+  @ApiResponse({ status: 200, description: 'Landlord properties with counts' })
+  async getMyProperties(@CurrentUser() user: User) {
+    return this.landlordService.getMyProperties(user.id);
+  }
+
+  /**
+   * Get a single property with candidate counts.
+   * Must come BEFORE the :propertyId/candidates route.
+   */
+  @Get('properties/:propertyId')
+  @ApiOperation({ summary: 'Get a single landlord property with counts' })
+  @ApiParam({ name: 'propertyId', type: 'string', format: 'uuid' })
+  @ApiResponse({ status: 200, description: 'Property with candidate counts' })
+  @ApiResponse({ status: 404, description: 'Property not found' })
+  async getMyProperty(
+    @CurrentUser() user: User,
+    @Param('propertyId', ParseUUIDPipe) propertyId: string,
+  ) {
+    return this.landlordService.getMyProperty(propertyId, user.id);
+  }
+
+  /**
    * Get all candidates for a property.
-   * Returns applications in reviewable states, sorted by score.
-   *
-   * Requirements: LAND-01, LAND-02, LAND-03
    */
   @Get('properties/:propertyId/candidates')
   @ApiOperation({

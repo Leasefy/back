@@ -6,22 +6,17 @@ import { DocumentsModule } from '../documents/documents.module.js';
 import { ScoringModule } from '../scoring/scoring.module.js';
 import { PropertyAccessModule } from '../property-access/property-access.module.js';
 import { ChatModule } from '../chat/chat.module.js';
+import { PropertiesModule } from '../properties/properties.module.js';
 
-/**
- * LandlordModule
- *
- * Provides landlord-specific functionality for managing candidates.
- * Orchestrates existing services - does not duplicate logic.
- *
- * Imports:
- * - ApplicationsModule: For state machine and event logging
- * - DocumentsModule: For document access (signed URLs)
- * - ScoringModule: For score retrieval
- * - PropertyAccessModule: For agent access checks
- * - ChatModule: For conversation deletion on reject
- */
 @Module({
-  imports: [ApplicationsModule, DocumentsModule, ScoringModule, PropertyAccessModule, ChatModule],
+  imports: [
+    ApplicationsModule,
+    DocumentsModule,
+    ScoringModule,
+    PropertyAccessModule,
+    ChatModule,
+    PropertiesModule,
+  ],
   controllers: [LandlordController],
   providers: [LandlordService],
   exports: [LandlordService],

@@ -175,17 +175,20 @@ export class VisitsController {
 
   /**
    * Get my scheduled visits.
-   * VISIT-11: Tenant can view their scheduled visits
+   * Tenants see visits they requested; landlords see visits on their properties.
    */
   @Get('mine')
   @ApiBearerAuth()
-  @Roles(Role.TENANT)
+  @Roles(Role.TENANT, Role.LANDLORD)
   @ApiOperation({ summary: 'Get my scheduled visits' })
   @ApiOkResponse({ description: 'List of visits' })
   async getMyVisits(
-    @CurrentUser('id') tenantId: string,
+    @CurrentUser() user: import('@prisma/client').User,
   ): Promise<VisitWithDetails[]> {
-    return this.visitsService.findByTenant(tenantId);
+    if (user.role === 'LANDLORD') {
+      return this.visitsService.findByLandlord(user.id);
+    }
+    return this.visitsService.findByTenant(user.id);
   }
 
   /**

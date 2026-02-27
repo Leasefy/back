@@ -1,18 +1,24 @@
-import { IsEnum } from 'class-validator';
+import { IsString } from 'class-validator';
+import { Transform } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
-import { DocumentType } from '../../common/enums/index.js';
+import {
+  DocumentType,
+  normalizeDocumentType,
+} from '../../common/enums/document-type.enum.js';
 
 /**
  * DTO for document upload metadata.
  * File itself comes via multipart/form-data.
+ * Accepts both frontend lowercase (id_document) and backend uppercase (ID_DOCUMENT).
  */
 export class UploadDocumentDto {
   @ApiProperty({
     enum: DocumentType,
     description: 'Type of document being uploaded',
-    example: 'ID_DOCUMENT',
+    example: 'id_document',
   })
-  @IsEnum(DocumentType)
+  @IsString()
+  @Transform(({ value }) => normalizeDocumentType(value))
   type!: DocumentType;
 }
 
