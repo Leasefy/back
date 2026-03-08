@@ -1,6 +1,8 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, BadRequestException, UnauthorizedException } from '@nestjs/common';
 import type { User } from '@prisma/client';
 import { Role as PrismaRole, ContractStatus, ApplicationStatus } from '@prisma/client';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../database/prisma.service.js';
 import { Role } from '../common/enums/role.enum.js';
 import { LeaseDocumentType } from '../common/enums/index.js';
@@ -10,6 +12,7 @@ import type { UpdatePreferencesDto } from './dto/update-preferences.dto.js';
 import type { UpdateNotificationSettingsDto } from './dto/update-notification-settings.dto.js';
 import type { CreateTeamMemberDto } from './dto/create-team-member.dto.js';
 import type { UpdateTeamMemberDto } from './dto/update-team-member.dto.js';
+import type { ChangePasswordDto } from './dto/change-password.dto.js';
 
 /**
  * Unified document structure for tenant vault.
@@ -34,7 +37,17 @@ export interface TenantVaultDocument {
  */
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly supabase: SupabaseClient;
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly configService: ConfigService,
+  ) {
+    this.supabase = createClient(
+      this.configService.get('SUPABASE_URL')!,
+      this.configService.get('SUPABASE_SERVICE_KEY')!,
+    );
+  }
 
   /**
    * Find a user by their ID.
@@ -627,6 +640,57 @@ export class UsersService {
     await this.prisma.teamMember.delete({
       where: { id: memberId },
     });
+
+    return { success: true };
+  }
+
+  // ===========================================================================
+  // Password Management
+  // ===========================================================================
+
+  /**
+   * Change the user's password after verifying the current one.
+   * 1. Re-authenticates with Supabase using current password.
+   * 2. If valid, updates the password via Supabase Admin API.
+   *
+   * @param userId - User UUID
+   * @param email - User email (from JWT)
+   * @param dto - { currentPassword, newPassword }
+   */
+  async changePassword(userId: string, email: string, dto: ChangePasswordDto): Promise<{ success: boolean }> {
+    if (dto.currentPassword) {
+      // User has a password — verify it before updating
+      const { error: signInError } = await this.supabase.auth.signInWithPassword({
+        email,
+        password: dto.currentPassword,
+      });
+
+      if (signInError) {
+        throw new UnauthorizedException('La contraseña actual es incorrecta');
+      }
+    } else {
+      // No currentPassword provided — only allowed for Google-only accounts.
+      // Verify via admin API that user has no email identity.
+      const { data: adminUser, error: adminErr } = await this.supabase.auth.admin.getUserById(userId);
+
+      if (adminErr || !adminUser?.user) {
+        throw new BadRequestException('No se pudo verificar el usuario');
+      }
+
+      const providers: string[] = adminUser.user.app_metadata?.providers ?? [];
+      if (providers.includes('email')) {
+        throw new UnauthorizedException('Debes ingresar tu contraseña actual para cambiarla');
+      }
+    }
+
+    // Update password using admin API (no email confirmation needed)
+    const { error: updateError } = await this.supabase.auth.admin.updateUserById(userId, {
+      password: dto.newPassword,
+    });
+
+    if (updateError) {
+      throw new BadRequestException('No se pudo actualizar la contraseña: ' + updateError.message);
+    }
 
     return { success: true };
   }

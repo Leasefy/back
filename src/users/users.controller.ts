@@ -19,6 +19,7 @@ import { RegisterFcmTokenDto } from './dto/register-fcm-token.dto.js';
 import { UpdateNotificationSettingsDto } from './dto/update-notification-settings.dto.js';
 import { CreateTeamMemberDto } from './dto/create-team-member.dto.js';
 import { UpdateTeamMemberDto } from './dto/update-team-member.dto.js';
+import { ChangePasswordDto } from './dto/change-password.dto.js';
 import { UsersService } from './users.service.js';
 
 /**
@@ -216,6 +217,25 @@ export class UsersController {
   ): Promise<{ complete: boolean }> {
     const complete = await this.usersService.isOnboardingComplete(userId);
     return { complete };
+  }
+
+  // =========================================================================
+  // Password Management
+  // =========================================================================
+
+  /**
+   * Change the authenticated user's password.
+   * Verifies current password before updating.
+   */
+  @Patch('me/password')
+  @ApiOperation({ summary: 'Change user password (verifies current password first)' })
+  @ApiOkResponse({ description: 'Password changed successfully' })
+  @ApiResponse({ status: 401, description: 'Current password is incorrect' })
+  async changePassword(
+    @CurrentUser() user: User,
+    @Body() dto: ChangePasswordDto,
+  ): Promise<{ success: boolean }> {
+    return this.usersService.changePassword(user.id, user.email, dto);
   }
 
   // =========================================================================
