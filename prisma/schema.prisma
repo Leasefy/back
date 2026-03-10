@@ -1504,6 +1504,11 @@ model AgencyMember {
   zone            String?              @db.VarChar(100)
   hireDate        DateTime?            @map("hire_date") @db.Date
 
+  // Invitation fields (for token-based member invitations)
+  invitationToken     String?   @unique @map("invitation_token")
+  invitationExpiresAt DateTime? @map("invitation_expires_at")
+  invitedEmail        String?   @map("invited_email") // For inviting users not yet registered
+
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
