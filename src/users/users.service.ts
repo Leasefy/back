@@ -7,12 +7,13 @@ import { PrismaService } from '../database/prisma.service.js';
 import { Role } from '../common/enums/role.enum.js';
 import { LeaseDocumentType } from '../common/enums/index.js';
 import type { UpdateProfileDto } from './dto/update-profile.dto.js';
-import type { CompleteOnboardingDto } from './dto/complete-onboarding.dto.js';
+import { CompleteOnboardingDto, UserType } from './dto/complete-onboarding.dto.js';
 import type { UpdatePreferencesDto } from './dto/update-preferences.dto.js';
 import type { UpdateNotificationSettingsDto } from './dto/update-notification-settings.dto.js';
 import type { CreateTeamMemberDto } from './dto/create-team-member.dto.js';
 import type { UpdateTeamMemberDto } from './dto/update-team-member.dto.js';
 import type { ChangePasswordDto } from './dto/change-password.dto.js';
+import { AgencyService } from '../inmobiliaria/agency/agency.service.js';
 
 /**
  * Unified document structure for tenant vault.
@@ -42,6 +43,7 @@ export class UsersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly configService: ConfigService,
+    private readonly agencyService: AgencyService,
   ) {
     this.supabase = createClient(
       this.configService.get('SUPABASE_URL')!,
@@ -110,14 +112,14 @@ export class UsersService {
   async completeOnboarding(
     userId: string,
     dto: CompleteOnboardingDto,
-  ): Promise<User> {
+  ): Promise<User | { user: User; agency: Awaited<ReturnType<AgencyService['createAgency']>>; onboardingStep: string }> {
     // Ensure user exists
     await this.findById(userId);
 
     // Map userType to Role enum
     const role = dto.userType as unknown as Role;
 
-    return this.prisma.user.update({
+    const updatedUser = await this.prisma.user.update({
       where: { id: userId },
       data: {
         firstName: dto.firstName,
@@ -126,6 +128,14 @@ export class UsersService {
         role: role as unknown as PrismaRole,
       },
     });
+
+    // For INMOBILIARIA: create the agency and return enriched response
+    if (dto.userType === UserType.INMOBILIARIA && dto.agency) {
+      const agency = await this.agencyService.createAgency(userId, dto.agency);
+      return { user: updatedUser, agency, onboardingStep: 'agency_created' };
+    }
+
+    return updatedUser;
   }
 
   /**

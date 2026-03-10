@@ -187,13 +187,40 @@ export class UsersController {
   @ApiOperation({
     summary: 'Complete onboarding after Google registration',
     description:
-      'Updates user profile and sets their role. Call this after Google OAuth to complete registration.',
+      'Updates user profile and sets their role. Call this after Google OAuth to complete registration. ' +
+      'For INMOBILIARIA type, also creates the agency and returns it in the response.',
   })
-  @ApiOkResponse({ description: 'Onboarding completed successfully' })
+  @ApiOkResponse({
+    description: 'Onboarding completed successfully',
+    schema: {
+      oneOf: [
+        {
+          description: 'For TENANT, LANDLORD, AGENT: returns the updated user',
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            email: { type: 'string' },
+            firstName: { type: 'string' },
+            lastName: { type: 'string' },
+            role: { type: 'string' },
+          },
+        },
+        {
+          description: 'For INMOBILIARIA: returns user + agency + onboardingStep',
+          type: 'object',
+          properties: {
+            user: { type: 'object', properties: { id: { type: 'string' }, email: { type: 'string' }, firstName: { type: 'string' }, lastName: { type: 'string' }, role: { type: 'string' } } },
+            agency: { type: 'object', properties: { id: { type: 'string' }, name: { type: 'string' }, nit: { type: 'string' }, city: { type: 'string' } } },
+            onboardingStep: { type: 'string', example: 'agency_created' },
+          },
+        },
+      ],
+    },
+  })
   async completeOnboarding(
     @CurrentUser('id') userId: string,
     @Body() dto: CompleteOnboardingDto,
-  ): Promise<User> {
+  ) {
     return this.usersService.completeOnboarding(userId, dto);
   }
 
