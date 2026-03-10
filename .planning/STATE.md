@@ -3,10 +3,10 @@
 ## Current Status
 
 **Milestone:** v1.0 Backend MVP — SHIPPED 2026-02-16
-**Status:** Milestone Complete
-**Last activity:** 2026-02-16 - v1.0 milestone archived
+**Status:** Post-v1.0 Active Development
+**Last activity:** 2026-03-09 - Completed 23-01-PLAN.md (Inmobiliaria Registration & Onboarding)
 
-**Progress:** [########################################] 100% (81/81 plans, 26 phases)
+**Progress:** [########################################] v1.0 complete + Phase 23 in progress (23-01/3 done)
 
 ## Project Reference
 
@@ -14,7 +14,7 @@ See: .planning/PROJECT.md (updated 2026-02-16)
 
 **Core value:** Ejecutar el Risk Score con analisis inteligente de documentos para que propietarios tomen decisiones informadas en minutos, con explicabilidad total.
 
-**Current focus:** v1.0 SHIPPED. Proximo milestone pendiente de definir.
+**Current focus:** Phase 23 — Inmobiliaria Registration & Onboarding Flow (post-v1.0).
 
 ## Quick Context
 
@@ -53,6 +53,7 @@ See: .planning/PROJECT.md (updated 2026-02-16)
 | 20. AI Document Analysis (IA) | COMPLETE | PRO+ tier - Cohere + OCR pipeline |
 | 21. Explainability (IA) | COMPLETE | All 2 plans - core services (21-01), endpoint + processor integration (21-02) |
 | 22. ML Persistence (IA) | COMPLETE | All 2 plans - feature snapshots, prediction logs (22-01), outcome tracking + export (22-02) |
+| 23. Inmobiliaria Registration | IN PROGRESS | 1/3 plans - 23-01 schema + onboarding complete |
 
 ## Roadmap Evolution
 
@@ -538,12 +539,17 @@ ALL 22 PHASES COMPLETE. The entire backend is implemented.
 | 2026-02-16 | 22-02 | Raw SQL for point-in-time export | Joins immutable snapshots + predictions + outcomes, never mutable Application data |
 | 2026-02-16 | 22-02 | 5-day grace period for late payment classification | Matches Phase 9 convention for Colombian rent payment standard |
 | 2026-02-16 | Executed 22-02-PLAN.md | Outcome tracking listeners, daily scheduler, ADMIN export endpoint, Phase 22 COMPLETE |
+| 2026-03-09 | 23-01 | AgencyService injected into UsersService via AgencyModule import | Avoids circular dependency, AgencyModule does not import UsersModule |
+| 2026-03-09 | 23-01 | completeOnboarding returns union type: User OR { user, agency, onboardingStep } | Preserves backward compatibility for TENANT/LANDLORD/AGENT flows |
+| 2026-03-09 | 23-01 | Migration uses snake_case column names | Matches @@map conventions throughout Prisma schema |
+| 2026-03-09 | 23-01 | Migration script is idempotent (IF NOT EXISTS guards) | Safe re-execution in Supabase SQL Editor |
+| 2026-03-09 | Executed 23-01-PLAN.md | Prisma schema + migration, DTO updates, service/module wiring for INMOBILIARIA onboarding |
 
 ## Session Continuity
 
-**Last session:** 2026-02-16
-**Stopped at:** Phase 22 Plan 02 complete (Outcome Tracking & Export) - ALL PHASES COMPLETE
-**Resume file:** .planning/phases/22-ml-persistence/22-02-SUMMARY.md
+**Last session:** 2026-03-09
+**Stopped at:** Phase 23 Plan 01 complete - foundation for INMOBILIARIA registration done
+**Resume file:** .planning/phases/23-inmobiliaria-registration/23-01-SUMMARY.md
 
 ---
-*Last updated: 2026-02-16*
+*Last updated: 2026-03-09*
