@@ -258,7 +258,35 @@ supabase/
 - `POST /applications/:id/withdraw` - Retirar
 - `GET /applications/:id/timeline` - Ver eventos
 
-### 4.5 DocumentsModule
+### 4.5 InmobiliariaModule — AgencyModule (Phase 23)
+
+**Responsabilidad:** Registro e incorporacion de empresas inmobiliarias y su equipo
+
+- Onboarding de admin que crea agencia en un solo paso (`POST /users/me/onboarding` con `userType: INMOBILIARIA`)
+- Invitacion de miembros con token seguro valido 7 dias
+- Endpoints publicos para ver/aceptar/rechazar invitaciones sin requerir auth
+- Checklist de onboarding con porcentaje de completitud
+- Reenvio de invitaciones con regeneracion de token
+
+**Endpoints:**
+- `GET /inmobiliaria/agency` - Ver mi agencia
+- `PUT /inmobiliaria/agency` - Actualizar agencia (admin)
+- `GET /inmobiliaria/agency/members` - Listar miembros
+- `POST /inmobiliaria/agency/members` - Invitar miembro (admin)
+- `GET /inmobiliaria/agency/invitations/:token` - Info de invitacion **(publico)**
+- `POST /inmobiliaria/agency/invitations/:token/accept` - Aceptar (requiere auth)
+- `POST /inmobiliaria/agency/invitations/:token/decline` - Rechazar **(publico)**
+- `POST /inmobiliaria/agency/members/:id/resend-invitation` - Reenviar (admin)
+- `GET /inmobiliaria/agency/onboarding-status` - Checklist de setup
+
+**Guards y permisos:**
+- Endpoints publicos usan `@Public()` — `SupabaseAuthGuard` los bypass via `IS_PUBLIC_KEY`
+- Verificacion de rol ADMIN implementada con `ensureAdmin()` en el controlador (ForbiddenException si no es ADMIN)
+- No usa `@Roles()` / `RolesGuard` — la verificacion es por membresía en la agencia
+
+---
+
+### 4.6 DocumentsModule
 
 **Responsabilidad:** Gestión de documentos de aplicación
 
@@ -642,18 +670,23 @@ npm run format
 |------|--------|--------|
 | 1 | Foundation | ✅ Completa |
 | 2 | Auth & Users | ✅ Completa |
+| 2.1 | User Roles & Agents | ✅ Completa |
 | 3 | Properties | ✅ Completa |
+| 3.1 | Property Visits Scheduling | ✅ Completa |
+| 3.2 | Natural Search | ✅ Completa |
 | 4 | Applications & Documents | ✅ Completa |
-| 5 | Scoring Engine | Pendiente |
-| 6 | AI Document Analysis | Pendiente |
-| 7 | Explainability | Pendiente |
-| 8 | Landlord Features | Pendiente |
-| 9 | Notifications | Pendiente |
-| 10 | ML Persistence | Pendiente |
-| 11 | Subscriptions & Plans | Pendiente |
-| 12 | Contracts | Pendiente |
-| 13 | Leases & Payments | Pendiente |
-| 14 | Insurance | Pendiente |
+| 5 | Scoring Engine | ✅ Completa |
+| 6 | Landlord Features | ✅ Completa |
+| 7 | Contracts | ✅ Completa |
+| 8 | Leases & Payments | ✅ Completa |
+| 9 | Payment History & Scoring | ✅ Completa |
+| 10 | Tenant Payment Simulation | ✅ Completa |
+| 11 | Notifications | ✅ Completa |
+| 12 | Subscriptions & Plans | ✅ Completa |
+| 13 | Insurance | ✅ Completa |
+| 14 | Wishlist & Favorites | ✅ Completa |
+| 20 | AI Document Analysis | ✅ Completa |
+| 23 | Inmobiliaria Registration & Onboarding | ✅ Completa |
 
 ### B. Límites de Plan
 

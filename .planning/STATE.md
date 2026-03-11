@@ -4,9 +4,9 @@
 
 **Milestone:** v1.0 Backend MVP — SHIPPED 2026-02-16
 **Status:** Post-v1.0 Active Development
-**Last activity:** 2026-03-10 - Completed 23-02-PLAN.md (Token-Based Invitation System)
+**Last activity:** 2026-03-10 - Completed 23-03-PLAN.md (Testing, docs & integration verification for inmobiliaria registration flow)
 
-**Progress:** [########################################] v1.0 complete + Phase 23 in progress (23-02/3 done)
+**Progress:** [########################################] v1.0 complete + Phase 23 COMPLETE (3/3 plans done)
 
 ## Project Reference
 
@@ -53,7 +53,7 @@ See: .planning/PROJECT.md (updated 2026-02-16)
 | 20. AI Document Analysis (IA) | COMPLETE | PRO+ tier - Cohere + OCR pipeline |
 | 21. Explainability (IA) | COMPLETE | All 2 plans - core services (21-01), endpoint + processor integration (21-02) |
 | 22. ML Persistence (IA) | COMPLETE | All 2 plans - feature snapshots, prediction logs (22-01), outcome tracking + export (22-02) |
-| 23. Inmobiliaria Registration | IN PROGRESS | 2/3 plans - 23-01 schema + onboarding, 23-02 token invitations complete |
+| 23. Inmobiliaria Registration | COMPLETE | 3/3 plans - 23-01 schema + onboarding, 23-02 token invitations, 23-03 testing + docs |
 
 ## Roadmap Evolution
 

@@ -400,6 +400,104 @@
     <pre id="plansOutput">// Planes...</pre>
   </div>
 
+  <!-- ==================== REGISTRO INMOBILIARIA ==================== -->
+  <div class="section">
+    <h2>12. Registro e Incorporacion Inmobiliaria (Phase 23)</h2>
+    <div class="info-box">
+      <strong>Flujo de Registro:</strong><br>
+      1. Admin hace onboarding con userType: 'INMOBILIARIA' → crea agencia automaticamente<br>
+      2. Admin invita miembros via POST /inmobiliaria/agency/members<br>
+      3. Invitado ve info publica del token (sin auth), luego acepta con su JWT<br>
+      4. Admin puede reenviar invitaciones o verificar el checklist de onboarding
+    </div>
+
+    <h3>12.1 Onboarding como INMOBILIARIA</h3>
+    <div class="note">Requiere usuario autenticado. Crea el perfil y la agencia en un solo paso.</div>
+    <div class="form-group">
+      <label>Nombre:</label>
+      <input type="text" id="onbFirstName" value="Carlos" style="width:150px;">
+      <label style="margin-left:10px;">Apellido:</label>
+      <input type="text" id="onbLastName" value="Rodriguez" style="width:150px;">
+    </div>
+    <div class="form-group">
+      <label>Nombre Agencia:</label>
+      <input type="text" id="agencyName" value="Inmobiliaria Test SA" style="width:250px;">
+    </div>
+    <div class="form-group">
+      <label>NIT:</label>
+      <input type="text" id="agencyNit" value="900.123.456-7" style="width:150px;">
+      <label style="margin-left:10px;">Ciudad:</label>
+      <input type="text" id="agencyCity" value="Bogota" style="width:120px;">
+    </div>
+    <div class="form-group">
+      <label>Telefono:</label>
+      <input type="text" id="agencyPhone" value="3001234567" style="width:150px;">
+      <label style="margin-left:10px;">Email:</label>
+      <input type="text" id="agencyEmail" value="info@agencia.com" style="width:200px;">
+    </div>
+    <button id="btnOnboardingInmobiliaria" class="btn-success">POST /users/me/onboarding (INMOBILIARIA)</button>
+    <pre id="onboardingInmobiliariaOutput">// Resultado: { user, agency, onboardingStep: 'agency_created' }...</pre>
+
+    <h3>12.2 Invitar Miembro (Admin)</h3>
+    <div class="note">Requiere ser ADMIN de la agencia. Genera token de invitacion valido 7 dias.</div>
+    <div class="form-group">
+      <label>Email invitado:</label>
+      <input type="email" id="inviteEmail" placeholder="agente@test.com" style="width:250px;">
+    </div>
+    <div class="form-group">
+      <label>Rol:</label>
+      <select id="inviteRole" style="width:150px;">
+        <option value="AGENTE">AGENTE</option>
+        <option value="ADMIN">ADMIN</option>
+        <option value="CONTADOR">CONTADOR</option>
+        <option value="VIEWER">VIEWER</option>
+      </select>
+    </div>
+    <button id="btnInviteMember" class="btn-success">POST /inmobiliaria/agency/members</button>
+    <pre id="inviteMemberOutput">// Resultado: { id, status: 'INVITED', invitedEmail, role } (token NO expuesto)...</pre>
+
+    <h3>12.3 Info de Invitacion (Publico - sin auth)</h3>
+    <div class="note">Endpoint publico. No requiere token JWT. Usar para mostrar pagina de bienvenida al invitado.</div>
+    <div class="form-group">
+      <label>Token:</label>
+      <input type="text" id="invitationToken" placeholder="UUID del token de invitacion" style="width:360px;">
+    </div>
+    <button id="btnGetInvitation" class="btn-primary">GET /inmobiliaria/agency/invitations/:token</button>
+    <pre id="getInvitationOutput">// Resultado: { agencyName, agencyCity, role, invitedEmail, expiresAt }...</pre>
+
+    <h3>12.4 Aceptar Invitacion (Requiere Auth)</h3>
+    <div class="note">El invitado debe estar autenticado. El token del campo 12.3 se usa aqui.</div>
+    <button id="btnAcceptInvitation" class="btn-success">POST /inmobiliaria/agency/invitations/:token/accept</button>
+    <pre id="acceptInvitationOutput">// Resultado: { id, status: 'ACTIVE', userId, agencyId, role }...</pre>
+
+    <h3>12.5 Rechazar Invitacion (Publico - sin auth)</h3>
+    <div class="note">Endpoint publico. Marca la invitacion como INACTIVE y limpia el token.</div>
+    <button id="btnDeclineInvitation" class="btn-danger">POST /inmobiliaria/agency/invitations/:token/decline</button>
+    <pre id="declineInvitationOutput">// Resultado: { id, status: 'INACTIVE' }...</pre>
+
+    <h3>12.6 Reenviar Invitacion (Admin)</h3>
+    <div class="note">Solo para miembros en estado INVITED. Genera nuevo token y reenvia email.</div>
+    <div class="form-group">
+      <label>Member ID:</label>
+      <input type="text" id="resendMemberId" placeholder="UUID del AgencyMember" style="width:360px;">
+    </div>
+    <button id="btnResendInvitation" class="btn-warning">POST /inmobiliaria/agency/members/:id/resend-invitation</button>
+    <pre id="resendInvitationOutput">// Resultado: { id, status: 'INVITED', invitationExpiresAt (renovado) }...</pre>
+
+    <h3>12.7 Checklist de Onboarding</h3>
+    <div class="note">Muestra el progreso de configuracion de la agencia. Requiere ser miembro activo.</div>
+    <button id="btnOnboardingStatus" class="btn-primary">GET /inmobiliaria/agency/onboarding-status</button>
+    <pre id="onboardingStatusOutput">// Resultado: { steps: [...], completedCount, completionPercent, isComplete }...</pre>
+
+    <h3>12.8 Ver Mi Agencia</h3>
+    <button id="btnGetMyAgency" class="btn-primary">GET /inmobiliaria/agency</button>
+    <pre id="getMyAgencyOutput">// Resultado: { id, name, nit, city, members, _count }...</pre>
+
+    <h3>12.9 Ver Miembros de la Agencia</h3>
+    <button id="btnGetAgencyMembers" class="btn-primary">GET /inmobiliaria/agency/members</button>
+    <pre id="getAgencyMembersOutput">// Resultado: [{ id, role, status, userId, invitedEmail }...]...</pre>
+  </div>
+
   <!-- ==================== LOGS ==================== -->
   <div class="section">
     <h2>Log de Peticiones</h2>
@@ -844,6 +942,116 @@
     document.getElementById('btnListPlans').onclick = async () => {
       const r = await makeRequest('GET', '/subscription-plans');
       showJson('plansOutput', r.data);
+    };
+
+    // ==================== REGISTRO INMOBILIARIA ====================
+
+    // 12.1 Onboarding como INMOBILIARIA
+    document.getElementById('btnOnboardingInmobiliaria').onclick = async () => {
+      if (!requireAuth('onboardingInmobiliariaOutput')) return;
+      const body = {
+        userType: 'INMOBILIARIA',
+        firstName: document.getElementById('onbFirstName').value || 'Carlos',
+        lastName: document.getElementById('onbLastName').value || 'Rodriguez',
+        agency: {
+          name: document.getElementById('agencyName').value || 'Inmobiliaria Test SA',
+          nit: document.getElementById('agencyNit').value || undefined,
+          city: document.getElementById('agencyCity').value || undefined,
+          phone: document.getElementById('agencyPhone').value || undefined,
+          email: document.getElementById('agencyEmail').value || undefined,
+        },
+      };
+      // Remove undefined fields from agency
+      Object.keys(body.agency).forEach(k => { if (!body.agency[k]) delete body.agency[k]; });
+      const r = await makeRequest('POST', '/users/me/onboarding', body);
+      showJson('onboardingInmobiliariaOutput', r.data);
+    };
+
+    // 12.2 Invitar Miembro
+    document.getElementById('btnInviteMember').onclick = async () => {
+      if (!requireAuth('inviteMemberOutput')) return;
+      const email = document.getElementById('inviteEmail').value.trim();
+      if (!email) { showJson('inviteMemberOutput', { error: 'Ingresa el email del invitado' }); return; }
+      const r = await makeRequest('POST', '/inmobiliaria/agency/members', {
+        email,
+        role: document.getElementById('inviteRole').value,
+      });
+      showJson('inviteMemberOutput', r.data);
+      // Auto-fill member ID for resend if successful
+      if (r.ok && r.data && r.data.id) {
+        document.getElementById('resendMemberId').value = r.data.id;
+      }
+    };
+
+    // 12.3 Info de Invitacion (sin auth)
+    document.getElementById('btnGetInvitation').onclick = async () => {
+      const token = document.getElementById('invitationToken').value.trim();
+      if (!token) { showJson('getInvitationOutput', { error: 'Ingresa el token de invitacion' }); return; }
+      // Public endpoint — no Authorization header
+      const url = BACKEND_URL + '/inmobiliaria/agency/invitations/' + token;
+      try {
+        const resp = await fetch(url);
+        const data = await resp.json();
+        addLog('GET', '/inmobiliaria/agency/invitations/' + token, resp.status, data);
+        showJson('getInvitationOutput', data);
+      } catch (e) {
+        showJson('getInvitationOutput', { error: e.message });
+      }
+    };
+
+    // 12.4 Aceptar Invitacion (requiere auth)
+    document.getElementById('btnAcceptInvitation').onclick = async () => {
+      if (!requireAuth('acceptInvitationOutput')) return;
+      const token = document.getElementById('invitationToken').value.trim();
+      if (!token) { showJson('acceptInvitationOutput', { error: 'Ingresa el token de invitacion (campo 12.3)' }); return; }
+      const r = await makeRequest('POST', '/inmobiliaria/agency/invitations/' + token + '/accept');
+      showJson('acceptInvitationOutput', r.data);
+    };
+
+    // 12.5 Rechazar Invitacion (sin auth)
+    document.getElementById('btnDeclineInvitation').onclick = async () => {
+      const token = document.getElementById('invitationToken').value.trim();
+      if (!token) { showJson('declineInvitationOutput', { error: 'Ingresa el token de invitacion (campo 12.3)' }); return; }
+      // Public endpoint — no Authorization header required
+      const url = BACKEND_URL + '/inmobiliaria/agency/invitations/' + token + '/decline';
+      try {
+        const resp = await fetch(url, { method: 'POST' });
+        const data = await resp.json();
+        addLog('POST', '/inmobiliaria/agency/invitations/' + token + '/decline', resp.status, data);
+        showJson('declineInvitationOutput', data);
+      } catch (e) {
+        showJson('declineInvitationOutput', { error: e.message });
+      }
+    };
+
+    // 12.6 Reenviar Invitacion (Admin)
+    document.getElementById('btnResendInvitation').onclick = async () => {
+      if (!requireAuth('resendInvitationOutput')) return;
+      const memberId = document.getElementById('resendMemberId').value.trim();
+      if (!memberId) { showJson('resendInvitationOutput', { error: 'Ingresa el Member ID' }); return; }
+      const r = await makeRequest('POST', '/inmobiliaria/agency/members/' + memberId + '/resend-invitation');
+      showJson('resendInvitationOutput', r.data);
+    };
+
+    // 12.7 Onboarding Status
+    document.getElementById('btnOnboardingStatus').onclick = async () => {
+      if (!requireAuth('onboardingStatusOutput')) return;
+      const r = await makeRequest('GET', '/inmobiliaria/agency/onboarding-status');
+      showJson('onboardingStatusOutput', r.data);
+    };
+
+    // 12.8 Ver Mi Agencia
+    document.getElementById('btnGetMyAgency').onclick = async () => {
+      if (!requireAuth('getMyAgencyOutput')) return;
+      const r = await makeRequest('GET', '/inmobiliaria/agency');
+      showJson('getMyAgencyOutput', r.data);
+    };
+
+    // 12.9 Ver Miembros
+    document.getElementById('btnGetAgencyMembers').onclick = async () => {
+      if (!requireAuth('getAgencyMembersOutput')) return;
+      const r = await makeRequest('GET', '/inmobiliaria/agency/members');
+      showJson('getAgencyMembersOutput', r.data);
     };
 
     // ==================== LOGS ====================

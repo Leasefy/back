@@ -985,6 +985,139 @@ export function ImageUploader({ propertyId, onUploadComplete }: Props) {
 
 ---
 
+## Flujo de Registro Inmobiliaria
+
+Este flujo cubre el registro de una nueva empresa inmobiliaria (INMOBILIARIA) y la incorporacion de su equipo. Requiere que el admin este autenticado via Supabase antes de comenzar.
+
+### 1. Registro del Admin (crea agencia)
+
+```typescript
+// POST /users/me/onboarding
+// Requiere: Bearer token del admin
+
+const body = {
+  userType: 'INMOBILIARIA',
+  firstName: 'Carlos',
+  lastName: 'Rodriguez',
+  agency: {
+    name: 'Inmobiliaria Test SA',
+    nit: '900.123.456-7',   // opcional
+    city: 'Bogota',          // opcional
+    phone: '3001234567',     // opcional
+    email: 'info@agencia.com' // opcional
+  }
+};
+
+// Response: { user, agency: { id, name, city, ... }, onboardingStep: 'agency_created' }
+```
+
+El admin queda automaticamente como miembro ADMIN de la agencia con status ACTIVE.
+
+### 2. Invitar Miembros (Admin)
+
+```typescript
+// POST /inmobiliaria/agency/members
+// Requiere: Bearer token del admin (debe ser ADMIN de la agencia)
+
+const body = {
+  email: 'agente@empresa.com',
+  role: 'AGENTE'  // 'ADMIN' | 'AGENTE' | 'CONTADOR' | 'VIEWER'
+};
+
+// Response: { id, status: 'INVITED', invitedEmail, role, agencyId }
+// NOTA: invitationToken NO se expone en la respuesta — se envia por email
+```
+
+El usuario invitado debe estar registrado en la plataforma. Si el email no existe, retorna 404.
+
+### 3. El Invitado Acepta (desde link del email)
+
+```typescript
+// Paso 3a: Ver info de la invitacion (SIN auth — pagina de bienvenida)
+// GET /inmobiliaria/agency/invitations/:token
+// No requiere Authorization header
+
+// Response: { agencyName, agencyCity, role, invitedEmail, expiresAt }
+```
+
+```typescript
+// Paso 3b: Aceptar la invitacion (CON auth)
+// POST /inmobiliaria/agency/invitations/:token/accept
+// Requiere: Bearer token del invitado (debe estar autenticado)
+
+// Response: { id, status: 'ACTIVE', userId, agencyId, role }
+// El invitationToken queda en null — no puede reutilizarse
+```
+
+```typescript
+// Alternativa: Rechazar la invitacion (SIN auth)
+// POST /inmobiliaria/agency/invitations/:token/decline
+
+// Response: { id, status: 'INACTIVE' }
+```
+
+### 4. Reenviar Invitacion (Admin)
+
+```typescript
+// POST /inmobiliaria/agency/members/:memberId/resend-invitation
+// Requiere: Bearer token del admin
+
+// Solo funciona si el miembro esta en estado INVITED
+// Genera nuevo token, renueva expiresAt a 7 dias, reenvia email
+
+// Response: { id, status: 'INVITED', invitationExpiresAt }
+```
+
+### 5. Checklist de Setup
+
+```typescript
+// GET /inmobiliaria/agency/onboarding-status
+// Requiere: Bearer token de cualquier miembro activo de la agencia
+
+// Response:
+// {
+//   steps: [
+//     { key: 'agency_created', label: 'Agencia creada', complete: true },
+//     { key: 'agency_profile', label: 'Perfil completo (direccion y NIT)', complete: false },
+//     { key: 'first_member', label: 'Primer miembro invitado', complete: false },
+//     { key: 'logo_uploaded', label: 'Logo subido', complete: false },
+//     { key: 'first_property', label: 'Primera propiedad registrada', complete: false }
+//   ],
+//   completedCount: 1,
+//   completionPercent: 20,
+//   isComplete: false
+// }
+```
+
+### Resumen de Endpoints Inmobiliaria (Phase 23)
+
+| Metodo | Endpoint | Auth | Rol | Descripcion |
+|--------|----------|------|-----|-------------|
+| POST | `/users/me/onboarding` | Si | Cualquiera | Onboarding como INMOBILIARIA (crea agencia) |
+| GET | `/inmobiliaria/agency` | Si | Miembro activo | Ver mi agencia |
+| PUT | `/inmobiliaria/agency` | Si | ADMIN | Actualizar agencia |
+| GET | `/inmobiliaria/agency/members` | Si | Miembro activo | Ver miembros |
+| POST | `/inmobiliaria/agency/members` | Si | ADMIN | Invitar miembro |
+| GET | `/inmobiliaria/agency/invitations/:token` | No (Publico) | - | Info de invitacion |
+| POST | `/inmobiliaria/agency/invitations/:token/accept` | Si | Cualquiera | Aceptar invitacion |
+| POST | `/inmobiliaria/agency/invitations/:token/decline` | No (Publico) | - | Rechazar invitacion |
+| POST | `/inmobiliaria/agency/members/:id/resend-invitation` | Si | ADMIN | Reenviar invitacion |
+| GET | `/inmobiliaria/agency/onboarding-status` | Si | Miembro activo | Checklist de setup |
+
+### Codigos de Error Esperados
+
+| Escenario | HTTP | Mensaje |
+|-----------|------|---------|
+| Token invalido o ya usado | 404 | Invitation token not found or already used |
+| Token expirado | 400 | Invitation token has expired |
+| Invitacion ya aceptada/rechazada | 400 | This invitation has already been used or is no longer valid |
+| Usuario ya es miembro | 409 | You are already a member of this agency |
+| Email no existe en plataforma | 404 | User with email X not found on the platform |
+| No es ADMIN | 403 | Only agency administrators can perform this action |
+| No tiene agencia | 404 | You are not a member of any agency |
+
+---
+
 ## Anexos
 
 ### A. Estados de Aplicación
