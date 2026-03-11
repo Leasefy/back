@@ -109,6 +109,72 @@ export class EmailService implements OnModuleInit {
   }
 
   /**
+   * Send an agency invitation email with the invitation link.
+   *
+   * @param to - Recipient email address
+   * @param agencyName - Name of the inviting agency
+   * @param role - Role assigned to the invitee
+   * @param token - Invitation token
+   * @param expiresAt - Token expiry date
+   * @returns EmailResult — never throws; failures are logged and returned
+   */
+  async sendAgencyInvitationEmail(
+    to: string,
+    agencyName: string,
+    role: string,
+    token: string,
+    expiresAt: Date,
+  ): Promise<EmailResult> {
+    const frontendUrl =
+      process.env['FRONTEND_URL'] || 'http://localhost:3001';
+    const invitationLink = `${frontendUrl}/invitacion/${token}`;
+    const expiryText = expiresAt.toLocaleDateString('es-CO', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px;">
+        <h2 style="color: #1a1a2e;">Has sido invitado a unirte a ${agencyName}</h2>
+        <p>Hola,</p>
+        <p>
+          <strong>${agencyName}</strong> te ha invitado a unirte como
+          <strong>${role}</strong> en la plataforma Leasefy.
+        </p>
+        <p>
+          <a
+            href="${invitationLink}"
+            style="
+              display: inline-block;
+              background-color: #4f46e5;
+              color: #ffffff;
+              padding: 12px 24px;
+              border-radius: 6px;
+              text-decoration: none;
+              font-weight: bold;
+              margin: 16px 0;
+            "
+          >
+            Aceptar invitación
+          </a>
+        </p>
+        <p style="color: #666; font-size: 14px;">
+          Este enlace expira el <strong>${expiryText}</strong>.
+          Si no deseas unirte, puedes ignorar este correo.
+        </p>
+        <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;" />
+        <p style="color: #999; font-size: 12px;">
+          Si el botón no funciona, copia y pega este enlace en tu navegador:<br />
+          <a href="${invitationLink}" style="color: #4f46e5;">${invitationLink}</a>
+        </p>
+      </div>
+    `;
+
+    return this.send({ to, subject: `Invitación para unirte a ${agencyName}`, html });
+  }
+
+  /**
    * Strip HTML tags to create plain text fallback.
    */
   private stripHtml(html: string): string {
