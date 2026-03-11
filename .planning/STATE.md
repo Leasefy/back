@@ -4,9 +4,9 @@
 
 **Milestone:** v1.0 Backend MVP — SHIPPED 2026-02-16
 **Status:** Post-v1.0 Active Development
-**Last activity:** 2026-03-09 - Completed 23-01-PLAN.md (Inmobiliaria Registration & Onboarding)
+**Last activity:** 2026-03-10 - Completed 23-02-PLAN.md (Token-Based Invitation System)
 
-**Progress:** [########################################] v1.0 complete + Phase 23 in progress (23-01/3 done)
+**Progress:** [########################################] v1.0 complete + Phase 23 in progress (23-02/3 done)
 
 ## Project Reference
 
@@ -53,7 +53,7 @@ See: .planning/PROJECT.md (updated 2026-02-16)
 | 20. AI Document Analysis (IA) | COMPLETE | PRO+ tier - Cohere + OCR pipeline |
 | 21. Explainability (IA) | COMPLETE | All 2 plans - core services (21-01), endpoint + processor integration (21-02) |
 | 22. ML Persistence (IA) | COMPLETE | All 2 plans - feature snapshots, prediction logs (22-01), outcome tracking + export (22-02) |
-| 23. Inmobiliaria Registration | IN PROGRESS | 1/3 plans - 23-01 schema + onboarding complete |
+| 23. Inmobiliaria Registration | IN PROGRESS | 2/3 plans - 23-01 schema + onboarding, 23-02 token invitations complete |
 
 ## Roadmap Evolution
 
@@ -309,12 +309,16 @@ See: .planning/PROJECT.md (updated 2026-02-16)
 | 2026-02-08 | 19-02 | Filter to AVAILABLE properties only | Recommendations exclude PENDING/RENTED - only show rentable properties |
 | 2026-02-08 | 19-02 | Minimum match score threshold of 40 | Hard-coded MIN_MATCH_SCORE = 40 prevents showing poor matches |
 | 2026-02-08 | 19-02 | Export interfaces from service | PropertyWithMatch and PaginatedResponse exported for type-safe controller responses |
+| 2026-03-10 | 23-02 | userId remains required (not nullable) | Making userId nullable requires architectural schema migration — deferred, existing NotFoundException preserved |
+| 2026-03-10 | 23-02 | Email sending fire-and-forget in AgencyService | Email failure must not break invitation creation — wrapped in try/catch |
+| 2026-03-10 | 23-02 | NotificationsModule imported into AgencyModule | EmailService injection via module import, no circular dependency |
+| 2026-03-10 | 23-02 | crypto.randomUUID() for token generation | Native Node.js, no extra dependency needed |
 
 ## Session Continuity
 
-**Last session:** 2026-02-08
-**Stopped at:** Phase 19 Plan 02 complete (RecommendationsService + REST endpoints)
-**Resume file:** .planning/phases/19-property-recommendations/19-02-SUMMARY.md
+**Last session:** 2026-03-10
+**Stopped at:** Phase 23 Plan 02 complete (Token-Based Invitation System)
+**Resume file:** .planning/phases/23-inmobiliaria-registration/23-02-SUMMARY.md
 
 ## Pending User Actions
 
