@@ -1,9 +1,12 @@
 import {
   Injectable,
+  Logger,
   NotFoundException,
   ConflictException,
+  BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service.js';
+import { EmailService } from '../../notifications/services/email.service.js';
 import { AgencyMemberRole } from '../../common/enums/agency-member-role.enum.js';
 import { AgencyMemberStatus } from '../../common/enums/agency-member-status.enum.js';
 import { CreateAgencyDto } from './dto/create-agency.dto.js';
@@ -13,7 +16,12 @@ import { UpdateMemberRoleDto } from './dto/update-member-role.dto.js';
 
 @Injectable()
 export class AgencyService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly logger = new Logger(AgencyService.name);
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly emailService: EmailService,
+  ) {}
 
   /**
    * Create a new agency and auto-add the creator as ADMIN member.
@@ -102,6 +110,7 @@ export class AgencyService {
   /**
    * Invite a member to the agency by email.
    * Finds the user by email and creates an AgencyMember with INVITED status.
+   * Generates a secure invitation token valid for 7 days.
    * Throws NotFoundException if the user does not exist in the platform.
    */
   async inviteMember(agencyId: string, dto: InviteMemberDto) {
@@ -115,35 +124,249 @@ export class AgencyService {
       );
     }
 
+    const invitationToken = crypto.randomUUID();
+    const invitationExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
     // Check if user is already a member
     const existing = await this.prisma.agencyMember.findUnique({
       where: { agencyId_userId: { agencyId, userId: user.id } },
     });
 
+    let member;
+
     if (existing) {
       if (existing.status === AgencyMemberStatus.INACTIVE) {
-        // Re-activate inactive member
-        return this.prisma.agencyMember.update({
+        // Re-activate inactive member with new token
+        member = await this.prisma.agencyMember.update({
           where: { id: existing.id },
           data: {
             role: dto.role,
             status: AgencyMemberStatus.INVITED,
+            invitationToken,
+            invitationExpiresAt,
+            invitedEmail: dto.email,
           },
+          include: { agency: true },
         });
+      } else {
+        throw new ConflictException(
+          `User ${dto.email} is already a member of this agency`,
+        );
       }
-      throw new ConflictException(
-        `User ${dto.email} is already a member of this agency`,
+    } else {
+      member = await this.prisma.agencyMember.create({
+        data: {
+          agencyId,
+          userId: user.id,
+          role: dto.role,
+          status: AgencyMemberStatus.INVITED,
+          invitationToken,
+          invitationExpiresAt,
+          invitedEmail: dto.email,
+        },
+        include: { agency: true },
+      });
+    }
+
+    // Send invitation email — failure must not break invitation creation
+    try {
+      await this.emailService.sendAgencyInvitationEmail(
+        dto.email,
+        member.agency.name,
+        member.role,
+        invitationToken,
+        invitationExpiresAt,
+      );
+    } catch (err) {
+      this.logger.error(
+        `Failed to send invitation email to ${dto.email}: ${err instanceof Error ? err.message : String(err)}`,
       );
     }
 
-    return this.prisma.agencyMember.create({
-      data: {
-        agencyId,
-        userId: user.id,
-        role: dto.role,
-        status: AgencyMemberStatus.INVITED,
+    return member;
+  }
+
+  /**
+   * Get invitation details by token.
+   * Validates token exists, is not expired, and member is still in INVITED state.
+   */
+  async getInvitationByToken(token: string) {
+    const member = await this.prisma.agencyMember.findUnique({
+      where: { invitationToken: token },
+      include: { agency: true },
+    });
+
+    if (!member) {
+      throw new NotFoundException('Invitation token not found or already used');
+    }
+
+    if (member.invitationExpiresAt && member.invitationExpiresAt < new Date()) {
+      throw new BadRequestException('Invitation token has expired');
+    }
+
+    if (member.status !== AgencyMemberStatus.INVITED) {
+      throw new BadRequestException(
+        'This invitation has already been used or is no longer valid',
+      );
+    }
+
+    return member;
+  }
+
+  /**
+   * Accept an invitation by token.
+   * Links the authenticated user to the agency member record.
+   */
+  async acceptInvitation(token: string, userId: string) {
+    const member = await this.getInvitationByToken(token);
+
+    // Check if this user is already an active member of this agency
+    const alreadyMember = await this.prisma.agencyMember.findFirst({
+      where: {
+        agencyId: member.agencyId,
+        userId,
+        id: { not: member.id },
       },
     });
+
+    if (alreadyMember) {
+      throw new ConflictException(
+        'You are already a member of this agency',
+      );
+    }
+
+    return this.prisma.agencyMember.update({
+      where: { id: member.id },
+      data: {
+        userId,
+        status: AgencyMemberStatus.ACTIVE,
+        invitationToken: null,
+        invitationExpiresAt: null,
+      },
+    });
+  }
+
+  /**
+   * Decline an invitation by token.
+   * Sets member status to INACTIVE and clears the token.
+   */
+  async declineInvitation(token: string) {
+    const member = await this.getInvitationByToken(token);
+
+    return this.prisma.agencyMember.update({
+      where: { id: member.id },
+      data: {
+        status: AgencyMemberStatus.INACTIVE,
+        invitationToken: null,
+        invitationExpiresAt: null,
+      },
+    });
+  }
+
+  /**
+   * Resend an invitation by generating a new token for a pending member.
+   */
+  async resendInvitation(memberId: string, agencyId: string) {
+    const member = await this.prisma.agencyMember.findFirst({
+      where: { id: memberId, agencyId, status: AgencyMemberStatus.INVITED },
+      include: { agency: true },
+    });
+
+    if (!member) {
+      throw new NotFoundException(
+        `Pending invitation with ID ${memberId} not found in this agency`,
+      );
+    }
+
+    const invitationToken = crypto.randomUUID();
+    const invitationExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+    const updated = await this.prisma.agencyMember.update({
+      where: { id: memberId },
+      data: { invitationToken, invitationExpiresAt },
+    });
+
+    // Send new invitation email — failure must not break token regeneration
+    const recipientEmail = member.invitedEmail;
+    if (recipientEmail) {
+      try {
+        await this.emailService.sendAgencyInvitationEmail(
+          recipientEmail,
+          member.agency.name,
+          member.role,
+          invitationToken,
+          invitationExpiresAt,
+        );
+      } catch (err) {
+        this.logger.error(
+          `Failed to resend invitation email to ${recipientEmail}: ${err instanceof Error ? err.message : String(err)}`,
+        );
+      }
+    }
+
+    return updated;
+  }
+
+  /**
+   * Get onboarding checklist status for the agency.
+   */
+  async getOnboardingStatus(agencyId: string) {
+    const agency = await this.prisma.agency.findUnique({
+      where: { id: agencyId },
+      include: {
+        members: {
+          where: { status: AgencyMemberStatus.ACTIVE },
+        },
+        _count: {
+          select: { consignaciones: true },
+        },
+      },
+    });
+
+    if (!agency) {
+      throw new NotFoundException(`Agency with ID ${agencyId} not found`);
+    }
+
+    const steps = [
+      {
+        key: 'agency_created',
+        label: 'Agencia creada',
+        complete: true,
+      },
+      {
+        key: 'agency_profile',
+        label: 'Perfil completo (dirección y NIT)',
+        complete: Boolean(agency.address && agency.nit),
+      },
+      {
+        key: 'first_member',
+        label: 'Primer miembro invitado',
+        complete: agency.members.length > 1,
+      },
+      {
+        key: 'logo_uploaded',
+        label: 'Logo subido',
+        complete: Boolean(agency.logoUrl),
+      },
+      {
+        key: 'first_property',
+        label: 'Primera propiedad registrada',
+        complete: agency._count.consignaciones > 0,
+      },
+    ];
+
+    const completedCount = steps.filter((s) => s.complete).length;
+    const completionPercent = Math.round(
+      (completedCount / steps.length) * 100,
+    );
+    const isComplete = completedCount === steps.length;
+
+    return {
+      steps,
+      completedCount,
+      completionPercent,
+      isComplete,
+    };
   }
 
   /**
