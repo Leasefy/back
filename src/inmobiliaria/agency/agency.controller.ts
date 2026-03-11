@@ -20,6 +20,7 @@ import {
   ApiOkResponse,
   ApiNoContentResponse,
 } from '@nestjs/swagger';
+import { Public } from '../../auth/decorators/public.decorator.js';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator.js';
 import { AgencyMemberRole } from '../../common/enums/agency-member-role.enum.js';
 import { AgencyService } from './agency.service.js';
@@ -28,6 +29,7 @@ import {
   UpdateAgencyDto,
   InviteMemberDto,
   UpdateMemberRoleDto,
+  InvitationInfoResponseDto,
 } from './dto/index.js';
 
 /**
@@ -121,6 +123,88 @@ export class AgencyController {
     }
     this.ensureAdmin(agency.memberRole as AgencyMemberRole);
     return this.agencyService.inviteMember(agency.id, dto);
+  }
+
+  /**
+   * GET /inmobiliaria/agency/onboarding-status
+   * Returns onboarding checklist for the current user's agency.
+   */
+  @Get('onboarding-status')
+  @ApiOperation({ summary: 'Get agency onboarding checklist status' })
+  @ApiOkResponse({ description: 'Onboarding checklist with completion percent' })
+  async getOnboardingStatus(@CurrentUser('id') userId: string) {
+    const agency = await this.agencyService.getAgencyForUser(userId);
+    if (!agency) {
+      throw new NotFoundException('You are not a member of any agency');
+    }
+    return this.agencyService.getOnboardingStatus(agency.id);
+  }
+
+  /**
+   * GET /inmobiliaria/agency/invitations/:token
+   * Public endpoint — returns invitation info without requiring auth.
+   */
+  @Public()
+  @Get('invitations/:token')
+  @ApiOperation({ summary: 'Get invitation info by token (public)' })
+  @ApiOkResponse({ type: InvitationInfoResponseDto })
+  async getInvitationByToken(
+    @Param('token') token: string,
+  ): Promise<InvitationInfoResponseDto> {
+    const member = await this.agencyService.getInvitationByToken(token);
+    return {
+      agencyName: member.agency.name,
+      agencyCity: member.agency.city ?? '',
+      role: member.role,
+      invitedEmail: member.invitedEmail ?? '',
+      expiresAt: member.invitationExpiresAt!,
+    };
+  }
+
+  /**
+   * POST /inmobiliaria/agency/invitations/:token/accept
+   * Accept an invitation. Requires authentication.
+   */
+  @Post('invitations/:token/accept')
+  @ApiOperation({ summary: 'Accept agency invitation (requires auth)' })
+  @ApiOkResponse({ description: 'Invitation accepted — member is now ACTIVE' })
+  async acceptInvitation(
+    @Param('token') token: string,
+    @CurrentUser('id') userId: string,
+  ) {
+    return this.agencyService.acceptInvitation(token, userId);
+  }
+
+  /**
+   * POST /inmobiliaria/agency/invitations/:token/decline
+   * Decline an invitation. Public — invitee may not be logged in.
+   */
+  @Public()
+  @Post('invitations/:token/decline')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Decline agency invitation (public)' })
+  @ApiOkResponse({ description: 'Invitation declined' })
+  async declineInvitation(@Param('token') token: string) {
+    return this.agencyService.declineInvitation(token);
+  }
+
+  /**
+   * POST /inmobiliaria/agency/members/:memberId/resend-invitation
+   * Resend invitation to a pending member. Admin only.
+   */
+  @Post('members/:memberId/resend-invitation')
+  @ApiOperation({ summary: 'Resend invitation to pending member (admin only)' })
+  @ApiOkResponse({ description: 'New invitation token generated' })
+  async resendInvitation(
+    @CurrentUser('id') userId: string,
+    @Param('memberId', ParseUUIDPipe) memberId: string,
+  ) {
+    const agency = await this.agencyService.getAgencyForUser(userId);
+    if (!agency) {
+      throw new NotFoundException('You are not a member of any agency');
+    }
+    this.ensureAdmin(agency.memberRole as AgencyMemberRole);
+    return this.agencyService.resendInvitation(memberId, agency.id);
   }
 
   /**
