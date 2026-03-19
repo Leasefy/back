@@ -26,10 +26,10 @@ import { CreateMantenimientoDto, AddQuoteDto } from './dto/index.js';
  * Controller for maintenance request management.
  * All endpoints require authentication and agency membership.
  */
-@ApiTags('inmobiliaria/maintenance')
+@ApiTags('inmobiliaria/mantenimiento')
 @ApiBearerAuth()
 @UseGuards(AgencyMemberGuard)
-@Controller('inmobiliaria/maintenance')
+@Controller('inmobiliaria/mantenimiento')
 export class MantenimientoController {
   constructor(
     private readonly mantenimientoService: MantenimientoService,

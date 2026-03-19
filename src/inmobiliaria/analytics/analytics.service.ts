@@ -5,180 +5,125 @@ import { ConsignacionAvailability } from '../../common/enums/consignacion-availa
 import { ConsignacionStatus } from '../../common/enums/consignacion-status.enum.js';
 import { PipelineStage } from '../../common/enums/pipeline-stage.enum.js';
 import { RenovacionStatus } from '../../common/enums/renovacion-status.enum.js';
+import { DispersionStatus } from '../../common/enums/dispersion-status.enum.js';
+import { AgencyMemberRole } from '../../common/enums/agency-member-role.enum.js';
+import { AgencyMemberStatus } from '../../common/enums/agency-member-status.enum.js';
 
 @Injectable()
 export class AnalyticsService {
   constructor(private readonly prisma: PrismaService) {}
 
   /**
-   * Return 8 KPIs for the agency dashboard analytics.
+   * Return dashboard KPIs matching the InmobiliariaDashboardKPIs frontend interface.
    */
   async getKpis(agencyId: string) {
     const now = new Date();
     const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const startOfNextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
 
-    // 1. Ingresos del mes: sum of paidAmount from cobros this month
+    // ── Portfolio ──────────────────────────────────────────────────────────
+    const activeStatuses = { in: [ConsignacionStatus.ACTIVE, ConsignacionStatus.PENDING] };
+
+    const [totalProperties, propertiesAvailable, propertiesRented] = await Promise.all([
+      this.prisma.consignacion.count({ where: { agencyId, status: activeStatuses } }),
+      this.prisma.consignacion.count({ where: { agencyId, status: activeStatuses, availability: ConsignacionAvailability.AVAILABLE } }),
+      this.prisma.consignacion.count({ where: { agencyId, status: activeStatuses, availability: ConsignacionAvailability.RENTED } }),
+    ]);
+
+    const propertiesInProcess = await this.prisma.pipelineItem.count({
+      where: { agencyId, stage: { notIn: [PipelineStage.COMPLETED, PipelineStage.LOST] } },
+    });
+
+    const occupancyRate = totalProperties > 0
+      ? Math.round((propertiesRented / totalProperties) * 100 * 100) / 100
+      : 0;
+
+    // ── Financial (current month) ──────────────────────────────────────────
     const cobrosThisMonth = await this.prisma.cobro.findMany({
       where: { agencyId, month: currentMonth },
       select: { paidAmount: true, totalAmount: true, status: true, pendingAmount: true },
     });
 
-    const ingresosDelMes = cobrosThisMonth.reduce(
-      (sum, c) => sum + c.paidAmount,
-      0,
-    );
+    const expectedRevenue = cobrosThisMonth.reduce((sum, c) => sum + c.totalAmount, 0);
+    const collectedRevenue = cobrosThisMonth.reduce((sum, c) => sum + c.paidAmount, 0);
+    const pendingCollections = cobrosThisMonth
+      .filter(c => c.status === CobroStatus.COBRO_PENDING)
+      .reduce((sum, c) => sum + c.pendingAmount, 0);
+    const lateCollections = cobrosThisMonth
+      .filter(c => c.status === CobroStatus.LATE || c.status === CobroStatus.DEFAULTED)
+      .reduce((sum, c) => sum + c.pendingAmount, 0);
+    const collectionRate = expectedRevenue > 0
+      ? Math.round((collectedRevenue / expectedRevenue) * 100 * 100) / 100
+      : 0;
 
-    // 2. Tasa de ocupacion
-    const totalActive = await this.prisma.consignacion.count({
-      where: {
-        agencyId,
-        status: { in: [ConsignacionStatus.ACTIVE, ConsignacionStatus.PENDING] },
-      },
+    const commissionsAgg = await this.prisma.dispersion.aggregate({
+      where: { agencyId, month: currentMonth },
+      _sum: { totalCommission: true },
     });
+    const totalCommissions = commissionsAgg._sum.totalCommission ?? 0;
 
-    const totalRented = await this.prisma.consignacion.count({
-      where: {
-        agencyId,
-        status: { in: [ConsignacionStatus.ACTIVE, ConsignacionStatus.PENDING] },
-        availability: ConsignacionAvailability.RENTED,
-      },
-    });
+    // ── Pipeline ───────────────────────────────────────────────────────────
+    const [activeLeads, closedThisMonth] = await Promise.all([
+      this.prisma.pipelineItem.count({
+        where: { agencyId, stage: { notIn: [PipelineStage.COMPLETED, PipelineStage.LOST] } },
+      }),
+      this.prisma.pipelineItem.count({
+        where: { agencyId, stage: PipelineStage.COMPLETED, updatedAt: { gte: startOfMonth, lt: startOfNextMonth } },
+      }),
+    ]);
 
-    const tasaOcupacion =
-      totalActive > 0
-        ? Math.round((totalRented / totalActive) * 100 * 100) / 100
-        : 0;
-
-    // 3. Recaudo del mes: (paidAmount / totalAmount) * 100
-    const totalAmountThisMonth = cobrosThisMonth.reduce(
-      (sum, c) => sum + c.totalAmount,
-      0,
-    );
-    const recaudoDelMes =
-      totalAmountThisMonth > 0
-        ? Math.round(
-            (ingresosDelMes / totalAmountThisMonth) * 100 * 100,
-          ) / 100
-        : 0;
-
-    // 4. Dias promedio para arrendar (avg days from creation to COMPLETED for pipeline items)
+    // ── Avg days to close ──────────────────────────────────────────────────
     const completedPipeline = await this.prisma.pipelineItem.findMany({
-      where: {
-        agencyId,
-        stage: PipelineStage.COMPLETED,
-      },
-      select: { daysInStage: true, createdAt: true, updatedAt: true },
+      where: { agencyId, stage: PipelineStage.COMPLETED },
+      select: { createdAt: true, updatedAt: true },
     });
-
-    let diasPromedioArrendar = 0;
+    let avgDaysToClose = 0;
     if (completedPipeline.length > 0) {
       const totalDays = completedPipeline.reduce((sum, item) => {
-        const days = Math.floor(
-          (item.updatedAt.getTime() - item.createdAt.getTime()) /
-            (1000 * 60 * 60 * 24),
-        );
-        return sum + days;
+        return sum + Math.floor((item.updatedAt.getTime() - item.createdAt.getTime()) / (1000 * 60 * 60 * 24));
       }, 0);
-      diasPromedioArrendar = Math.round(totalDays / completedPipeline.length);
+      avgDaysToClose = Math.round(totalDays / completedPipeline.length);
     }
 
-    // 5. Tasa de renovacion
-    const totalRenovaciones = await this.prisma.renovacion.count({
-      where: { agencyId },
-    });
-    const completedRenovaciones = await this.prisma.renovacion.count({
-      where: { agencyId, status: RenovacionStatus.RENOV_COMPLETED },
-    });
-    const tasaRenovacion =
-      totalRenovaciones > 0
-        ? Math.round(
-            (completedRenovaciones / totalRenovaciones) * 100 * 100,
-          ) / 100
-        : 0;
-
-    // 6. Cartera vencida: sum of pendingAmount from LATE/DEFAULTED cobros
-    const lateCobros = await this.prisma.cobro.findMany({
-      where: {
-        agencyId,
-        status: { in: [CobroStatus.LATE, CobroStatus.DEFAULTED] },
-      },
-      select: { pendingAmount: true },
-    });
-    const carteraVencida = lateCobros.reduce(
-      (sum, c) => sum + c.pendingAmount,
-      0,
-    );
-
-    // 7. Productividad de agentes: COMPLETED pipeline items / distinct agents
-    const distinctAgents = await this.prisma.pipelineItem.findMany({
-      where: {
-        agencyId,
-        agenteUserId: { not: null },
-      },
-      distinct: ['agenteUserId'],
-      select: { agenteUserId: true },
-    });
-    const agentCount = distinctAgents.length;
-    const productividadAgentes =
-      agentCount > 0
-        ? Math.round((completedPipeline.length / agentCount) * 100) / 100
-        : 0;
-
-    // 8. Total propietarios
-    const totalPropietarios = await this.prisma.propietario.count({
-      where: { agencyId },
+    // ── Team ───────────────────────────────────────────────────────────────
+    const totalAgents = await this.prisma.agencyMember.count({
+      where: { agencyId, role: AgencyMemberRole.AGENTE, status: AgencyMemberStatus.ACTIVE },
     });
 
-    return [
-      {
-        id: 'ingresosDelMes',
-        label: 'Ingresos del mes',
-        value: ingresosDelMes,
-        category: 'financial' as const,
-      },
-      {
-        id: 'tasaOcupacion',
-        label: 'Tasa de ocupacion',
-        value: tasaOcupacion,
-        category: 'operational' as const,
-      },
-      {
-        id: 'recaudoDelMes',
-        label: 'Recaudo del mes',
-        value: recaudoDelMes,
-        category: 'financial' as const,
-      },
-      {
-        id: 'diasPromedioArrendar',
-        label: 'Dias promedio para arrendar',
-        value: diasPromedioArrendar,
-        category: 'operational' as const,
-      },
-      {
-        id: 'tasaRenovacion',
-        label: 'Tasa de renovacion',
-        value: tasaRenovacion,
-        category: 'operational' as const,
-      },
-      {
-        id: 'carteraVencida',
-        label: 'Cartera vencida',
-        value: carteraVencida,
-        category: 'financial' as const,
-      },
-      {
-        id: 'productividadAgentes',
-        label: 'Productividad de agentes',
-        value: productividadAgentes,
-        category: 'performance' as const,
-      },
-      {
-        id: 'totalPropietarios',
-        label: 'Total propietarios',
-        value: totalPropietarios,
-        category: 'performance' as const,
-      },
-    ];
+    // ── Owners & Dispersions ───────────────────────────────────────────────
+    const [totalPropietarios, pendingDispersions] = await Promise.all([
+      this.prisma.propietario.count({ where: { agencyId } }),
+      this.prisma.dispersion.count({ where: { agencyId, status: DispersionStatus.DISP_PENDING } }),
+    ]);
+
+    return {
+      // Portfolio
+      totalProperties,
+      propertiesAvailable,
+      propertiesRented,
+      propertiesInProcess,
+      occupancyRate,
+      // Financial
+      expectedRevenue,
+      collectedRevenue,
+      pendingCollections,
+      lateCollections,
+      collectionRate,
+      totalCommissions,
+      // Pipeline
+      activeLeads,
+      scheduledVisits: 0,      // cross-module: visits are platform-level
+      pendingApplications: 0,  // cross-module: applications are platform-level
+      contractsInProgress: 0,  // cross-module: contracts are platform-level
+      // Team
+      totalAgents,
+      closedThisMonth,
+      avgDaysToClose,
+      // Owners
+      totalPropietarios,
+      pendingDispersions,
+    };
   }
 
   /**

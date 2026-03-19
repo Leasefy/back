@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { ApplicationsController } from './applications.controller.js';
 import { ApplicationsService } from './applications.service.js';
 import { ApplicationStateMachine } from './state-machine/application-state-machine.js';
@@ -8,6 +9,7 @@ import { ChatModule } from '../chat/chat.module.js';
 
 @Module({
   imports: [
+    ConfigModule,
     // Import ScoringModule to access ScoringService for async scoring
     ScoringModule,
     // Import ChatModule for conversation creation on submit

@@ -17,6 +17,7 @@ import {
 import { ApplicationsService } from './applications.service.js';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import { Roles } from '../auth/decorators/roles.decorator.js';
+import { Public } from '../auth/decorators/public.decorator.js';
 import { Role } from '../common/enums/role.enum.js';
 import type { User } from '@prisma/client';
 import {
@@ -29,6 +30,7 @@ import {
   SubmitApplicationDto,
   WithdrawApplicationDto,
   RespondInfoRequestDto,
+  GuestApplicationDto,
 } from './dto/index.js';
 
 @ApiTags('Applications')
@@ -36,6 +38,16 @@ import {
 @Controller('applications')
 export class ApplicationsController {
   constructor(private readonly applicationsService: ApplicationsService) {}
+
+  @Post('guest')
+  @Public()
+  @ApiOperation({ summary: 'Submit application as guest — invites user via email to set password' })
+  @ApiResponse({ status: 201, description: 'Application created, invitation email sent' })
+  @ApiResponse({ status: 400, description: 'Property not available or invite failed' })
+  @ApiResponse({ status: 409, description: 'Already have active application' })
+  async createGuest(@Body() dto: GuestApplicationDto) {
+    return this.applicationsService.createGuestApplication(dto);
+  }
 
   @Post()
   @Roles(Role.TENANT)

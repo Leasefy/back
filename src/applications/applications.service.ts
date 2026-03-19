@@ -25,9 +25,12 @@ import {
   SubmitApplicationDto,
   WithdrawApplicationDto,
   RespondInfoRequestDto,
+  GuestApplicationDto,
 } from './dto/index.js';
 import { ScoringService } from '../scoring/scoring.service.js';
 import { ChatService } from '../chat/chat.service.js';
+import { ConfigService } from '@nestjs/config';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 type StepDto =
   | PersonalInfoDto
@@ -41,6 +44,8 @@ type StepDto =
  */
 @Injectable()
 export class ApplicationsService {
+  private readonly supabase: SupabaseClient;
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly stateMachine: ApplicationStateMachine,
@@ -48,7 +53,13 @@ export class ApplicationsService {
     private readonly scoringService: ScoringService,
     private readonly eventEmitter: EventEmitter2,
     private readonly chatService: ChatService,
-  ) {}
+    private readonly configService: ConfigService,
+  ) {
+    this.supabase = createClient(
+      this.configService.get<string>('SUPABASE_URL')!,
+      this.configService.get<string>('SUPABASE_SERVICE_KEY')!,
+    );
+  }
 
   /**
    * Flatten a Prisma Application into the shape the frontend expects.
@@ -864,5 +875,85 @@ export class ApplicationsService {
     }
 
     return this.findByIdOrThrow(applicationId);
+  }
+
+  // ===========================================================================
+  // Guest Application (unauthenticated flow)
+  // ===========================================================================
+
+  /**
+   * Create an application from an unauthenticated guest.
+   *
+   * Flow:
+   * 1. Check if a Supabase auth user exists for the email.
+   * 2. If not, send a Supabase invite email (magic link to set password).
+   * 3. Upsert the Prisma User record with TENANT role.
+   * 4. Create the application using the existing createComplete logic.
+   *
+   * Returns the application + invite status so the frontend can show the right message.
+   */
+  async createGuestApplication(dto: GuestApplicationDto): Promise<{
+    applicationId: string;
+    trackingCode: string;
+    userAlreadyExisted: boolean;
+  }> {
+    const email = dto.email.toLowerCase().trim();
+    const frontendUrl = this.configService.get<string>('FRONTEND_URL') || 'http://localhost:3001';
+
+    // 1. Look up existing user by email in Prisma (id = Supabase UUID)
+    const existingUser = await this.prisma.user.findUnique({ where: { email } });
+
+    let supabaseUserId: string;
+    let userAlreadyExisted = false;
+
+    if (existingUser) {
+      supabaseUserId = existingUser.id;
+      userAlreadyExisted = true;
+    } else {
+      // Invite creates the Supabase auth user and sends the email
+      const { data: inviteData, error: inviteError } = await this.supabase.auth.admin.inviteUserByEmail(email, {
+        redirectTo: `${frontendUrl}/auth/callback?returnUrl=/inquilino`,
+        data: {
+          role: 'TENANT',
+          fullName: dto.fullName,
+        },
+      });
+
+      if (inviteError || !inviteData?.user) {
+        throw new BadRequestException(`No se pudo enviar la invitación: ${inviteError?.message}`);
+      }
+
+      supabaseUserId = inviteData.user.id;
+    }
+
+    // 2. Upsert the Prisma User record
+    const [firstName, ...rest] = dto.fullName.trim().split(' ');
+    const lastName = rest.join(' ') || undefined;
+
+    await this.prisma.user.upsert({
+      where: { id: supabaseUserId },
+      create: {
+        id: supabaseUserId,
+        email,
+        role: 'TENANT',
+        firstName,
+        lastName,
+      },
+      update: {
+        // Don't overwrite name if user already filled it in
+        ...(firstName && !userAlreadyExisted && { firstName, lastName }),
+      },
+    });
+
+    // 3. Create the application (reuse existing logic)
+    const application = await this.createComplete(supabaseUserId, dto);
+
+    const trackingCode = 'AF-' + application.id.replace(/-/g, '').slice(0, 6).toUpperCase();
+
+    return {
+      applicationId: application.id,
+      trackingCode,
+      userAlreadyExisted,
+    };
   }
 }

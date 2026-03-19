@@ -10,6 +10,10 @@ Backend API en NestJS para el marketplace de arriendos "Arriendo Facil". Provee 
 
 ## Phases
 
+### v1.1 Inmobiliaria Registration Flow
+
+- [x] Phase 23: Inmobiliaria Registration & Onboarding Flow (3/3 plans) — 2026-03-10
+
 <details>
 <summary>v1.0 Backend MVP (Phases 1-22) — SHIPPED 2026-02-16</summary>
 
@@ -47,6 +51,7 @@ Backend API en NestJS para el marketplace de arriendos "Arriendo Facil". Provee 
 | Milestone | Phases | Plans | Status | Shipped |
 |-----------|--------|-------|--------|---------|
 | v1.0 Backend MVP | 26 | 81/81 | Complete | 2026-02-16 |
+| v1.1 Inmobiliaria Registration | 1 | 3/3 | Complete | 2026-03-10 |
 
 ## External Services
 
@@ -60,4 +65,4 @@ Backend API en NestJS para el marketplace de arriendos "Arriendo Facil". Provee 
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-02-16 — v1.0 Backend MVP SHIPPED. All 22 phases archived.*
+*Last updated: 2026-03-10 — v1.1 Inmobiliaria Registration SHIPPED. Phase 23 complete.*

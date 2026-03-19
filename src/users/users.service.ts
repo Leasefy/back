@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException, ForbiddenException, BadRequestException, UnauthorizedException } from '@nestjs/common';
-import type { User } from '@prisma/client';
+import type { User, Prisma } from '@prisma/client';
 import { Role as PrismaRole, ContractStatus, ApplicationStatus } from '@prisma/client';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { ConfigService } from '@nestjs/config';
@@ -85,6 +85,12 @@ export class UsersService {
         firstName: dto.firstName,
         lastName: dto.lastName,
         phone: dto.phone,
+        rut: dto.rut,
+        address: dto.address,
+        birthDate: dto.birthDate ? new Date(dto.birthDate) : undefined,
+        emergencyContactName: dto.emergencyContactName,
+        emergencyContactPhone: dto.emergencyContactPhone,
+        avatarUrl: dto.avatarUrl,
       },
     });
   }
@@ -116,8 +122,37 @@ export class UsersService {
     // Ensure user exists
     await this.findById(userId);
 
-    // Map userType to Role enum
-    const role = dto.userType as unknown as Role;
+    // Map userType to Role enum (INMOBILIARIA maps to AGENT in the DB schema)
+    const role: PrismaRole =
+      dto.userType === UserType.INMOBILIARIA
+        ? PrismaRole.AGENT
+        : (dto.userType as unknown as PrismaRole);
+
+    // Build role-specific onboarding data to persist as JSON
+    let onboardingData: Record<string, unknown> | undefined;
+    if (dto.userType === UserType.TENANT) {
+      onboardingData = {
+        preferredContact: dto.preferredContact,
+        employmentType: dto.employmentType,
+        companyName: dto.companyName,
+        monthlyIncome: dto.monthlyIncome,
+        additionalIncome: dto.additionalIncome,
+        budgetMin: dto.budgetMin,
+        budgetMax: dto.budgetMax,
+        preferredZones: dto.preferredZones ?? [],
+        preferredAmenities: dto.preferredAmenities ?? [],
+        moveInDate: dto.moveInDate,
+        hasPets: dto.hasPets ?? false,
+        petDetails: dto.petDetails,
+      };
+    } else if (dto.userType === UserType.LANDLORD) {
+      onboardingData = {
+        preferredContact: dto.preferredContact,
+        propertyType: dto.propertyType,
+        propertyCity: dto.propertyCity,
+        expectedRent: dto.expectedRent,
+      };
+    }
 
     const updatedUser = await this.prisma.user.update({
       where: { id: userId },
@@ -125,13 +160,32 @@ export class UsersService {
         firstName: dto.firstName,
         lastName: dto.lastName,
         phone: dto.phone,
-        role: role as unknown as PrismaRole,
+        role,
+        ...(dto.rut !== undefined && { rut: dto.rut }),
+        ...(onboardingData !== undefined && { onboardingData: onboardingData as Prisma.InputJsonValue }),
       },
     });
 
-    // For INMOBILIARIA: create the agency and return enriched response
+    // For INMOBILIARIA: create or update the agency and return enriched response
     if (dto.userType === UserType.INMOBILIARIA && dto.agency) {
       const agency = await this.agencyService.createAgency(userId, dto.agency);
+      const agencyId = (agency as { id: string }).id;
+
+      // Always update all provided fields (supports both initial setup and re-onboarding)
+      await this.prisma.agency.update({
+        where: { id: agencyId },
+        data: {
+          name: dto.agency.name,
+          ...(dto.agency.nit !== undefined && { nit: dto.agency.nit || null }),
+          ...(dto.agency.city !== undefined && { city: dto.agency.city || null }),
+          ...(dto.agency.phone !== undefined && { phone: dto.agency.phone || null }),
+          ...(dto.agency.portfolioSize !== undefined && { portfolioSize: dto.agency.portfolioSize }),
+          ...(dto.agency.yearsInBusiness !== undefined && { yearsInBusiness: dto.agency.yearsInBusiness }),
+          ...(dto.agency.services !== undefined && { services: dto.agency.services as Prisma.InputJsonValue }),
+          ...(dto.agency.website !== undefined && { website: dto.agency.website }),
+        },
+      });
+
       return { user: updatedUser, agency, onboardingStep: 'agency_created' };
     }
 

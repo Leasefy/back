@@ -25,8 +25,21 @@ export class AgencyService {
 
   /**
    * Create a new agency and auto-add the creator as ADMIN member.
+   * Idempotent: if the user already owns an agency as ADMIN, returns it instead of creating a duplicate.
    */
   async createAgency(userId: string, dto: CreateAgencyDto) {
+    const existing = await this.prisma.agencyMember.findFirst({
+      where: { userId, role: AgencyMemberRole.ADMIN, status: AgencyMemberStatus.ACTIVE },
+      select: { agencyId: true },
+    });
+
+    if (existing) {
+      return this.prisma.agency.findUnique({
+        where: { id: existing.agencyId },
+        include: { members: true },
+      });
+    }
+
     return this.prisma.agency.create({
       data: {
         name: dto.name,

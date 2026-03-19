@@ -7,3 +7,4 @@ export * from './references.dto.js';
 export * from './submit-application.dto.js';
 export * from './withdraw-application.dto.js';
 export * from './respond-info-request.dto.js';
+export * from './guest-application.dto.js';

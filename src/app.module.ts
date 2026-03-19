@@ -28,6 +28,7 @@ import { ActivityLogModule } from './activity-log/activity-log.module.js';
 import { DashboardModule } from './dashboard/dashboard.module.js';
 import { RecommendationsModule } from './recommendations/recommendations.module.js';
 import { AgencyModule } from './inmobiliaria/agency/agency.module.js';
+import { AgentesModule } from './inmobiliaria/agentes/agentes.module.js';
 import { PipelineModule } from './inmobiliaria/pipeline/pipeline.module.js';
 import { PropietariosModule } from './inmobiliaria/propietarios/propietarios.module.js';
 import { ConsignacionesModule } from './inmobiliaria/consignaciones/consignaciones.module.js';
@@ -82,6 +83,7 @@ import { AppService } from './app.service.js';
     WishlistsModule,
     RecommendationsModule,
     AgencyModule,
+    AgentesModule,
     PipelineModule,
     PropietariosModule,
     ConsignacionesModule,

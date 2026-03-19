@@ -1,10 +1,15 @@
 import {
+  IsArray,
+  IsBoolean,
   IsEmail,
   IsEnum,
+  IsInt,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
   Matches,
+  Min,
   ValidateIf,
   ValidateNested,
 } from 'class-validator';
@@ -16,13 +21,9 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
  * Maps to the Role enum in the database.
  */
 export enum UserType {
-  /** Usuario que quiere arrendar inmuebles (busca donde vivir) */
   TENANT = 'TENANT',
-  /** Usuario que arrienda inmuebles a otros (propietario) */
   LANDLORD = 'LANDLORD',
-  /** Agente inmobiliario que gestiona propiedades de otros */
   AGENT = 'AGENT',
-  /** Empresa inmobiliaria que gestiona propiedades para múltiples propietarios */
   INMOBILIARIA = 'INMOBILIARIA',
 }
 
@@ -31,82 +32,71 @@ export enum UserType {
  * Required when userType === 'INMOBILIARIA'.
  */
 export class CreateAgencyInOnboardingDto {
-  @ApiProperty({ example: 'Inmobiliaria ABC', description: 'Nombre de la inmobiliaria' })
+  @ApiProperty({ example: 'Inmobiliaria ABC' })
   @IsString()
   @IsNotEmpty({ message: 'El nombre de la inmobiliaria es requerido' })
   name!: string;
 
-  @ApiPropertyOptional({ example: '900123456-7', description: 'NIT de la empresa' })
+  @ApiPropertyOptional({ example: '900123456-7' })
   @IsOptional()
   @IsString()
   nit?: string;
 
-  @ApiPropertyOptional({ example: 'Bogota', description: 'Ciudad de la inmobiliaria' })
+  @ApiPropertyOptional({ example: 'Bogota' })
   @IsOptional()
   @IsString()
   city?: string;
 
-  @ApiPropertyOptional({ example: '3001234567', description: 'Telefono de contacto' })
+  @ApiPropertyOptional({ example: '3001234567' })
   @IsOptional()
   @IsString()
   phone?: string;
 
-  @ApiPropertyOptional({ example: 'contacto@inmobiliaria.com', description: 'Email de contacto' })
+  @ApiPropertyOptional({ example: 'contacto@inmobiliaria.com' })
   @IsOptional()
   @IsEmail({}, { message: 'Email de la inmobiliaria invalido' })
   email?: string;
+
+  // Business profile fields (saved to agencies table)
+  @ApiPropertyOptional({ example: 'small', enum: ['small', 'medium', 'large', 'enterprise'] })
+  @IsOptional()
+  @IsString()
+  portfolioSize?: string;
+
+  @ApiPropertyOptional({ example: 5 })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  yearsInBusiness?: number;
+
+  @ApiPropertyOptional({ example: ['arriendos', 'ventas'], type: [String] })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  services?: string[];
+
+  @ApiPropertyOptional({ example: 'https://miinmobiliaria.com' })
+  @IsOptional()
+  @IsString()
+  website?: string;
 }
 
 /**
- * DTO for completing user onboarding after Google OAuth registration.
- *
- * This endpoint allows new users to:
- * 1. Set their profile information (name, phone)
- * 2. Select their user type (tenant, landlord, agent, or inmobiliaria)
- * 3. If INMOBILIARIA: provide agency data to create the agency automatically
- *
- * @example
- * POST /users/me/onboarding
- * {
- *   "firstName": "Juan",
- *   "lastName": "Garcia",
- *   "phone": "+573001234567",
- *   "userType": "LANDLORD"
- * }
- *
- * @example
- * POST /users/me/onboarding
- * {
- *   "firstName": "Carlos",
- *   "lastName": "Lopez",
- *   "userType": "INMOBILIARIA",
- *   "agency": { "name": "Inmobiliaria Lopez", "city": "Medellin" }
- * }
+ * DTO for completing user onboarding.
+ * Accepts all role-specific fields and persists them to the database.
  */
 export class CompleteOnboardingDto {
-  /**
-   * User's first name
-   * @example "Juan"
-   */
-  @ApiProperty({ example: 'Juan', description: 'Nombre del usuario' })
+  @ApiProperty({ example: 'Juan' })
   @IsString()
   @IsNotEmpty({ message: 'El nombre es requerido' })
   firstName!: string;
 
-  /**
-   * User's last name
-   * @example "Garcia"
-   */
-  @ApiProperty({ example: 'Garcia', description: 'Apellido del usuario' })
+  @ApiProperty({ example: 'Garcia' })
   @IsString()
   @IsNotEmpty({ message: 'El apellido es requerido' })
   lastName!: string;
 
-  /**
-   * User's phone number (Colombian mobile format)
-   * @example "+573001234567"
-   */
-  @ApiPropertyOptional({ example: '+573001234567', description: 'Telefono movil colombiano' })
+  @ApiPropertyOptional({ example: '+573001234567' })
   @IsOptional()
   @IsString()
   @Matches(/^(\+57)?3[0-9]{9}$/, {
@@ -114,34 +104,110 @@ export class CompleteOnboardingDto {
   })
   phone?: string;
 
-  /**
-   * Type of user account:
-   * - TENANT: Looking to rent a property (inquilino)
-   * - LANDLORD: Has properties to rent out (propietario)
-   * - AGENT: Real estate agent managing properties for landlords
-   * - INMOBILIARIA: Real estate company managing multiple properties
-   *
-   * @example "LANDLORD"
-   */
-  @ApiProperty({
-    enum: UserType,
-    example: UserType.LANDLORD,
-    description: 'Tipo de cuenta de usuario',
-  })
+  @ApiProperty({ enum: UserType, example: UserType.LANDLORD })
   @IsEnum(UserType, {
     message: 'Tipo de usuario invalido. Debe ser: TENANT, LANDLORD, AGENT o INMOBILIARIA',
   })
   @IsNotEmpty({ message: 'El tipo de usuario es requerido' })
   userType!: UserType;
 
-  /**
-   * Agency data — required when userType === 'INMOBILIARIA'.
-   * Ignored for other user types.
-   */
-  @ApiPropertyOptional({
-    type: () => CreateAgencyInOnboardingDto,
-    description: 'Datos de la inmobiliaria (requerido cuando userType es INMOBILIARIA)',
-  })
+  /** CC para personas naturales (inquilino/propietario) o RUT para inmobiliaria */
+  @ApiPropertyOptional({ example: '1090525663', description: 'Cédula de ciudadanía o RUT' })
+  @IsOptional()
+  @IsString()
+  rut?: string;
+
+  // ── Common extended fields ──────────────────────────────────────────────────
+
+  @ApiPropertyOptional({ example: 'whatsapp', enum: ['whatsapp', 'email', 'phone'] })
+  @IsOptional()
+  @IsString()
+  preferredContact?: string;
+
+  // ── Tenant-specific fields ──────────────────────────────────────────────────
+
+  @ApiPropertyOptional({ example: 'employed' })
+  @IsOptional()
+  @IsString()
+  employmentType?: string;
+
+  @ApiPropertyOptional({ example: 'Empresa S.A.' })
+  @IsOptional()
+  @IsString()
+  companyName?: string;
+
+  @ApiPropertyOptional({ example: 5000000 })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  monthlyIncome?: number;
+
+  @ApiPropertyOptional({ example: 500000 })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  additionalIncome?: number;
+
+  @ApiPropertyOptional({ example: 800000 })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  budgetMin?: number;
+
+  @ApiPropertyOptional({ example: 1500000 })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  budgetMax?: number;
+
+  @ApiPropertyOptional({ example: ['Chapinero', 'Usaquén'], type: [String] })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  preferredZones?: string[];
+
+  @ApiPropertyOptional({ example: ['parking', 'gym'], type: [String] })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  preferredAmenities?: string[];
+
+  @ApiPropertyOptional({ example: '2026-04-01' })
+  @IsOptional()
+  @IsString()
+  moveInDate?: string;
+
+  @ApiPropertyOptional({ example: false })
+  @IsOptional()
+  @IsBoolean()
+  hasPets?: boolean;
+
+  @ApiPropertyOptional({ example: 'Un perro pequeño' })
+  @IsOptional()
+  @IsString()
+  petDetails?: string;
+
+  // ── Landlord-specific fields ────────────────────────────────────────────────
+
+  @ApiPropertyOptional({ example: 'apartment', enum: ['apartment', 'house', 'studio', 'room'] })
+  @IsOptional()
+  @IsString()
+  propertyType?: string;
+
+  @ApiPropertyOptional({ example: 'Bogotá' })
+  @IsOptional()
+  @IsString()
+  propertyCity?: string;
+
+  @ApiPropertyOptional({ example: 2000000 })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  expectedRent?: number;
+
+  // ── Inmobiliaria agency data ────────────────────────────────────────────────
+
+  @ApiPropertyOptional({ type: () => CreateAgencyInOnboardingDto })
   @IsOptional()
   @ValidateIf((o: CompleteOnboardingDto) => o.userType === UserType.INMOBILIARIA)
   @IsNotEmpty({ message: 'Los datos de la agencia son requeridos para una inmobiliaria' })
