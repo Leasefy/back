@@ -521,6 +521,8 @@ export class AgencyService {
   /**
    * Update granular permissions for an agency member.
    * Pass null to reset to role defaults (clears custom permissions).
+   * If the passed permissions exactly match the role defaults, also saves null
+   * to avoid storing redundant custom data.
    * Only ADMIN can call this — enforced at controller level.
    */
   async updateMemberPermissions(
@@ -538,10 +540,27 @@ export class AgencyService {
       );
     }
 
+    // If explicit null → clear custom permissions (reset to role defaults)
+    // If permissions match role defaults exactly → also clear (no need to store redundant data)
+    let resolvedPermissions: object | null = null;
+
+    if (permissions !== null && member.role !== AgencyMemberRole.ADMIN) {
+      const roleDefault =
+        AGENCY_ROLE_DEFAULTS[
+          member.role as Exclude<AgencyMemberRole, AgencyMemberRole.ADMIN>
+        ];
+
+      const isIdenticalToDefaults =
+        roleDefault !== undefined &&
+        JSON.stringify(permissions) === JSON.stringify(roleDefault);
+
+      resolvedPermissions = isIdenticalToDefaults ? null : (permissions as object);
+    }
+
     return this.prisma.agencyMember.update({
       where: { id: memberId },
       data: {
-        permissions: permissions === null ? null : (permissions as object),
+        permissions: resolvedPermissions,
       },
       select: {
         id: true,
