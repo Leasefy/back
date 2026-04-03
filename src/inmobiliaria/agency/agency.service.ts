@@ -13,6 +13,8 @@ import { CreateAgencyDto } from './dto/create-agency.dto.js';
 import { UpdateAgencyDto } from './dto/update-agency.dto.js';
 import { InviteMemberDto } from './dto/invite-member.dto.js';
 import { UpdateMemberRoleDto } from './dto/update-member-role.dto.js';
+import type { AgencyPermissions } from './permissions/agency-permissions.js';
+import { AGENCY_ROLE_DEFAULTS } from './permissions/role-defaults.js';
 
 @Injectable()
 export class AgencyService {
@@ -469,6 +471,83 @@ export class AgencyService {
     return this.prisma.agencyIntegration.findMany({
       where: { agencyId },
       orderBy: { name: 'asc' },
+    });
+  }
+
+  /**
+   * Get effective permissions for an agency member.
+   * Returns custom permissions if set, otherwise returns role defaults.
+   * Admin members always have full access (indicated by isAdmin: true).
+   */
+  async getMemberPermissions(agencyId: string, memberId: string) {
+    const member = await this.prisma.agencyMember.findFirst({
+      where: { id: memberId, agencyId },
+      select: { role: true, permissions: true },
+    });
+
+    if (!member) {
+      throw new NotFoundException(
+        `Member with ID ${memberId} not found in this agency`,
+      );
+    }
+
+    if (member.role === AgencyMemberRole.ADMIN) {
+      return {
+        memberId,
+        role: member.role,
+        isAdmin: true,
+        permissions: null,
+        effectivePermissions: null,
+        note: 'ADMIN role has full access to all modules and actions',
+      };
+    }
+
+    const customPermissions = member.permissions as AgencyPermissions | null;
+    const defaultPermissions =
+      AGENCY_ROLE_DEFAULTS[
+        member.role as Exclude<AgencyMemberRole, AgencyMemberRole.ADMIN>
+      ] ?? {};
+
+    return {
+      memberId,
+      role: member.role,
+      isAdmin: false,
+      permissions: customPermissions,
+      effectivePermissions: customPermissions ?? defaultPermissions,
+      usingDefaults: customPermissions === null,
+    };
+  }
+
+  /**
+   * Update granular permissions for an agency member.
+   * Pass null to reset to role defaults (clears custom permissions).
+   * Only ADMIN can call this — enforced at controller level.
+   */
+  async updateMemberPermissions(
+    agencyId: string,
+    memberId: string,
+    permissions: AgencyPermissions | null,
+  ) {
+    const member = await this.prisma.agencyMember.findFirst({
+      where: { id: memberId, agencyId },
+    });
+
+    if (!member) {
+      throw new NotFoundException(
+        `Member with ID ${memberId} not found in this agency`,
+      );
+    }
+
+    return this.prisma.agencyMember.update({
+      where: { id: memberId },
+      data: {
+        permissions: permissions === null ? null : (permissions as object),
+      },
+      select: {
+        id: true,
+        role: true,
+        permissions: true,
+      },
     });
   }
 

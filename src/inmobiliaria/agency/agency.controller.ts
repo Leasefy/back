@@ -29,6 +29,7 @@ import {
   UpdateAgencyDto,
   InviteMemberDto,
   UpdateMemberRoleDto,
+  UpdatePermissionsDto,
   InvitationInfoResponseDto,
 } from './dto/index.js';
 
@@ -225,6 +226,58 @@ export class AgencyController {
     }
     this.ensureAdmin(agency.memberRole as AgencyMemberRole);
     return this.agencyService.updateMemberRole(agency.id, memberId, dto);
+  }
+
+  /**
+   * GET /inmobiliaria/agency/members/:memberId/permissions
+   * Get effective permissions for a member (custom or role defaults). Admin only.
+   */
+  @Get('members/:memberId/permissions')
+  @ApiOperation({
+    summary: 'Get member effective permissions (admin only)',
+    description:
+      'Returns custom permissions if set, or role defaults. ADMIN members always have full access.',
+  })
+  @ApiOkResponse({ description: 'Effective permissions for the member' })
+  async getMemberPermissions(
+    @CurrentUser('id') userId: string,
+    @Param('memberId', ParseUUIDPipe) memberId: string,
+  ) {
+    const agency = await this.agencyService.getAgencyForUser(userId);
+    if (!agency) {
+      throw new NotFoundException('You are not a member of any agency');
+    }
+    this.ensureAdmin(agency.memberRole as AgencyMemberRole);
+    return this.agencyService.getMemberPermissions(agency.id, memberId);
+  }
+
+  /**
+   * PUT /inmobiliaria/agency/members/:memberId/permissions
+   * Update granular permissions for a member. Admin only.
+   * Pass null as permissions to reset to role defaults.
+   */
+  @Put('members/:memberId/permissions')
+  @ApiOperation({
+    summary: 'Update member permissions (admin only)',
+    description:
+      'Set custom granular permissions per module+action. Pass null to reset to role defaults.',
+  })
+  @ApiOkResponse({ description: 'Updated member with new permissions' })
+  async updateMemberPermissions(
+    @CurrentUser('id') userId: string,
+    @Param('memberId', ParseUUIDPipe) memberId: string,
+    @Body() dto: UpdatePermissionsDto,
+  ) {
+    const agency = await this.agencyService.getAgencyForUser(userId);
+    if (!agency) {
+      throw new NotFoundException('You are not a member of any agency');
+    }
+    this.ensureAdmin(agency.memberRole as AgencyMemberRole);
+    return this.agencyService.updateMemberPermissions(
+      agency.id,
+      memberId,
+      dto.permissions,
+    );
   }
 
   /**
