@@ -10,6 +10,7 @@ import {
   ApiOperation,
   ApiOkResponse,
   ApiQuery,
+  ApiForbiddenResponse,
 } from '@nestjs/swagger';
 import { AgencyMemberGuard } from '../agency/guards/agency-member.guard.js';
 import { AgencyPermissionGuard } from '../agency/guards/agency-permission.guard.js';
@@ -36,6 +37,7 @@ export class DashboardController {
   @RequirePermission('dashboard', 'view')
   @ApiOperation({ summary: 'Get dashboard KPIs' })
   @ApiOkResponse({ description: 'Aggregated dashboard metrics' })
+  @ApiForbiddenResponse({ description: 'Insufficient permissions: requires dashboard:view' })
   async getDashboardKpis(@CurrentAgency('agencyId') agencyId: string) {
     return this.dashboardService.getDashboardKpis(agencyId);
   }

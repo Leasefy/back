@@ -19,6 +19,9 @@ import {
   ApiCreatedResponse,
   ApiOkResponse,
   ApiNoContentResponse,
+  ApiForbiddenResponse,
+  ApiParam,
+  ApiBody,
 } from '@nestjs/swagger';
 import { Public } from '../../auth/decorators/public.decorator.js';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator.js';
@@ -236,9 +239,42 @@ export class AgencyController {
   @ApiOperation({
     summary: 'Get member effective permissions (admin only)',
     description:
-      'Returns custom permissions if set, or role defaults. ADMIN members always have full access.',
+      'Returns the effective permissions for the given member. ' +
+      'If the member has custom permissions set, those are returned. ' +
+      'Otherwise, returns the role defaults. ADMIN members always have full access (FULL_ACCESS).',
   })
-  @ApiOkResponse({ description: 'Effective permissions for the member' })
+  @ApiParam({ name: 'memberId', description: 'Agency member UUID', type: 'string', format: 'uuid' })
+  @ApiOkResponse({
+    description: 'Effective permissions for the member',
+    schema: {
+      type: 'object',
+      properties: {
+        memberId: { type: 'string', format: 'uuid' },
+        role: { type: 'string', enum: ['ADMIN', 'AGENTE', 'CONTADOR', 'VIEWER'] },
+        permissions: {
+          oneOf: [
+            { type: 'string', example: 'FULL_ACCESS', description: 'For ADMIN role' },
+            {
+              type: 'object',
+              description: 'Module-action permission map',
+              properties: {
+                dashboard: { type: 'array', items: { type: 'string' } },
+                portafolio: { type: 'array', items: { type: 'string' } },
+                pipeline: { type: 'array', items: { type: 'string' } },
+                cobros: { type: 'array', items: { type: 'string' } },
+                dispersiones: { type: 'array', items: { type: 'string' } },
+                reportes: { type: 'array', items: { type: 'string' } },
+                configuracion: { type: 'array', items: { type: 'string' } },
+                analytics: { type: 'array', items: { type: 'string' } },
+              },
+            },
+          ],
+        },
+        source: { type: 'string', enum: ['custom', 'role_defaults'], description: 'Where permissions come from' },
+      },
+    },
+  })
+  @ApiForbiddenResponse({ description: 'Requester is not an ADMIN of this agency' })
   async getMemberPermissions(
     @CurrentUser('id') userId: string,
     @Param('memberId', ParseUUIDPipe) memberId: string,
@@ -260,9 +296,33 @@ export class AgencyController {
   @ApiOperation({
     summary: 'Update member permissions (admin only)',
     description:
-      'Set custom granular permissions per module+action. Pass null to reset to role defaults.',
+      'Set custom granular permissions per module+action. ' +
+      'Pass null as the permissions field to reset to role defaults. ' +
+      'Omitted modules are treated as no access. ' +
+      'Valid actions: view, create, edit, delete, export.',
   })
-  @ApiOkResponse({ description: 'Updated member with new permissions' })
+  @ApiParam({ name: 'memberId', description: 'Agency member UUID', type: 'string', format: 'uuid' })
+  @ApiBody({
+    description: 'Permissions to set. Use null to reset to role defaults.',
+    schema: {
+      type: 'object',
+      properties: {
+        permissions: {
+          nullable: true,
+          description: 'Custom permissions map. null = reset to role defaults.',
+          type: 'object',
+          example: {
+            dashboard: ['view'],
+            portafolio: ['view', 'create', 'edit'],
+            reportes: ['view', 'export'],
+            configuracion: [],
+          },
+        },
+      },
+    },
+  })
+  @ApiOkResponse({ description: 'Updated agency member with new permissions applied' })
+  @ApiForbiddenResponse({ description: 'Requester is not an ADMIN of this agency' })
   async updateMemberPermissions(
     @CurrentUser('id') userId: string,
     @Param('memberId', ParseUUIDPipe) memberId: string,

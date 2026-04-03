@@ -16,6 +16,7 @@ import {
   ApiOperation,
   ApiResponse,
   ApiParam,
+  ApiForbiddenResponse,
 } from '@nestjs/swagger';
 import { LandlordService } from './landlord.service.js';
 import { CurrentUser, Roles, RequireTeamPermission } from '../auth/decorators/index.js';
@@ -55,6 +56,7 @@ export class LandlordController {
     status: 200,
     description: 'All candidates with stats',
   })
+  @ApiForbiddenResponse({ description: 'Insufficient team permissions: requires candidates:view' })
   async getAllCandidates(@CurrentUser() user: User) {
     return this.landlordService.getAllCandidates(user.id);
   }
