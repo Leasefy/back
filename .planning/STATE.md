@@ -2,11 +2,11 @@
 
 ## Current Status
 
-**Milestone:** v1.0 Backend MVP — SHIPPED 2026-02-16
+**Milestone:** v1.2 Roles & Permissions — IN PROGRESS
 **Status:** Post-v1.0 Active Development
-**Last activity:** 2026-03-10 - Completed 23-03-PLAN.md (Testing, docs & integration verification for inmobiliaria registration flow)
+**Last activity:** 2026-04-01 - Completed 24-01-PLAN.md (Granular agency member permissions system)
 
-**Progress:** [########################################] v1.0 complete + Phase 23 COMPLETE (3/3 plans done)
+**Progress:** [########################################] v1.0 complete + Phase 23 COMPLETE + Phase 24 IN PROGRESS (1/3 plans done)
 
 ## Project Reference
 
@@ -14,7 +14,7 @@ See: .planning/PROJECT.md (updated 2026-02-16)
 
 **Core value:** Ejecutar el Risk Score con analisis inteligente de documentos para que propietarios tomen decisiones informadas en minutos, con explicabilidad total.
 
-**Current focus:** Phase 23 — Inmobiliaria Registration & Onboarding Flow (post-v1.0).
+**Current focus:** Phase 24 — Roles & Permissions (granular permission system for agency members).
 
 ## Quick Context
 
@@ -54,6 +54,7 @@ See: .planning/PROJECT.md (updated 2026-02-16)
 | 21. Explainability (IA) | COMPLETE | All 2 plans - core services (21-01), endpoint + processor integration (21-02) |
 | 22. ML Persistence (IA) | COMPLETE | All 2 plans - feature snapshots, prediction logs (22-01), outcome tracking + export (22-02) |
 | 23. Inmobiliaria Registration | COMPLETE | 3/3 plans - 23-01 schema + onboarding, 23-02 token invitations, 23-03 testing + docs |
+| 24. Roles & Permissions | IN PROGRESS | 1/3 plans - 24-01 granular permissions system for agency members |
 
 ## Roadmap Evolution
 
@@ -313,12 +314,17 @@ See: .planning/PROJECT.md (updated 2026-02-16)
 | 2026-03-10 | 23-02 | Email sending fire-and-forget in AgencyService | Email failure must not break invitation creation — wrapped in try/catch |
 | 2026-03-10 | 23-02 | NotificationsModule imported into AgencyModule | EmailService injection via module import, no circular dependency |
 | 2026-03-10 | 23-02 | crypto.randomUUID() for token generation | Native Node.js, no extra dependency needed |
+| 2026-04-01 | 24-01 | JSONB + null pattern for permissions | permissions=null means use role defaults; only write custom data when different from defaults |
+| 2026-04-01 | 24-01 | AgencyMemberGuard extended for permissions | Same DB query selects agencyId+role+permissions; no extra round-trip for AgencyPermissionGuard |
+| 2026-04-01 | 24-01 | ADMIN bypasses permission checks entirely | No lookup/comparison needed for ADMIN role, always passes |
+| 2026-04-01 | 24-01 | renovaciones+actas map to portafolio module | Both manage property portfolio sub-items; inherit same access matrix as consignaciones |
+| 2026-04-01 | 24-01 | mantenimiento maps to operaciones module | Matches frontend navigation naming convention for maintenance/operations section |
 
 ## Session Continuity
 
-**Last session:** 2026-03-10
-**Stopped at:** Phase 23 Plan 02 complete (Token-Based Invitation System)
-**Resume file:** .planning/phases/23-inmobiliaria-registration/23-02-SUMMARY.md
+**Last session:** 2026-04-01
+**Stopped at:** Phase 24 Plan 01 complete (Granular Agency Member Permissions)
+**Resume file:** .planning/phases/24-roles-permissions/24-01-SUMMARY.md
 
 ## Pending User Actions
 
@@ -354,6 +360,11 @@ See: .planning/PROJECT.md (updated 2026-02-16)
 1. Run: `npx prisma db push`
 2. If "spawn UNKNOWN" error on Windows/OneDrive, try WSL or shorter path
 3. Verify tables: `npx prisma studio`
+
+**Phase 24-01: Database migration for permissions column:**
+1. Run: `npx prisma migrate deploy` (production) or `npx prisma migrate dev` (development)
+2. Adds nullable JSONB `permissions` column to `agency_members` table
+3. Existing members will have `null` permissions (role defaults apply automatically)
 
 **Seed notification templates:**
 1. Run: `npm run seed:templates`
