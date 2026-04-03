@@ -4,9 +4,9 @@
 
 **Milestone:** v1.2 Roles & Permissions — IN PROGRESS
 **Status:** Post-v1.0 Active Development
-**Last activity:** 2026-04-01 - Completed 24-01-PLAN.md (Granular agency member permissions system)
+**Last activity:** 2026-04-03 - Completed 24-02-PLAN.md (Landlord team role enforcement - TeamAccessGuard)
 
-**Progress:** [########################################] v1.0 complete + Phase 23 COMPLETE + Phase 24 IN PROGRESS (1/3 plans done)
+**Progress:** [########################################] v1.0 complete + Phase 23 COMPLETE + Phase 24 IN PROGRESS (2/3 plans done)
 
 ## Project Reference
 
@@ -54,7 +54,7 @@ See: .planning/PROJECT.md (updated 2026-02-16)
 | 21. Explainability (IA) | COMPLETE | All 2 plans - core services (21-01), endpoint + processor integration (21-02) |
 | 22. ML Persistence (IA) | COMPLETE | All 2 plans - feature snapshots, prediction logs (22-01), outcome tracking + export (22-02) |
 | 23. Inmobiliaria Registration | COMPLETE | 3/3 plans - 23-01 schema + onboarding, 23-02 token invitations, 23-03 testing + docs |
-| 24. Roles & Permissions | IN PROGRESS | 1/3 plans - 24-01 granular permissions system for agency members |
+| 24. Roles & Permissions | IN PROGRESS | 2/3 plans - 24-01 agency member permissions, 24-02 landlord team role enforcement |
 
 ## Roadmap Evolution
 
@@ -319,12 +319,16 @@ See: .planning/PROJECT.md (updated 2026-02-16)
 | 2026-04-01 | 24-01 | ADMIN bypasses permission checks entirely | No lookup/comparison needed for ADMIN role, always passes |
 | 2026-04-01 | 24-01 | renovaciones+actas map to portafolio module | Both manage property portfolio sub-items; inherit same access matrix as consignaciones |
 | 2026-04-01 | 24-01 | mantenimiento maps to operaciones module | Matches frontend navigation naming convention for maintenance/operations section |
+| 2026-04-03 | 24-02 | Email-based TeamMember lookup | TeamMember has no userId field; guard matches by User.email against TeamMember.email |
+| 2026-04-03 | 24-02 | Direct owner detection via property count | landlordId property count > 0 means direct owner, bypasses team permission checks |
+| 2026-04-03 | 24-02 | MVP: no context-switching for landlords with own properties | LANDLORD users with own properties always pass; pure team-member context requires future explicit switch feature |
+| 2026-04-03 | 24-02 | TeamAccessGuard provided per feature module | PrismaModule is @Global; guard added to providers in each consuming module (landlord, properties, contracts, leases, visits, users) |
 
 ## Session Continuity
 
-**Last session:** 2026-04-01
-**Stopped at:** Phase 24 Plan 01 complete (Granular Agency Member Permissions)
-**Resume file:** .planning/phases/24-roles-permissions/24-01-SUMMARY.md
+**Last session:** 2026-04-03
+**Stopped at:** Phase 24 Plan 02 complete (Landlord Team Role Enforcement - TeamAccessGuard)
+**Resume file:** .planning/phases/24-roles-permissions/24-02-SUMMARY.md
 
 ## Pending User Actions
 
