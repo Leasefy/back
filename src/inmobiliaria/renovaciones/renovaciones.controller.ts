@@ -18,6 +18,8 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { AgencyMemberGuard } from '../agency/guards/agency-member.guard.js';
+import { AgencyPermissionGuard } from '../agency/guards/agency-permission.guard.js';
+import { RequirePermission } from '../agency/decorators/require-permission.decorator.js';
 import { CurrentAgency } from '../agency/decorators/current-agency.decorator.js';
 import { RenovacionesService } from './renovaciones.service.js';
 import { CreateRenovacionDto, UpdateRenovacionStageDto } from './dto/index.js';
@@ -25,10 +27,11 @@ import { CreateRenovacionDto, UpdateRenovacionStageDto } from './dto/index.js';
 /**
  * Controller for lease renewal (renovacion) management.
  * All endpoints require authentication and agency membership.
+ * Module: portafolio (inherits from consignaciones/property portfolio).
  */
 @ApiTags('inmobiliaria/renovaciones')
 @ApiBearerAuth()
-@UseGuards(AgencyMemberGuard)
+@UseGuards(AgencyMemberGuard, AgencyPermissionGuard)
 @Controller('inmobiliaria/renovaciones')
 export class RenovacionesController {
   constructor(
@@ -40,6 +43,7 @@ export class RenovacionesController {
    * Create a new lease renewal record.
    */
   @Post()
+  @RequirePermission('portafolio', 'create')
   @ApiOperation({ summary: 'Create a lease renewal' })
   @ApiCreatedResponse({ description: 'Lease renewal created' })
   async create(
@@ -54,6 +58,7 @@ export class RenovacionesController {
    * List renovaciones with optional status and urgency filters.
    */
   @Get()
+  @RequirePermission('portafolio', 'view')
   @ApiOperation({ summary: 'List lease renewals' })
   @ApiOkResponse({ description: 'List of lease renewals' })
   @ApiQuery({ name: 'status', required: false })
@@ -72,6 +77,7 @@ export class RenovacionesController {
    * Must be declared BEFORE /:id to avoid route collision.
    */
   @Get('upcoming')
+  @RequirePermission('portafolio', 'view')
   @ApiOperation({ summary: 'Get upcoming lease renewals' })
   @ApiOkResponse({ description: 'List of upcoming renewals' })
   @ApiQuery({ name: 'days', required: false, description: 'Number of days to look ahead (default 90)' })
@@ -88,6 +94,7 @@ export class RenovacionesController {
    * Get a single renovacion with its full history.
    */
   @Get(':id')
+  @RequirePermission('portafolio', 'view')
   @ApiOperation({ summary: 'Get lease renewal detail' })
   @ApiOkResponse({ description: 'Lease renewal with history' })
   async findOne(
@@ -102,6 +109,7 @@ export class RenovacionesController {
    * Update the stage/status of a renovacion.
    */
   @Put(':id/stage')
+  @RequirePermission('portafolio', 'edit')
   @ApiOperation({ summary: 'Update lease renewal stage' })
   @ApiOkResponse({ description: 'Lease renewal stage updated' })
   async updateStage(

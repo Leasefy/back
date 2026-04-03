@@ -12,6 +12,8 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { AgencyMemberGuard } from '../agency/guards/agency-member.guard.js';
+import { AgencyPermissionGuard } from '../agency/guards/agency-permission.guard.js';
+import { RequirePermission } from '../agency/decorators/require-permission.decorator.js';
 import { CurrentAgency } from '../agency/decorators/current-agency.decorator.js';
 import { DashboardService } from './dashboard.service.js';
 
@@ -21,7 +23,7 @@ import { DashboardService } from './dashboard.service.js';
  */
 @ApiTags('inmobiliaria/dashboard')
 @ApiBearerAuth()
-@UseGuards(AgencyMemberGuard)
+@UseGuards(AgencyMemberGuard, AgencyPermissionGuard)
 @Controller('inmobiliaria/dashboard')
 export class DashboardController {
   constructor(private readonly dashboardService: DashboardService) {}
@@ -31,6 +33,7 @@ export class DashboardController {
    * Aggregated dashboard KPIs (properties, revenue, pipeline, agents).
    */
   @Get('kpis')
+  @RequirePermission('dashboard', 'view')
   @ApiOperation({ summary: 'Get dashboard KPIs' })
   @ApiOkResponse({ description: 'Aggregated dashboard metrics' })
   async getDashboardKpis(@CurrentAgency('agencyId') agencyId: string) {
@@ -42,6 +45,7 @@ export class DashboardController {
    * Urgent counts requiring attention (maintenance, signatures, expirations, overdue).
    */
   @Get('quick-stats')
+  @RequirePermission('dashboard', 'view')
   @ApiOperation({ summary: 'Get quick stats (urgent counts)' })
   @ApiOkResponse({ description: 'Counts of items requiring attention' })
   async getQuickStats(@CurrentAgency('agencyId') agencyId: string) {
@@ -53,6 +57,7 @@ export class DashboardController {
    * Recent activity across cobros, pipeline, and maintenance.
    */
   @Get('activity')
+  @RequirePermission('dashboard', 'view')
   @ApiOperation({ summary: 'Get recent activity feed' })
   @ApiOkResponse({ description: 'Mixed list of recent changes sorted by date' })
   @ApiQuery({ name: 'limit', required: false, example: 10 })

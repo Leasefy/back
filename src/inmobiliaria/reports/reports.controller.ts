@@ -14,6 +14,8 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { AgencyMemberGuard } from '../agency/guards/agency-member.guard.js';
+import { AgencyPermissionGuard } from '../agency/guards/agency-permission.guard.js';
+import { RequirePermission } from '../agency/decorators/require-permission.decorator.js';
 import { CurrentAgency } from '../agency/decorators/current-agency.decorator.js';
 import { ReportsService } from './reports.service.js';
 
@@ -23,7 +25,7 @@ import { ReportsService } from './reports.service.js';
  */
 @ApiTags('inmobiliaria/reports')
 @ApiBearerAuth()
-@UseGuards(AgencyMemberGuard)
+@UseGuards(AgencyMemberGuard, AgencyPermissionGuard)
 @Controller('inmobiliaria/reports')
 export class ReportsController {
   constructor(private readonly reportsService: ReportsService) {}
@@ -33,6 +35,7 @@ export class ReportsController {
    * Owner monthly statement for a given month.
    */
   @Get('extracto/:propietarioId')
+  @RequirePermission('reportes', 'view')
   @ApiOperation({ summary: 'Owner monthly statement (extracto)' })
   @ApiOkResponse({ description: 'Owner statement with line items and totals' })
   @ApiQuery({ name: 'month', required: true, example: '2026-02' })
@@ -53,6 +56,7 @@ export class ReportsController {
    * Aging analysis of pending/late collections.
    */
   @Get('cartera')
+  @RequirePermission('reportes', 'view')
   @ApiOperation({ summary: 'Aging/cartera report' })
   @ApiOkResponse({ description: 'Aging analysis with buckets' })
   async getCarteraReport(@CurrentAgency('agencyId') agencyId: string) {
@@ -64,6 +68,7 @@ export class ReportsController {
    * Agent commission report for a given month.
    */
   @Get('comisiones')
+  @RequirePermission('reportes', 'view')
   @ApiOperation({ summary: 'Agent commissions report' })
   @ApiOkResponse({ description: 'Commission totals per agent' })
   @ApiQuery({ name: 'month', required: true, example: '2026-02' })
@@ -79,6 +84,7 @@ export class ReportsController {
    * Property occupancy report grouped by zone/city.
    */
   @Get('ocupacion')
+  @RequirePermission('reportes', 'view')
   @ApiOperation({ summary: 'Property occupancy report' })
   @ApiOkResponse({ description: 'Occupancy rates by zone' })
   async getOcupacionReport(@CurrentAgency('agencyId') agencyId: string) {
@@ -90,6 +96,7 @@ export class ReportsController {
    * Contract/lease expiry report with aging buckets.
    */
   @Get('vencimientos')
+  @RequirePermission('reportes', 'view')
   @ApiOperation({ summary: 'Contract expiry report' })
   @ApiOkResponse({ description: 'Lease expirations with bucket summary' })
   async getVencimientosReport(@CurrentAgency('agencyId') agencyId: string) {
@@ -101,6 +108,7 @@ export class ReportsController {
    * Cash flow report for the last N months.
    */
   @Get('flujo-caja')
+  @RequirePermission('reportes', 'view')
   @ApiOperation({ summary: 'Cash flow report' })
   @ApiOkResponse({ description: 'Monthly income, disbursements, and commissions' })
   @ApiQuery({ name: 'period', required: false, example: 'semester' })
@@ -123,6 +131,7 @@ export class ReportsController {
    * Agent performance report for a given month.
    */
   @Get('rendimiento-agentes')
+  @RequirePermission('reportes', 'view')
   @ApiOperation({ summary: 'Agent performance report' })
   @ApiOkResponse({ description: 'Performance metrics per agent' })
   @ApiQuery({ name: 'month', required: true, example: '2026-02' })

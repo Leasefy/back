@@ -18,6 +18,8 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { AgencyMemberGuard } from '../agency/guards/agency-member.guard.js';
+import { AgencyPermissionGuard } from '../agency/guards/agency-permission.guard.js';
+import { RequirePermission } from '../agency/decorators/require-permission.decorator.js';
 import { CurrentAgency } from '../agency/decorators/current-agency.decorator.js';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator.js';
 import { DispersionesService } from './dispersiones.service.js';
@@ -29,7 +31,7 @@ import { GenerateDispersionDto, ProcessDispersionDto } from './dto/index.js';
  */
 @ApiTags('inmobiliaria/dispersiones')
 @ApiBearerAuth()
-@UseGuards(AgencyMemberGuard)
+@UseGuards(AgencyMemberGuard, AgencyPermissionGuard)
 @Controller('inmobiliaria/dispersiones')
 export class DispersionesController {
   constructor(private readonly dispersionesService: DispersionesService) {}
@@ -40,6 +42,7 @@ export class DispersionesController {
    * NOTE: This route MUST be defined before /:id to avoid path conflicts.
    */
   @Post('generate')
+  @RequirePermission('dispersiones', 'create')
   @ApiOperation({ summary: 'Generate dispersiones for a month' })
   @ApiCreatedResponse({ description: 'Dispersiones generated successfully' })
   async generate(
@@ -54,6 +57,7 @@ export class DispersionesController {
    * List dispersiones with optional filters.
    */
   @Get()
+  @RequirePermission('dispersiones', 'view')
   @ApiOperation({ summary: 'List dispersiones with filters' })
   @ApiOkResponse({ description: 'List of dispersiones with items' })
   @ApiQuery({ name: 'month', required: false, example: '2026-02' })
@@ -73,6 +77,7 @@ export class DispersionesController {
    * Get a single dispersion with items and propietario details.
    */
   @Get(':id')
+  @RequirePermission('dispersiones', 'view')
   @ApiOperation({ summary: 'Get dispersion by ID' })
   @ApiOkResponse({ description: 'Dispersion details with items and propietario' })
   async findOne(
@@ -88,6 +93,7 @@ export class DispersionesController {
    * Gets userId from @CurrentUser to track who approved.
    */
   @Put(':id/approve')
+  @RequirePermission('dispersiones', 'edit')
   @ApiOperation({ summary: 'Approve a dispersion' })
   @ApiOkResponse({ description: 'Dispersion approved and set to PROCESSING' })
   async approve(
@@ -103,6 +109,7 @@ export class DispersionesController {
    * Mark a dispersion as completed with transfer reference.
    */
   @Put(':id/process')
+  @RequirePermission('dispersiones', 'edit')
   @ApiOperation({ summary: 'Process a dispersion (mark as completed)' })
   @ApiOkResponse({ description: 'Dispersion processed successfully' })
   async process(

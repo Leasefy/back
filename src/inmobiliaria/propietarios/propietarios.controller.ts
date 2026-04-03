@@ -22,6 +22,8 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { AgencyMemberGuard } from '../agency/guards/agency-member.guard.js';
+import { AgencyPermissionGuard } from '../agency/guards/agency-permission.guard.js';
+import { RequirePermission } from '../agency/decorators/require-permission.decorator.js';
 import { CurrentAgency } from '../agency/decorators/current-agency.decorator.js';
 import { PropietariosService } from './propietarios.service.js';
 import { CreatePropietarioDto, UpdatePropietarioDto } from './dto/index.js';
@@ -32,7 +34,7 @@ import { CreatePropietarioDto, UpdatePropietarioDto } from './dto/index.js';
  */
 @ApiTags('inmobiliaria/propietarios')
 @ApiBearerAuth()
-@UseGuards(AgencyMemberGuard)
+@UseGuards(AgencyMemberGuard, AgencyPermissionGuard)
 @Controller('inmobiliaria/propietarios')
 export class PropietariosController {
   constructor(private readonly propietariosService: PropietariosService) {}
@@ -42,6 +44,7 @@ export class PropietariosController {
    * Create a new propietario for the user's agency.
    */
   @Post()
+  @RequirePermission('propietarios', 'create')
   @ApiOperation({ summary: 'Create a new propietario' })
   @ApiCreatedResponse({ description: 'Propietario created successfully' })
   async create(
@@ -56,6 +59,7 @@ export class PropietariosController {
    * List all propietarios for the user's agency with computed fields.
    */
   @Get()
+  @RequirePermission('propietarios', 'view')
   @ApiOperation({ summary: 'List propietarios with computed fields' })
   @ApiOkResponse({ description: 'List of propietarios' })
   @ApiQuery({ name: 'search', required: false })
@@ -71,6 +75,7 @@ export class PropietariosController {
    * Get a single propietario with consignaciones.
    */
   @Get(':id')
+  @RequirePermission('propietarios', 'view')
   @ApiOperation({ summary: 'Get propietario detail with consignaciones' })
   @ApiOkResponse({ description: 'Propietario detail' })
   async findOne(
@@ -85,6 +90,7 @@ export class PropietariosController {
    * Update a propietario.
    */
   @Put(':id')
+  @RequirePermission('propietarios', 'edit')
   @ApiOperation({ summary: 'Update a propietario' })
   @ApiOkResponse({ description: 'Propietario updated successfully' })
   async update(
@@ -101,6 +107,7 @@ export class PropietariosController {
    */
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @RequirePermission('propietarios', 'delete')
   @ApiOperation({ summary: 'Delete a propietario' })
   @ApiNoContentResponse({ description: 'Propietario deleted' })
   async remove(
@@ -115,6 +122,7 @@ export class PropietariosController {
    * Get owner statement for a given month.
    */
   @Get(':id/extracto')
+  @RequirePermission('propietarios', 'view')
   @ApiOperation({ summary: 'Get owner statement (extracto) for a month' })
   @ApiOkResponse({ description: 'Owner statement with line items and totals' })
   @ApiQuery({ name: 'month', required: true, example: '2026-02' })

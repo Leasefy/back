@@ -22,6 +22,8 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { AgencyMemberGuard } from '../agency/guards/agency-member.guard.js';
+import { AgencyPermissionGuard } from '../agency/guards/agency-permission.guard.js';
+import { RequirePermission } from '../agency/decorators/require-permission.decorator.js';
 import { CurrentAgency } from '../agency/decorators/current-agency.decorator.js';
 import { PipelineService } from './pipeline.service.js';
 import {
@@ -38,7 +40,7 @@ import { PipelineStage } from '../../common/enums/pipeline-stage.enum.js';
  */
 @ApiTags('inmobiliaria/pipeline')
 @ApiBearerAuth()
-@UseGuards(AgencyMemberGuard)
+@UseGuards(AgencyMemberGuard, AgencyPermissionGuard)
 @Controller('inmobiliaria/pipeline')
 export class PipelineController {
   constructor(private readonly pipelineService: PipelineService) {}
@@ -48,6 +50,7 @@ export class PipelineController {
    * Create a new pipeline item (prospect).
    */
   @Post()
+  @RequirePermission('pipeline', 'create')
   @ApiOperation({ summary: 'Create a pipeline item' })
   @ApiCreatedResponse({ description: 'Pipeline item created' })
   async create(
@@ -62,6 +65,7 @@ export class PipelineController {
    * List pipeline items with optional filters.
    */
   @Get()
+  @RequirePermission('pipeline', 'view')
   @ApiOperation({ summary: 'List pipeline items' })
   @ApiOkResponse({ description: 'List of pipeline items' })
   @ApiQuery({ name: 'stage', required: false, enum: PipelineStage })
@@ -89,6 +93,7 @@ export class PipelineController {
    * MUST be defined before /:id to avoid route conflicts.
    */
   @Get('stats')
+  @RequirePermission('pipeline', 'view')
   @ApiOperation({ summary: 'Get pipeline statistics' })
   @ApiOkResponse({ description: 'Pipeline statistics' })
   async getStats(@CurrentAgency('agencyId') agencyId: string) {
@@ -100,6 +105,7 @@ export class PipelineController {
    * Get a single pipeline item with consignacion details.
    */
   @Get(':id')
+  @RequirePermission('pipeline', 'view')
   @ApiOperation({ summary: 'Get pipeline item detail' })
   @ApiOkResponse({ description: 'Pipeline item detail' })
   async findOne(
@@ -114,6 +120,7 @@ export class PipelineController {
    * Update a pipeline item's fields.
    */
   @Put(':id')
+  @RequirePermission('pipeline', 'edit')
   @ApiOperation({ summary: 'Update pipeline item' })
   @ApiOkResponse({ description: 'Pipeline item updated' })
   async update(
@@ -129,6 +136,7 @@ export class PipelineController {
    * Move a pipeline item to a new stage.
    */
   @Put(':id/stage')
+  @RequirePermission('pipeline', 'edit')
   @ApiOperation({ summary: 'Move pipeline item to a new stage' })
   @ApiOkResponse({ description: 'Pipeline item stage updated' })
   async moveStage(
@@ -144,6 +152,7 @@ export class PipelineController {
    * Log a contact action on a pipeline item.
    */
   @Post(':id/action')
+  @RequirePermission('pipeline', 'edit')
   @ApiOperation({ summary: 'Log an action on a pipeline item' })
   @ApiOkResponse({ description: 'Action logged' })
   async logAction(
@@ -160,6 +169,7 @@ export class PipelineController {
    */
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @RequirePermission('pipeline', 'delete')
   @ApiOperation({ summary: 'Delete a pipeline item' })
   @ApiNoContentResponse({ description: 'Pipeline item deleted' })
   async remove(

@@ -12,6 +12,8 @@ import {
   ApiOkResponse,
 } from '@nestjs/swagger';
 import { AgencyMemberGuard } from '../agency/guards/agency-member.guard.js';
+import { AgencyPermissionGuard } from '../agency/guards/agency-permission.guard.js';
+import { RequirePermission } from '../agency/decorators/require-permission.decorator.js';
 import { CurrentAgency } from '../agency/decorators/current-agency.decorator.js';
 import { AgentesService } from './agentes.service.js';
 
@@ -21,7 +23,7 @@ import { AgentesService } from './agentes.service.js';
  */
 @ApiTags('inmobiliaria/agentes')
 @ApiBearerAuth()
-@UseGuards(AgencyMemberGuard)
+@UseGuards(AgencyMemberGuard, AgencyPermissionGuard)
 @Controller('inmobiliaria/agentes')
 export class AgentesController {
   constructor(private readonly agentesService: AgentesService) {}
@@ -31,6 +33,7 @@ export class AgentesController {
    * List all active agents in the agency with metrics.
    */
   @Get()
+  @RequirePermission('agentes', 'view')
   @ApiOperation({ summary: 'List all agents with metrics' })
   @ApiOkResponse({ description: 'Array of agents wrapped in { data }' })
   async findAll(@CurrentAgency('agencyId') agencyId: string) {
@@ -44,6 +47,7 @@ export class AgentesController {
    * Must be defined BEFORE /:id to avoid route conflict.
    */
   @Get('leaderboard')
+  @RequirePermission('agentes', 'view')
   @ApiOperation({ summary: 'Get agent leaderboard sorted by commissions' })
   @ApiOkResponse({ description: 'Array of agents wrapped in { data }' })
   async getLeaderboard(@CurrentAgency('agencyId') agencyId: string) {
@@ -56,6 +60,7 @@ export class AgentesController {
    * Get a single agent with full metrics.
    */
   @Get(':id')
+  @RequirePermission('agentes', 'view')
   @ApiOperation({ summary: 'Get agent detail' })
   @ApiOkResponse({ description: 'Agent with metrics' })
   async findOne(
@@ -70,6 +75,7 @@ export class AgentesController {
    * Get computed metrics for a specific agent.
    */
   @Get(':id/metrics')
+  @RequirePermission('agentes', 'view')
   @ApiOperation({ summary: 'Get agent metrics' })
   @ApiOkResponse({ description: 'Agent metrics object' })
   async getMetrics(
@@ -84,6 +90,7 @@ export class AgentesController {
    * Get all property consignations assigned to the agent.
    */
   @Get(':id/consignaciones')
+  @RequirePermission('agentes', 'view')
   @ApiOperation({ summary: 'Get consignaciones assigned to agent' })
   @ApiOkResponse({ description: 'Array of consignaciones wrapped in { data }' })
   async getConsignaciones(
@@ -99,6 +106,7 @@ export class AgentesController {
    * Get pipeline items assigned to the agent.
    */
   @Get(':id/pipeline')
+  @RequirePermission('agentes', 'view')
   @ApiOperation({ summary: 'Get pipeline items assigned to agent' })
   @ApiOkResponse({ description: 'Array of pipeline items wrapped in { data }' })
   async getPipeline(

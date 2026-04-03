@@ -11,6 +11,8 @@ import {
   ApiOkResponse,
 } from '@nestjs/swagger';
 import { AgencyMemberGuard } from '../agency/guards/agency-member.guard.js';
+import { AgencyPermissionGuard } from '../agency/guards/agency-permission.guard.js';
+import { RequirePermission } from '../agency/decorators/require-permission.decorator.js';
 import { CurrentAgency } from '../agency/decorators/current-agency.decorator.js';
 import { AnalyticsService } from './analytics.service.js';
 
@@ -20,7 +22,7 @@ import { AnalyticsService } from './analytics.service.js';
  */
 @ApiTags('inmobiliaria/analytics')
 @ApiBearerAuth()
-@UseGuards(AgencyMemberGuard)
+@UseGuards(AgencyMemberGuard, AgencyPermissionGuard)
 @Controller('inmobiliaria/analytics')
 export class AnalyticsController {
   constructor(private readonly analyticsService: AnalyticsService) {}
@@ -30,6 +32,7 @@ export class AnalyticsController {
    * Return 8 KPIs for the agency.
    */
   @Get('kpis')
+  @RequirePermission('analytics', 'view')
   @ApiOperation({ summary: 'Get agency KPIs' })
   @ApiOkResponse({ description: 'Array of 8 KPI objects' })
   async getKpis(@CurrentAgency('agencyId') agencyId: string) {
@@ -41,6 +44,7 @@ export class AnalyticsController {
    * Return chart data for revenue, occupancy, collections, and pipeline.
    */
   @Get('charts')
+  @RequirePermission('analytics', 'view')
   @ApiOperation({ summary: 'Get chart data' })
   @ApiOkResponse({ description: 'Chart datasets for the agency' })
   async getCharts(@CurrentAgency('agencyId') agencyId: string) {
@@ -52,6 +56,7 @@ export class AnalyticsController {
    * Return monthly trend data for a specific metric over 12 months.
    */
   @Get('trends/:metricId')
+  @RequirePermission('analytics', 'view')
   @ApiOperation({ summary: 'Get metric trend (12 months)' })
   @ApiOkResponse({ description: 'Monthly data points for the metric' })
   async getTrend(
@@ -66,6 +71,7 @@ export class AnalyticsController {
    * Simple linear projection: 6 months historical + 3 months projected.
    */
   @Get('forecast/:metricId')
+  @RequirePermission('analytics', 'view')
   @ApiOperation({ summary: 'Get metric forecast (linear projection)' })
   @ApiOkResponse({ description: 'Historical and projected data points' })
   async getForecast(

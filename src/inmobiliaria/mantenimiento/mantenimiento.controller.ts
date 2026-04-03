@@ -18,6 +18,8 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { AgencyMemberGuard } from '../agency/guards/agency-member.guard.js';
+import { AgencyPermissionGuard } from '../agency/guards/agency-permission.guard.js';
+import { RequirePermission } from '../agency/decorators/require-permission.decorator.js';
 import { CurrentAgency } from '../agency/decorators/current-agency.decorator.js';
 import { MantenimientoService } from './mantenimiento.service.js';
 import { CreateMantenimientoDto, AddQuoteDto } from './dto/index.js';
@@ -28,7 +30,7 @@ import { CreateMantenimientoDto, AddQuoteDto } from './dto/index.js';
  */
 @ApiTags('inmobiliaria/mantenimiento')
 @ApiBearerAuth()
-@UseGuards(AgencyMemberGuard)
+@UseGuards(AgencyMemberGuard, AgencyPermissionGuard)
 @Controller('inmobiliaria/mantenimiento')
 export class MantenimientoController {
   constructor(
@@ -40,6 +42,7 @@ export class MantenimientoController {
    * Create a new maintenance request.
    */
   @Post()
+  @RequirePermission('operaciones', 'create')
   @ApiOperation({ summary: 'Create a maintenance request' })
   @ApiCreatedResponse({ description: 'Maintenance request created' })
   async create(
@@ -54,6 +57,7 @@ export class MantenimientoController {
    * List maintenance requests with optional filters.
    */
   @Get()
+  @RequirePermission('operaciones', 'view')
   @ApiOperation({ summary: 'List maintenance requests' })
   @ApiOkResponse({ description: 'List of maintenance requests' })
   @ApiQuery({ name: 'status', required: false })
@@ -80,6 +84,7 @@ export class MantenimientoController {
    * Get a single maintenance request with all quotes.
    */
   @Get(':id')
+  @RequirePermission('operaciones', 'view')
   @ApiOperation({ summary: 'Get maintenance request detail' })
   @ApiOkResponse({ description: 'Maintenance request with quotes' })
   async findOne(
@@ -94,6 +99,7 @@ export class MantenimientoController {
    * Update a maintenance request.
    */
   @Put(':id')
+  @RequirePermission('operaciones', 'edit')
   @ApiOperation({ summary: 'Update a maintenance request' })
   @ApiOkResponse({ description: 'Maintenance request updated' })
   async update(
@@ -109,6 +115,7 @@ export class MantenimientoController {
    * Add a vendor quote to a maintenance request.
    */
   @Post(':id/quote')
+  @RequirePermission('operaciones', 'edit')
   @ApiOperation({ summary: 'Add a quote to a maintenance request' })
   @ApiCreatedResponse({ description: 'Quote added' })
   async addQuote(
@@ -124,6 +131,7 @@ export class MantenimientoController {
    * Select a quote for the maintenance request.
    */
   @Put(':id/select-quote')
+  @RequirePermission('operaciones', 'edit')
   @ApiOperation({ summary: 'Select a quote for a maintenance request' })
   @ApiOkResponse({ description: 'Quote selected' })
   async selectQuote(
@@ -139,6 +147,7 @@ export class MantenimientoController {
    * Approve a maintenance request.
    */
   @Put(':id/approve')
+  @RequirePermission('operaciones', 'edit')
   @ApiOperation({ summary: 'Approve a maintenance request' })
   @ApiOkResponse({ description: 'Maintenance request approved' })
   async approve(
@@ -153,6 +162,7 @@ export class MantenimientoController {
    * Mark a maintenance request as completed.
    */
   @Put(':id/complete')
+  @RequirePermission('operaciones', 'edit')
   @ApiOperation({ summary: 'Complete a maintenance request' })
   @ApiOkResponse({ description: 'Maintenance request completed' })
   async complete(
@@ -173,6 +183,7 @@ export class MantenimientoController {
    * Cancel a maintenance request.
    */
   @Put(':id/cancel')
+  @RequirePermission('operaciones', 'edit')
   @ApiOperation({ summary: 'Cancel a maintenance request' })
   @ApiOkResponse({ description: 'Maintenance request cancelled' })
   async cancel(

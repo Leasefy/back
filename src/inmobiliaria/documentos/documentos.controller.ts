@@ -22,6 +22,8 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { AgencyMemberGuard } from '../agency/guards/agency-member.guard.js';
+import { AgencyPermissionGuard } from '../agency/guards/agency-permission.guard.js';
+import { RequirePermission } from '../agency/decorators/require-permission.decorator.js';
 import { CurrentAgency } from '../agency/decorators/current-agency.decorator.js';
 import { DocumentosService } from './documentos.service.js';
 import {
@@ -36,7 +38,7 @@ import {
  */
 @ApiTags('inmobiliaria/documents')
 @ApiBearerAuth()
-@UseGuards(AgencyMemberGuard)
+@UseGuards(AgencyMemberGuard, AgencyPermissionGuard)
 @Controller('inmobiliaria/documents')
 export class DocumentosController {
   constructor(private readonly documentosService: DocumentosService) {}
@@ -49,6 +51,7 @@ export class DocumentosController {
    * Optionally filter by category query param.
    */
   @Get('templates')
+  @RequirePermission('documentos', 'view')
   @ApiOperation({ summary: 'List document templates' })
   @ApiOkResponse({ description: 'List of document templates' })
   @ApiQuery({ name: 'category', required: false })
@@ -64,6 +67,7 @@ export class DocumentosController {
    * Get a single template by ID.
    */
   @Get('templates/:id')
+  @RequirePermission('documentos', 'view')
   @ApiOperation({ summary: 'Get document template by ID' })
   @ApiOkResponse({ description: 'Template details' })
   async getTemplate(
@@ -78,6 +82,7 @@ export class DocumentosController {
    * Create a new document template.
    */
   @Post('templates')
+  @RequirePermission('documentos', 'create')
   @ApiOperation({ summary: 'Create document template' })
   @ApiCreatedResponse({ description: 'Template created successfully' })
   async createTemplate(
@@ -92,6 +97,7 @@ export class DocumentosController {
    * Update an existing document template.
    */
   @Put('templates/:id')
+  @RequirePermission('documentos', 'edit')
   @ApiOperation({ summary: 'Update document template' })
   @ApiOkResponse({ description: 'Template updated successfully' })
   async updateTemplate(
@@ -108,6 +114,7 @@ export class DocumentosController {
    */
   @Delete('templates/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @RequirePermission('documentos', 'delete')
   @ApiOperation({ summary: 'Delete document template' })
   @ApiNoContentResponse({ description: 'Template deleted' })
   async deleteTemplate(
@@ -125,6 +132,7 @@ export class DocumentosController {
    * Optionally filter by consignacionId and/or status.
    */
   @Get()
+  @RequirePermission('documentos', 'view')
   @ApiOperation({ summary: 'List generated documents' })
   @ApiOkResponse({ description: 'List of generated documents' })
   @ApiQuery({ name: 'consignacionId', required: false })
@@ -145,6 +153,7 @@ export class DocumentosController {
    * Get a single generated document by ID.
    */
   @Get(':id')
+  @RequirePermission('documentos', 'view')
   @ApiOperation({ summary: 'Get document by ID' })
   @ApiOkResponse({ description: 'Document details' })
   async getDocument(
@@ -159,6 +168,7 @@ export class DocumentosController {
    * Generate a document from a template or raw content.
    */
   @Post('generate')
+  @RequirePermission('documentos', 'create')
   @ApiOperation({ summary: 'Generate document from template or raw content' })
   @ApiCreatedResponse({ description: 'Document generated successfully' })
   async generateDocument(
@@ -173,6 +183,7 @@ export class DocumentosController {
    * Add a signature to a document.
    */
   @Post(':id/sign')
+  @RequirePermission('documentos', 'edit')
   @ApiOperation({ summary: 'Sign a document' })
   @ApiOkResponse({ description: 'Signature added to document' })
   async signDocument(

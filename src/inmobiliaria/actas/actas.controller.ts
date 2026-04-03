@@ -22,6 +22,8 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { AgencyMemberGuard } from '../agency/guards/agency-member.guard.js';
+import { AgencyPermissionGuard } from '../agency/guards/agency-permission.guard.js';
+import { RequirePermission } from '../agency/decorators/require-permission.decorator.js';
 import { CurrentAgency } from '../agency/decorators/current-agency.decorator.js';
 import { ActasService } from './actas.service.js';
 import { CreateActaDto, UpdateActaDto, SignActaDto } from './dto/index.js';
@@ -29,10 +31,11 @@ import { CreateActaDto, UpdateActaDto, SignActaDto } from './dto/index.js';
 /**
  * Controller for property delivery/return acts (actas de entrega/devolucion).
  * All endpoints scoped to agency via AgencyMemberGuard.
+ * Module: portafolio (inherits from consignaciones/property portfolio).
  */
 @ApiTags('inmobiliaria/actas')
 @ApiBearerAuth()
-@UseGuards(AgencyMemberGuard)
+@UseGuards(AgencyMemberGuard, AgencyPermissionGuard)
 @Controller('inmobiliaria/actas')
 export class ActasController {
   constructor(private readonly actasService: ActasService) {}
@@ -42,6 +45,7 @@ export class ActasController {
    * Create a new acta (delivery or return act).
    */
   @Post()
+  @RequirePermission('portafolio', 'create')
   @ApiOperation({ summary: 'Create a new acta' })
   @ApiCreatedResponse({ description: 'Acta created successfully' })
   async create(
@@ -56,6 +60,7 @@ export class ActasController {
    * List actas for the user's agency with optional filters.
    */
   @Get()
+  @RequirePermission('portafolio', 'view')
   @ApiOperation({ summary: 'List actas' })
   @ApiOkResponse({ description: 'List of actas' })
   @ApiQuery({ name: 'type', required: false, description: 'Filter by type (ENTREGA/DEVOLUCION)' })
@@ -79,6 +84,7 @@ export class ActasController {
    * Get a single acta by ID.
    */
   @Get(':id')
+  @RequirePermission('portafolio', 'view')
   @ApiOperation({ summary: 'Get acta by ID' })
   @ApiOkResponse({ description: 'Acta details' })
   async findOne(
@@ -93,6 +99,7 @@ export class ActasController {
    * Update an acta (rooms, items, meters, keys, etc.).
    */
   @Put(':id')
+  @RequirePermission('portafolio', 'edit')
   @ApiOperation({ summary: 'Update acta' })
   @ApiOkResponse({ description: 'Acta updated successfully' })
   async update(
@@ -108,6 +115,7 @@ export class ActasController {
    * Add a signature to an acta.
    */
   @Post(':id/sign')
+  @RequirePermission('portafolio', 'edit')
   @ApiOperation({ summary: 'Sign an acta' })
   @ApiOkResponse({ description: 'Signature added to acta' })
   async sign(
@@ -124,6 +132,7 @@ export class ActasController {
    */
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @RequirePermission('portafolio', 'delete')
   @ApiOperation({ summary: 'Delete draft acta' })
   @ApiNoContentResponse({ description: 'Acta deleted' })
   async remove(

@@ -22,6 +22,8 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { AgencyMemberGuard } from '../agency/guards/agency-member.guard.js';
+import { AgencyPermissionGuard } from '../agency/guards/agency-permission.guard.js';
+import { RequirePermission } from '../agency/decorators/require-permission.decorator.js';
 import { CurrentAgency } from '../agency/decorators/current-agency.decorator.js';
 import { ConsignacionesService } from './consignaciones.service.js';
 import {
@@ -36,7 +38,7 @@ import {
  */
 @ApiTags('inmobiliaria/consignaciones')
 @ApiBearerAuth()
-@UseGuards(AgencyMemberGuard)
+@UseGuards(AgencyMemberGuard, AgencyPermissionGuard)
 @Controller('inmobiliaria/consignaciones')
 export class ConsignacionesController {
   constructor(
@@ -48,6 +50,7 @@ export class ConsignacionesController {
    * Create a new consignacion.
    */
   @Post()
+  @RequirePermission('portafolio', 'create')
   @ApiOperation({ summary: 'Create a new consignacion' })
   @ApiCreatedResponse({ description: 'Consignacion created successfully' })
   async create(
@@ -62,6 +65,7 @@ export class ConsignacionesController {
    * List consignaciones with optional filters.
    */
   @Get()
+  @RequirePermission('portafolio', 'view')
   @ApiOperation({ summary: 'List consignaciones with filters' })
   @ApiOkResponse({ description: 'List of consignaciones' })
   @ApiQuery({ name: 'status', required: false })
@@ -88,6 +92,7 @@ export class ConsignacionesController {
    * Get a single consignacion with propietario.
    */
   @Get(':id')
+  @RequirePermission('portafolio', 'view')
   @ApiOperation({ summary: 'Get consignacion detail' })
   @ApiOkResponse({ description: 'Consignacion detail with propietario' })
   async findOne(
@@ -102,6 +107,7 @@ export class ConsignacionesController {
    * Update a consignacion.
    */
   @Put(':id')
+  @RequirePermission('portafolio', 'edit')
   @ApiOperation({ summary: 'Update a consignacion' })
   @ApiOkResponse({ description: 'Consignacion updated successfully' })
   async update(
@@ -118,6 +124,7 @@ export class ConsignacionesController {
    */
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @RequirePermission('portafolio', 'delete')
   @ApiOperation({ summary: 'Delete a consignacion' })
   @ApiNoContentResponse({ description: 'Consignacion deleted' })
   async remove(
@@ -132,6 +139,7 @@ export class ConsignacionesController {
    * Assign an agent to a consignacion.
    */
   @Put(':id/assign-agent')
+  @RequirePermission('portafolio', 'edit')
   @ApiOperation({ summary: 'Assign agent to consignacion' })
   @ApiOkResponse({ description: 'Agent assigned successfully' })
   async assignAgent(
@@ -151,6 +159,7 @@ export class ConsignacionesController {
    * Get cobros history for a consignacion.
    */
   @Get(':id/lease-history')
+  @RequirePermission('portafolio', 'view')
   @ApiOperation({ summary: 'Get lease/cobros history for a consignacion' })
   @ApiOkResponse({ description: 'List of cobros for this consignacion' })
   async getLeaseHistory(
@@ -165,6 +174,7 @@ export class ConsignacionesController {
    * Get maintenance requests for a consignacion.
    */
   @Get(':id/maintenance')
+  @RequirePermission('portafolio', 'view')
   @ApiOperation({ summary: 'Get maintenance requests for a consignacion' })
   @ApiOkResponse({ description: 'List of maintenance requests' })
   async getMaintenanceRequests(
