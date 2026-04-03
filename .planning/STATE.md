@@ -2,11 +2,11 @@
 
 ## Current Status
 
-**Milestone:** v1.2 Roles & Permissions — IN PROGRESS
+**Milestone:** v1.2 Roles & Permissions — COMPLETE
 **Status:** Post-v1.0 Active Development
-**Last activity:** 2026-04-03 - Completed 24-02-PLAN.md (Landlord team role enforcement - TeamAccessGuard)
+**Last activity:** 2026-04-03 - Completed 24-03-PLAN.md (Tests, effective permissions endpoint, invitation expiration)
 
-**Progress:** [########################################] v1.0 complete + Phase 23 COMPLETE + Phase 24 IN PROGRESS (2/3 plans done)
+**Progress:** [########################################] v1.0 complete + Phase 23 COMPLETE + Phase 24 COMPLETE (3/3 plans done)
 
 ## Project Reference
 
@@ -14,7 +14,7 @@ See: .planning/PROJECT.md (updated 2026-02-16)
 
 **Core value:** Ejecutar el Risk Score con analisis inteligente de documentos para que propietarios tomen decisiones informadas en minutos, con explicabilidad total.
 
-**Current focus:** Phase 24 — Roles & Permissions (granular permission system for agency members).
+**Current focus:** Phase 24 COMPLETE — v1.2 shipped. Ready for next milestone planning.
 
 ## Quick Context
 
@@ -54,7 +54,7 @@ See: .planning/PROJECT.md (updated 2026-02-16)
 | 21. Explainability (IA) | COMPLETE | All 2 plans - core services (21-01), endpoint + processor integration (21-02) |
 | 22. ML Persistence (IA) | COMPLETE | All 2 plans - feature snapshots, prediction logs (22-01), outcome tracking + export (22-02) |
 | 23. Inmobiliaria Registration | COMPLETE | 3/3 plans - 23-01 schema + onboarding, 23-02 token invitations, 23-03 testing + docs |
-| 24. Roles & Permissions | IN PROGRESS | 2/3 plans - 24-01 agency member permissions, 24-02 landlord team role enforcement |
+| 24. Roles & Permissions | COMPLETE | 3/3 plans - 24-01 agency perms, 24-02 team roles, 24-03 tests + effective perms endpoint + invitation expiry |
 
 ## Roadmap Evolution
 
@@ -323,12 +323,16 @@ See: .planning/PROJECT.md (updated 2026-02-16)
 | 2026-04-03 | 24-02 | Direct owner detection via property count | landlordId property count > 0 means direct owner, bypasses team permission checks |
 | 2026-04-03 | 24-02 | MVP: no context-switching for landlords with own properties | LANDLORD users with own properties always pass; pure team-member context requires future explicit switch feature |
 | 2026-04-03 | 24-02 | TeamAccessGuard provided per feature module | PrismaModule is @Global; guard added to providers in each consuming module (landlord, properties, contracts, leases, visits, users) |
+| 2026-04-03 | 24-03 | ADMIN returns 'FULL_ACCESS' string in getEffectivePermissions | Communicates bypass semantics clearly to API consumers |
+| 2026-04-03 | 24-03 | LANDLORD with no properties + no team membership = direct owner | Permissive default allows fresh landlords with no properties yet |
+| 2026-04-03 | 24-03 | InvitationExpirationScheduler in UsersModule | Invitation lifecycle tied to user management, not notifications |
+| 2026-04-03 | 24-03 | moduleNameMapper for .js imports in ts-jest | Standard solution for ESM projects: strips .js extension for module resolution |
 
 ## Session Continuity
 
 **Last session:** 2026-04-03
-**Stopped at:** Phase 24 Plan 02 complete (Landlord Team Role Enforcement - TeamAccessGuard)
-**Resume file:** .planning/phases/24-roles-permissions/24-02-SUMMARY.md
+**Stopped at:** Phase 24 Plan 03 complete (Tests, effective perms endpoint, invitation expiry) — Phase 24 COMPLETE
+**Resume file:** .planning/phases/24-roles-permissions/24-03-SUMMARY.md
 
 ## Pending User Actions
 

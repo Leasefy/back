@@ -14,6 +14,10 @@ Backend API en NestJS para el marketplace de arriendos "Arriendo Facil". Provee 
 
 - [x] Phase 23: Inmobiliaria Registration & Onboarding Flow (3/3 plans) — 2026-03-10
 
+### v1.2 Roles & Permissions
+
+- [x] Phase 24: Granular Permissions & Team Role Enforcement (3/3 plans) — 2026-04-03 COMPLETE
+
 <details>
 <summary>v1.0 Backend MVP (Phases 1-22) — SHIPPED 2026-02-16</summary>
 
@@ -52,6 +56,7 @@ Backend API en NestJS para el marketplace de arriendos "Arriendo Facil". Provee 
 |-----------|--------|-------|--------|---------|
 | v1.0 Backend MVP | 26 | 81/81 | Complete | 2026-02-16 |
 | v1.1 Inmobiliaria Registration | 1 | 3/3 | Complete | 2026-03-10 |
+| v1.2 Roles & Permissions | 1 | 3/3 | Complete | 2026-04-03 |
 
 ## External Services
 
@@ -65,4 +70,4 @@ Backend API en NestJS para el marketplace de arriendos "Arriendo Facil". Provee 
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-03-10 — v1.1 Inmobiliaria Registration SHIPPED. Phase 23 complete.*
+*Last updated: 2026-04-03 — Phase 24 complete (3/3 plans). v1.2 Roles & Permissions SHIPPED.*
