@@ -4,7 +4,7 @@ import {
   ExecutionContext,
   ForbiddenException,
 } from '@nestjs/common';
-import type { User } from '@prisma/client';
+import type { Prisma, User } from '@prisma/client';
 import type { Request } from 'express';
 import { PrismaService } from '../../../database/prisma.service.js';
 import { AgencyMemberStatus } from '../../../common/enums/agency-member-status.enum.js';
@@ -12,8 +12,11 @@ import { AgencyMemberStatus } from '../../../common/enums/agency-member-status.e
 /**
  * Guard that checks if the current user is an active member of an agency.
  *
- * Sets `request.agencyId` and `request.agencyMemberRole` for downstream
- * handlers and decorators.
+ * Sets `request.agencyId`, `request.agencyMemberRole`, and `request.agencyPermissions`
+ * for downstream handlers and decorators.
+ *
+ * `request.agencyPermissions` is null when the member has no custom permissions override,
+ * meaning the AgencyPermissionGuard will fall back to AGENCY_ROLE_DEFAULTS.
  *
  * Must be applied AFTER SupabaseAuthGuard to ensure user is authenticated.
  *
@@ -31,7 +34,14 @@ export class AgencyMemberGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context
       .switchToHttp()
-      .getRequest<Request & { user?: User; agencyId?: string; agencyMemberRole?: string }>();
+      .getRequest<
+        Request & {
+          user?: User;
+          agencyId?: string;
+          agencyMemberRole?: string;
+          agencyPermissions?: Prisma.JsonValue | null;
+        }
+      >();
 
     const user = request.user;
 
@@ -47,6 +57,7 @@ export class AgencyMemberGuard implements CanActivate {
       select: {
         agencyId: true,
         role: true,
+        permissions: true,
       },
     });
 
@@ -58,6 +69,7 @@ export class AgencyMemberGuard implements CanActivate {
 
     request.agencyId = member.agencyId;
     request.agencyMemberRole = member.role;
+    request.agencyPermissions = member.permissions;
 
     return true;
   }
