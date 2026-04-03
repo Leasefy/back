@@ -381,6 +381,7 @@ model TeamMember {
 
   @@unique([ownerId, email])
   @@index([ownerId])
+  @@index([email, status])
   @@map("team_members")
 }
 
