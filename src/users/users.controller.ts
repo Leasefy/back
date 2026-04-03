@@ -45,6 +45,71 @@ export class UsersController {
   }
 
   /**
+   * Get effective permissions for the current user.
+   * Returns permissions based on user role and context (owner, team member, agency member).
+   */
+  @Get('me/permissions')
+  @ApiOperation({
+    summary: 'Get effective permissions for current user',
+    description:
+      'Returns granular permissions based on user role and context. ' +
+      'TENANT: no granular permissions. ' +
+      'LANDLORD: owner permissions or team member role restrictions. ' +
+      'AGENT: agency role permissions (custom or default by role).',
+  })
+  @ApiOkResponse({
+    description: 'Effective permissions for the current user',
+    schema: {
+      oneOf: [
+        {
+          description: 'TENANT',
+          type: 'object',
+          properties: {
+            role: { type: 'string', example: 'TENANT' },
+            context: { type: 'string', example: 'tenant' },
+            permissions: { type: 'null' },
+          },
+        },
+        {
+          description: 'LANDLORD direct owner',
+          type: 'object',
+          properties: {
+            role: { type: 'string', example: 'LANDLORD' },
+            context: { type: 'string', example: 'owner' },
+            teamRole: { type: 'null' },
+            permissions: { type: 'object' },
+          },
+        },
+        {
+          description: 'LANDLORD team member',
+          type: 'object',
+          properties: {
+            role: { type: 'string', example: 'LANDLORD' },
+            context: { type: 'string', example: 'team_member' },
+            teamRole: { type: 'string', example: 'manager' },
+            ownerId: { type: 'string', format: 'uuid' },
+            permissions: { type: 'object' },
+          },
+        },
+        {
+          description: 'AGENT agency member',
+          type: 'object',
+          properties: {
+            role: { type: 'string', example: 'AGENT' },
+            context: { type: 'string', example: 'agency_member' },
+            agencyId: { type: 'string', format: 'uuid' },
+            agencyRole: { type: 'string', example: 'AGENTE' },
+            permissions: { type: 'object' },
+          },
+        },
+      ],
+    },
+  })
+  async getMyPermissions(@CurrentUser() user: User) {
+    return this.usersService.getEffectivePermissions(user);
+  }
+
+  /**
    * Get all documents for the authenticated tenant.
    * Aggregates documents from applications, leases, and contract PDFs.
    */

@@ -14,6 +14,10 @@ import type { CreateTeamMemberDto } from './dto/create-team-member.dto.js';
 import type { UpdateTeamMemberDto } from './dto/update-team-member.dto.js';
 import type { ChangePasswordDto } from './dto/change-password.dto.js';
 import { AgencyService } from '../inmobiliaria/agency/agency.service.js';
+import { AGENCY_ROLE_DEFAULTS } from '../inmobiliaria/agency/permissions/role-defaults.js';
+import { TEAM_ROLE_PERMISSIONS } from '../auth/permissions/team-role-permissions.js';
+import { AgencyMemberRole } from '../common/enums/agency-member-role.enum.js';
+import type { AgencyPermissions } from '../inmobiliaria/agency/permissions/agency-permissions.js';
 
 /**
  * Unified document structure for tenant vault.
@@ -757,6 +761,148 @@ export class UsersService {
     }
 
     return { success: true };
+  }
+
+  // ===========================================================================
+  // Effective Permissions
+  // ===========================================================================
+
+  /**
+   * Return effective permissions for the current authenticated user.
+   *
+   * - TENANT → no granular permissions (context: "tenant")
+   * - LANDLORD → direct owner (context: "owner") or team member (context: "team_member")
+   * - AGENT → agency member (context: "agency_member")
+   */
+  async getEffectivePermissions(user: User) {
+    // TENANT: no granular permissions
+    if (user.role === Role.TENANT) {
+      return {
+        role: 'TENANT',
+        context: 'tenant',
+        permissions: null,
+      };
+    }
+
+    // AGENT: find agency membership
+    if (user.role === Role.AGENT) {
+      const membership = await this.prisma.agencyMember.findFirst({
+        where: { userId: user.id, status: 'ACTIVE' },
+        select: {
+          agencyId: true,
+          role: true,
+          permissions: true,
+        },
+      });
+
+      if (!membership) {
+        return {
+          role: 'AGENT',
+          context: 'agency_member',
+          agencyId: null,
+          agencyRole: null,
+          permissions: null,
+        };
+      }
+
+      const agencyRole = membership.role as AgencyMemberRole;
+
+      // ADMIN bypasses permission matrix — return indication of full access
+      if (agencyRole === AgencyMemberRole.ADMIN) {
+        return {
+          role: 'AGENT',
+          context: 'agency_member',
+          agencyId: membership.agencyId,
+          agencyRole,
+          permissions: 'FULL_ACCESS',
+        };
+      }
+
+      const effectivePermissions: AgencyPermissions =
+        membership.permissions != null
+          ? (membership.permissions as AgencyPermissions)
+          : (AGENCY_ROLE_DEFAULTS[agencyRole as Exclude<AgencyMemberRole, AgencyMemberRole.ADMIN>] ?? {});
+
+      return {
+        role: 'AGENT',
+        context: 'agency_member',
+        agencyId: membership.agencyId,
+        agencyRole,
+        permissions: effectivePermissions,
+      };
+    }
+
+    // LANDLORD: check if direct owner or team member
+    if (user.role === Role.LANDLORD) {
+      // Check for own properties (direct owner)
+      const ownPropertyCount = await this.prisma.property.count({
+        where: { landlordId: user.id },
+      });
+
+      if (ownPropertyCount > 0) {
+        // Direct owner — full permissions
+        return {
+          role: 'LANDLORD',
+          context: 'owner',
+          teamRole: null,
+          permissions: {
+            properties: ['view', 'create', 'edit', 'delete'],
+            candidates: ['view', 'edit'],
+            contracts: ['view', 'create', 'edit'],
+            reports: ['view'],
+            leases: ['view', 'edit'],
+            visits: ['view', 'create', 'edit', 'delete'],
+            messages: ['view', 'create'],
+            settings: ['view', 'edit'],
+            team: ['view', 'create', 'edit', 'delete'],
+            billing: ['view', 'create', 'edit'],
+          },
+        };
+      }
+
+      // Check accepted team membership
+      const teamMembership = await this.prisma.teamMember.findFirst({
+        where: { email: user.email, status: 'accepted' },
+        select: { ownerId: true, role: true },
+      });
+
+      if (teamMembership) {
+        const teamPermissions = TEAM_ROLE_PERMISSIONS[teamMembership.role] ?? {};
+        return {
+          role: 'LANDLORD',
+          context: 'team_member',
+          teamRole: teamMembership.role,
+          ownerId: teamMembership.ownerId,
+          permissions: teamPermissions,
+        };
+      }
+
+      // Landlord with no properties and no team membership — treat as direct owner
+      return {
+        role: 'LANDLORD',
+        context: 'owner',
+        teamRole: null,
+        permissions: {
+          properties: ['view', 'create', 'edit', 'delete'],
+          candidates: ['view', 'edit'],
+          contracts: ['view', 'create', 'edit'],
+          reports: ['view'],
+          leases: ['view', 'edit'],
+          visits: ['view', 'create', 'edit', 'delete'],
+          messages: ['view', 'create'],
+          settings: ['view', 'edit'],
+          team: ['view', 'create', 'edit', 'delete'],
+          billing: ['view', 'create', 'edit'],
+        },
+      };
+    }
+
+    // Fallback for unknown roles
+    return {
+      role: user.role,
+      context: 'unknown',
+      permissions: null,
+    };
   }
 
   // ===========================================================================
