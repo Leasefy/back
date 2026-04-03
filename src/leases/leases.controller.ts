@@ -5,6 +5,7 @@ import {
   Param,
   Body,
   ParseUUIDPipe,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -18,6 +19,8 @@ import { PaymentsService } from './payments.service.js';
 import { CreatePaymentDto } from './dto/create-payment.dto.js';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import { Roles } from '../auth/decorators/roles.decorator.js';
+import { RequireTeamPermission } from '../auth/decorators/require-team-permission.decorator.js';
+import { TeamAccessGuard } from '../auth/guards/team-access.guard.js';
 import { Role } from '../common/enums/index.js';
 import type { User, Lease, Payment } from '@prisma/client';
 
@@ -60,6 +63,8 @@ export class LeasesController {
    */
   @Get()
   @Roles(Role.LANDLORD, Role.TENANT)
+  @UseGuards(TeamAccessGuard)
+  @RequireTeamPermission('leases', 'view')
   @ApiOperation({ summary: 'List leases for authenticated user' })
   @ApiResponse({
     status: 200,
@@ -78,6 +83,8 @@ export class LeasesController {
    * Either landlord or tenant can view.
    */
   @Get(':id')
+  @UseGuards(TeamAccessGuard)
+  @RequireTeamPermission('leases', 'view')
   @ApiOperation({ summary: 'Get lease details' })
   @ApiParam({ name: 'id', type: String, description: 'Lease ID' })
   @ApiResponse({ status: 200, description: 'Lease details' })
@@ -99,6 +106,8 @@ export class LeasesController {
    */
   @Post(':id/payments')
   @Roles(Role.LANDLORD)
+  @UseGuards(TeamAccessGuard)
+  @RequireTeamPermission('leases', 'edit')
   @ApiOperation({ summary: 'Record payment received' })
   @ApiParam({ name: 'id', type: String, description: 'Lease ID' })
   @ApiResponse({ status: 201, description: 'Payment recorded' })
@@ -127,6 +136,8 @@ export class LeasesController {
    * Requirements: LEAS-06
    */
   @Get(':id/payments')
+  @UseGuards(TeamAccessGuard)
+  @RequireTeamPermission('leases', 'view')
   @ApiOperation({ summary: 'Get payment history for lease' })
   @ApiParam({ name: 'id', type: String, description: 'Lease ID' })
   @ApiResponse({ status: 200, description: 'List of payments' })
@@ -145,6 +156,8 @@ export class LeasesController {
    * Either landlord or tenant can view.
    */
   @Get(':id/payments/summary')
+  @UseGuards(TeamAccessGuard)
+  @RequireTeamPermission('leases', 'view')
   @ApiOperation({ summary: 'Get payment summary for lease' })
   @ApiParam({ name: 'id', type: String, description: 'Lease ID' })
   @ApiResponse({ status: 200, description: 'Payment summary' })

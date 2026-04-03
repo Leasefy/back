@@ -6,6 +6,7 @@ import {
   Param,
   ParseUUIDPipe,
   Req,
+  UseGuards,
 } from '@nestjs/common';
 import type { Request } from 'express';
 import {
@@ -19,6 +20,8 @@ import { ContractsService } from './contracts.service.js';
 import { CreateContractDto, SignContractDto } from './dto/index.js';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import { Roles } from '../auth/decorators/roles.decorator.js';
+import { RequireTeamPermission } from '../auth/decorators/require-team-permission.decorator.js';
+import { TeamAccessGuard } from '../auth/guards/team-access.guard.js';
 import { Role } from '../common/enums/index.js';
 import type { User } from '@prisma/client';
 
@@ -49,6 +52,8 @@ export class ContractsController {
    */
   @Post()
   @Roles(Role.LANDLORD)
+  @UseGuards(TeamAccessGuard)
+  @RequireTeamPermission('contracts', 'create')
   @ApiOperation({ summary: 'Create contract for approved application' })
   @ApiResponse({ status: 201, description: 'Contract created' })
   @ApiResponse({
@@ -65,6 +70,8 @@ export class ContractsController {
    * Note: This must be defined BEFORE /:id to avoid "list" being parsed as UUID
    */
   @Get()
+  @UseGuards(TeamAccessGuard)
+  @RequireTeamPermission('contracts', 'view')
   @ApiOperation({ summary: 'List user contracts' })
   @ApiResponse({ status: 200, description: 'List of contracts' })
   async list(@CurrentUser() user: User) {
@@ -76,6 +83,8 @@ export class ContractsController {
    * Both parties can view.
    */
   @Get(':id/preview')
+  @UseGuards(TeamAccessGuard)
+  @RequireTeamPermission('contracts', 'view')
   @ApiOperation({ summary: 'Get contract preview HTML' })
   @ApiResponse({ status: 200, description: 'Contract HTML' })
   async getPreview(
@@ -92,6 +101,8 @@ export class ContractsController {
    * Requirements: CONT-10
    */
   @Get(':id')
+  @UseGuards(TeamAccessGuard)
+  @RequireTeamPermission('contracts', 'view')
   @ApiOperation({ summary: 'Get contract details' })
   @ApiResponse({ status: 200, description: 'Contract details' })
   async getById(
@@ -108,6 +119,8 @@ export class ContractsController {
    */
   @Post(':id/send')
   @Roles(Role.LANDLORD)
+  @UseGuards(TeamAccessGuard)
+  @RequireTeamPermission('contracts', 'edit')
   @ApiOperation({ summary: 'Send contract for signing' })
   @ApiResponse({ status: 200, description: 'Contract sent for signing' })
   async sendForSigning(
@@ -125,6 +138,8 @@ export class ContractsController {
    */
   @Post(':id/sign/landlord')
   @Roles(Role.LANDLORD)
+  @UseGuards(TeamAccessGuard)
+  @RequireTeamPermission('contracts', 'edit')
   @ApiOperation({ summary: 'Landlord signs contract' })
   @ApiResponse({ status: 200, description: 'Contract signed by landlord' })
   @ApiResponse({ status: 400, description: 'Invalid state or missing consent' })

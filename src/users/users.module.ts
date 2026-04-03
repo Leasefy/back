@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { UsersController } from './users.controller.js';
 import { UsersService } from './users.service.js';
 import { AgencyModule } from '../inmobiliaria/agency/agency.module.js';
+import { TeamAccessGuard } from '../auth/guards/team-access.guard.js';
 
 /**
  * User profile management module.
@@ -11,7 +12,7 @@ import { AgencyModule } from '../inmobiliaria/agency/agency.module.js';
 @Module({
   imports: [AgencyModule],
   controllers: [UsersController],
-  providers: [UsersService],
+  providers: [UsersService, TeamAccessGuard],
   exports: [UsersService],
 })
 export class UsersModule {}

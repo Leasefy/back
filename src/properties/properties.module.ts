@@ -5,6 +5,7 @@ import { NaturalSearchParserService } from './services/natural-search-parser.ser
 import { ColombiaDataProvider } from './services/colombia-data.provider.js';
 import { SubscriptionsModule } from '../subscriptions/subscriptions.module.js';
 import { PropertyAccessModule } from '../property-access/property-access.module.js';
+import { TeamAccessGuard } from '../auth/guards/team-access.guard.js';
 
 @Module({
   imports: [SubscriptionsModule, PropertyAccessModule],
@@ -13,6 +14,7 @@ import { PropertyAccessModule } from '../property-access/property-access.module.
     PropertiesService,
     NaturalSearchParserService,
     ColombiaDataProvider,
+    TeamAccessGuard,
   ],
   exports: [PropertiesService],
 })

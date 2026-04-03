@@ -5,6 +5,7 @@ import { LeasesService } from './leases.service.js';
 import { PaymentsService } from './payments.service.js';
 import { LeaseDocumentsService } from './lease-documents.service.js';
 import { ContractActivatedListener } from './events/contract-activated.listener.js';
+import { TeamAccessGuard } from '../auth/guards/team-access.guard.js';
 
 /**
  * LeasesModule
@@ -26,6 +27,7 @@ import { ContractActivatedListener } from './events/contract-activated.listener.
     PaymentsService,
     LeaseDocumentsService,
     ContractActivatedListener,
+    TeamAccessGuard,
   ],
   exports: [LeasesService, PaymentsService, LeaseDocumentsService],
 })

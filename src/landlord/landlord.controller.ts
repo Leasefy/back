@@ -8,6 +8,7 @@ import {
   ParseUUIDPipe,
   HttpCode,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -17,7 +18,8 @@ import {
   ApiParam,
 } from '@nestjs/swagger';
 import { LandlordService } from './landlord.service.js';
-import { CurrentUser, Roles } from '../auth/decorators/index.js';
+import { CurrentUser, Roles, RequireTeamPermission } from '../auth/decorators/index.js';
+import { TeamAccessGuard } from '../auth/guards/index.js';
 import { Role } from '../common/enums/index.js';
 import {
   CandidateCardDto,
@@ -34,6 +36,7 @@ import type { User, Application, LandlordNote } from '@prisma/client';
 @ApiBearerAuth()
 @Controller('landlord')
 @Roles(Role.LANDLORD)
+@UseGuards(TeamAccessGuard)
 export class LandlordController {
   constructor(private readonly landlordService: LandlordService) {}
 
@@ -42,6 +45,7 @@ export class LandlordController {
    * Used by /panel/candidatos to show a global candidates list.
    */
   @Get('candidates')
+  @RequireTeamPermission('candidates', 'view')
   @ApiOperation({
     summary: 'Get all candidates across all properties',
     description:
@@ -59,6 +63,7 @@ export class LandlordController {
    * Get all properties for the authenticated landlord with candidate counts.
    */
   @Get('properties')
+  @RequireTeamPermission('properties', 'view')
   @ApiOperation({ summary: 'Get my properties with candidate counts' })
   @ApiResponse({ status: 200, description: 'Landlord properties with counts' })
   async getMyProperties(@CurrentUser() user: User) {
@@ -70,6 +75,7 @@ export class LandlordController {
    * Must come BEFORE the :propertyId/candidates route.
    */
   @Get('properties/:propertyId')
+  @RequireTeamPermission('properties', 'view')
   @ApiOperation({ summary: 'Get a single landlord property with counts' })
   @ApiParam({ name: 'propertyId', type: 'string', format: 'uuid' })
   @ApiResponse({ status: 200, description: 'Property with candidate counts' })
@@ -85,6 +91,7 @@ export class LandlordController {
    * Get all candidates for a property.
    */
   @Get('properties/:propertyId/candidates')
+  @RequireTeamPermission('candidates', 'view')
   @ApiOperation({
     summary: 'Get candidates for a property',
     description:
@@ -112,6 +119,7 @@ export class LandlordController {
    * Requirements: LAND-04
    */
   @Get('applications/:applicationId')
+  @RequireTeamPermission('candidates', 'view')
   @ApiOperation({
     summary: 'Get candidate detail',
     description:
@@ -141,6 +149,7 @@ export class LandlordController {
    * Requirements: LAND-10
    */
   @Get('applications/:applicationId/documents/:documentId/url')
+  @RequireTeamPermission('candidates', 'view')
   @ApiOperation({
     summary: 'Get document URL',
     description:
@@ -176,6 +185,7 @@ export class LandlordController {
    * Requirements: LAND-05
    */
   @Post('applications/:applicationId/preapprove')
+  @RequireTeamPermission('candidates', 'edit')
   @ApiOperation({
     summary: 'Pre-approve a candidate',
     description:
@@ -204,6 +214,7 @@ export class LandlordController {
    * Requirements: LAND-06
    */
   @Post('applications/:applicationId/approve')
+  @RequireTeamPermission('candidates', 'edit')
   @ApiOperation({
     summary: 'Approve a candidate',
     description:
@@ -231,6 +242,7 @@ export class LandlordController {
    * Requirements: LAND-07
    */
   @Post('applications/:applicationId/reject')
+  @RequireTeamPermission('candidates', 'edit')
   @ApiOperation({
     summary: 'Reject a candidate',
     description:
@@ -258,6 +270,7 @@ export class LandlordController {
    * Requirements: LAND-08
    */
   @Post('applications/:applicationId/request-info')
+  @RequireTeamPermission('candidates', 'edit')
   @ApiOperation({
     summary: 'Request additional info',
     description:
@@ -285,6 +298,7 @@ export class LandlordController {
    * Requirements: LAND-09
    */
   @Post('applications/:applicationId/notes')
+  @RequireTeamPermission('candidates', 'edit')
   @ApiOperation({
     summary: 'Create or update private note',
     description:
@@ -311,6 +325,7 @@ export class LandlordController {
    * Requirements: LAND-09
    */
   @Delete('applications/:applicationId/notes')
+  @RequireTeamPermission('candidates', 'edit')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     summary: 'Delete private note',

@@ -10,6 +10,7 @@ import {
   ParseUUIDPipe,
   HttpCode,
   HttpStatus,
+  UseGuards,
   UseInterceptors,
   UploadedFile,
   BadRequestException,
@@ -28,6 +29,8 @@ import type { Property, PropertyImage } from '@prisma/client';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import { Roles } from '../auth/decorators/roles.decorator.js';
 import { Public } from '../auth/decorators/public.decorator.js';
+import { RequireTeamPermission } from '../auth/decorators/require-team-permission.decorator.js';
+import { TeamAccessGuard } from '../auth/guards/team-access.guard.js';
 import { Role } from '../common/enums/role.enum.js';
 import { PropertiesService } from './properties.service.js';
 import {
@@ -91,6 +94,8 @@ Explicit filter parameters override parsed values.
   @Get('mine')
   @ApiBearerAuth()
   @Roles(Role.LANDLORD)
+  @UseGuards(TeamAccessGuard)
+  @RequireTeamPermission('properties', 'view')
   @ApiOperation({ summary: 'Get my properties' })
   @ApiOkResponse({ description: 'List of landlord properties' })
   async findMine(@CurrentUser('id') landlordId: string): Promise<Property[]> {
@@ -118,6 +123,8 @@ Explicit filter parameters override parsed values.
   @Post()
   @ApiBearerAuth()
   @Roles(Role.LANDLORD)
+  @UseGuards(TeamAccessGuard)
+  @RequireTeamPermission('properties', 'create')
   @ApiOperation({ summary: 'Create a new property' })
   @ApiCreatedResponse({ description: 'Property created successfully' })
   async create(
@@ -133,6 +140,8 @@ Explicit filter parameters override parsed values.
   @Patch(':id')
   @ApiBearerAuth()
   @Roles(Role.LANDLORD)
+  @UseGuards(TeamAccessGuard)
+  @RequireTeamPermission('properties', 'edit')
   @ApiOperation({ summary: 'Update a property' })
   @ApiOkResponse({ description: 'Property updated successfully' })
   async update(
@@ -149,6 +158,8 @@ Explicit filter parameters override parsed values.
   @Delete(':id')
   @ApiBearerAuth()
   @Roles(Role.LANDLORD)
+  @UseGuards(TeamAccessGuard)
+  @RequireTeamPermission('properties', 'delete')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete a property' })
   @ApiNoContentResponse({ description: 'Property deleted successfully' })
@@ -170,6 +181,8 @@ Explicit filter parameters override parsed values.
   @Post(':id/images')
   @ApiBearerAuth()
   @Roles(Role.LANDLORD)
+  @UseGuards(TeamAccessGuard)
+  @RequireTeamPermission('properties', 'edit')
   @UseInterceptors(FileInterceptor('file'))
   @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: 'Upload property image' })
@@ -191,6 +204,8 @@ Explicit filter parameters override parsed values.
   @Delete(':id/images/:imageId')
   @ApiBearerAuth()
   @Roles(Role.LANDLORD)
+  @UseGuards(TeamAccessGuard)
+  @RequireTeamPermission('properties', 'edit')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete property image' })
   @ApiNoContentResponse({ description: 'Image deleted successfully' })
@@ -209,6 +224,8 @@ Explicit filter parameters override parsed values.
   @Patch(':id/images/order')
   @ApiBearerAuth()
   @Roles(Role.LANDLORD)
+  @UseGuards(TeamAccessGuard)
+  @RequireTeamPermission('properties', 'edit')
   @ApiOperation({ summary: 'Reorder property images' })
   @ApiOkResponse({ description: 'Images reordered successfully' })
   async reorderImages(

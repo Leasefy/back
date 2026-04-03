@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOkResponse,
@@ -10,6 +10,8 @@ import {
 import type { User } from '@prisma/client';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import { Roles } from '../auth/decorators/roles.decorator.js';
+import { RequireTeamPermission } from '../auth/decorators/require-team-permission.decorator.js';
+import { TeamAccessGuard } from '../auth/guards/team-access.guard.js';
 import { Role } from '../common/enums/index.js';
 import { TenantProfileDto } from './dto/tenant-profile.dto.js';
 import { UpdateProfileDto } from './dto/update-profile.dto.js';
@@ -325,6 +327,8 @@ export class UsersController {
    */
   @Get('me/team')
   @Roles(Role.LANDLORD)
+  @UseGuards(TeamAccessGuard)
+  @RequireTeamPermission('team', 'view')
   @ApiOperation({ summary: 'List team members' })
   @ApiOkResponse({ description: 'Team members list' })
   async getTeamMembers(@CurrentUser('id') userId: string) {
@@ -336,6 +340,8 @@ export class UsersController {
    */
   @Post('me/team')
   @Roles(Role.LANDLORD)
+  @UseGuards(TeamAccessGuard)
+  @RequireTeamPermission('team', 'create')
   @ApiOperation({ summary: 'Invite a team member' })
   @ApiOkResponse({ description: 'Team member invited' })
   async createTeamMember(
@@ -350,6 +356,8 @@ export class UsersController {
    */
   @Patch('me/team/:memberId')
   @Roles(Role.LANDLORD)
+  @UseGuards(TeamAccessGuard)
+  @RequireTeamPermission('team', 'edit')
   @ApiOperation({ summary: 'Update team member' })
   @ApiParam({ name: 'memberId', description: 'Team member UUID' })
   @ApiOkResponse({ description: 'Team member updated' })
@@ -366,6 +374,8 @@ export class UsersController {
    */
   @Delete('me/team/:memberId')
   @Roles(Role.LANDLORD)
+  @UseGuards(TeamAccessGuard)
+  @RequireTeamPermission('team', 'delete')
   @ApiOperation({ summary: 'Remove team member' })
   @ApiParam({ name: 'memberId', description: 'Team member UUID' })
   @ApiOkResponse({ description: 'Team member removed' })

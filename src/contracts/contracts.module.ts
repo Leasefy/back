@@ -8,6 +8,7 @@ import { ContractStateMachine } from './state-machine/contract-state-machine.js'
 import { ContractTemplateService } from './templates/contract-template.service.js';
 import { SignatureService } from './signature/signature.service.js';
 import { PdfGeneratorService } from './pdf/pdf-generator.service.js';
+import { TeamAccessGuard } from '../auth/guards/team-access.guard.js';
 
 /**
  * ContractsModule
@@ -30,6 +31,7 @@ import { PdfGeneratorService } from './pdf/pdf-generator.service.js';
     ContractTemplateService,
     SignatureService,
     PdfGeneratorService,
+    TeamAccessGuard,
   ],
   exports: [ContractsService],
 })

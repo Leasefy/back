@@ -6,6 +6,7 @@ import { AvailabilityService } from './availability/availability.service.js';
 import { SlotsService } from './availability/slots.service.js';
 import { VisitsService } from './visits.service.js';
 import { VisitsController } from './visits.controller.js';
+import { TeamAccessGuard } from '../auth/guards/team-access.guard.js';
 
 @Module({
   imports: [PrismaModule, PropertyAccessModule],
@@ -15,6 +16,7 @@ import { VisitsController } from './visits.controller.js';
     AvailabilityService,
     SlotsService,
     VisitsService,
+    TeamAccessGuard,
   ],
   exports: [
     VisitStateMachine,

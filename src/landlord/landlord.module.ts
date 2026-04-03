@@ -7,6 +7,7 @@ import { ScoringModule } from '../scoring/scoring.module.js';
 import { PropertyAccessModule } from '../property-access/property-access.module.js';
 import { ChatModule } from '../chat/chat.module.js';
 import { PropertiesModule } from '../properties/properties.module.js';
+import { TeamAccessGuard } from '../auth/guards/team-access.guard.js';
 
 @Module({
   imports: [
@@ -18,7 +19,7 @@ import { PropertiesModule } from '../properties/properties.module.js';
     PropertiesModule,
   ],
   controllers: [LandlordController],
-  providers: [LandlordService],
+  providers: [LandlordService, TeamAccessGuard],
   exports: [LandlordService],
 })
 export class LandlordModule {}
