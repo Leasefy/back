@@ -1524,6 +1524,10 @@ model AgencyMember {
   invitationExpiresAt DateTime? @map("invitation_expires_at")
   invitedEmail        String?   @map("invited_email") // For inviting users not yet registered
 
+  // Granular permissions override. Null = use role defaults (AGENCY_ROLE_DEFAULTS).
+  // Only written when admin customizes permissions for this member.
+  permissions Json? /// Custom permissions override. Null = use role defaults
+
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
