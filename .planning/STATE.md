@@ -2,19 +2,19 @@
 
 ## Current Status
 
-**Milestone:** v1.2 Roles & Permissions — COMPLETE
-**Status:** Post-v1.0 Active Development
-**Last activity:** 2026-04-03 - Completed 24-03-PLAN.md (Tests, effective permissions endpoint, invitation expiration)
+**Milestone:** v1.3 Subscription Restructuring & Unified Evaluations
+**Status:** Defining requirements
+**Last activity:** 2026-04-04 — Milestone v1.3 started
 
-**Progress:** [########################################] v1.0 complete + Phase 23 COMPLETE + Phase 24 COMPLETE (3/3 plans done)
+**Progress:** Defining requirements
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-02-16)
+See: .planning/PROJECT.md (updated 2026-04-04)
 
 **Core value:** Ejecutar el Risk Score con analisis inteligente de documentos para que propietarios tomen decisiones informadas en minutos, con explicabilidad total.
 
-**Current focus:** Phase 24 COMPLETE — v1.2 shipped. Ready for next milestone planning.
+**Current focus:** Defining requirements for v1.3 — subscription restructuring + unified evaluations.
 
 ## Quick Context
 

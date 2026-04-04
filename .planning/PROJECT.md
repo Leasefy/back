@@ -38,6 +38,23 @@ El scoring es asincrono (BullMQ), explicable (drivers, flags, condiciones, narra
 | Inmobiliaria | Agencias, propietarios, consignaciones, pipeline, cobros, dispersiones |
 | Frontend Parity | Wishlist, document vault, preferences, coupons, dashboard, recommendations |
 
+## Current Milestone: v1.3 Subscription Restructuring & Unified Evaluations
+
+**Goal:** Reestructurar suscripciones (STARTER/PRO/FLEX) con modelo de pago por evaluacion, endpoint unificado de evaluacion que consume microservicio de agentes, y sistema de creditos de uso.
+
+**Target features:**
+- Renombrar tiers FREE→STARTER, BUSINESS→FLEX con nuevo pricing
+- Modelo pay-per-evaluation: STARTER $42K/eval, PRO $21K/eval (50% dto, 30/mes), FLEX ilimitado
+- Endpoint unificado de evaluacion: valida plan/creditos → llama micro agentes → guarda resultado
+- Tabla de creditos de uso de agentes (compra → usa despues)
+- Restriccion: scoring basico solo para tenant, landlord/inmobiliaria accede via evaluacion
+- FLEX billing: 1% del canon via PSE split o reporte manual
+
+**Constraints:**
+- Minimizar cambios de URLs de endpoints (frontend ya integrando)
+- Agentes AI viven en microservicio separado (localhost:4000), no en este backend
+- PSE sigue siendo mock para MVP
+
 ## Requirements
 
 ### Validated (v1.0)
