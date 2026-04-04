@@ -20,7 +20,7 @@ import { Role, DocumentType } from '../common/enums/index.js';
  * AiController
  *
  * REST endpoints for AI document analysis.
- * All endpoints require LANDLORD role and PRO/BUSINESS subscription.
+ * All endpoints require LANDLORD role and PRO/FLEX subscription.
  * Analysis runs on-demand (no BullMQ queue, no Redis polling).
  */
 @Controller('ai')
@@ -284,7 +284,7 @@ export class AiController {
   }
 
   /**
-   * Verify user has PRO or BUSINESS subscription.
+   * Verify user has PRO or FLEX subscription.
    */
   private async enforceSubscription(userId: string): Promise<void> {
     const planConfig =

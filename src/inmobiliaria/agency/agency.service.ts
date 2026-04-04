@@ -5,6 +5,7 @@ import {
   ConflictException,
   BadRequestException,
 } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service.js';
 import { EmailService } from '../../notifications/services/email.service.js';
 import { AgencyMemberRole } from '../../common/enums/agency-member-role.enum.js';
@@ -542,7 +543,8 @@ export class AgencyService {
 
     // If explicit null → clear custom permissions (reset to role defaults)
     // If permissions match role defaults exactly → also clear (no need to store redundant data)
-    let resolvedPermissions: object | null = null;
+    let resolvedPermissions: Prisma.InputJsonValue | Prisma.NullableJsonNullValueInput =
+      Prisma.DbNull;
 
     if (permissions !== null && member.role !== AgencyMemberRole.ADMIN) {
       const roleDefault =
@@ -554,7 +556,9 @@ export class AgencyService {
         roleDefault !== undefined &&
         JSON.stringify(permissions) === JSON.stringify(roleDefault);
 
-      resolvedPermissions = isIdenticalToDefaults ? null : (permissions as object);
+      resolvedPermissions = isIdenticalToDefaults
+        ? Prisma.DbNull
+        : (permissions as Prisma.InputJsonValue);
     }
 
     return this.prisma.agencyMember.update({
