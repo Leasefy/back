@@ -33,7 +33,8 @@ import { ExplainabilityResponseDto } from './explainability/dto/index.js';
  * ScoringController
  *
  * Endpoints for accessing risk score results.
- * Accessible by: tenant who owns the application OR landlord who owns the property.
+ * Accessible by: tenant who owns the application only.
+ * Landlords and inmobiliarias access scoring data through the evaluation endpoint (Phase 27).
  */
 @ApiTags('scoring')
 @ApiBearerAuth()
@@ -119,13 +120,13 @@ export class ScoringController {
 
   /**
    * Get detailed score explanation with AI narrative.
-   * PRO/BUSINESS subscription required.
+   * Tenant-only access. PRO o FLEX subscription required.
    */
   @Get(':applicationId/explanation')
   @ApiOperation({
-    summary: 'Get detailed score explanation (PRO/BUSINESS only)',
+    summary: 'Get detailed score explanation (tenant-only, PRO o FLEX)',
     description:
-      'Returns AI-generated narrative, enhanced drivers with category metadata, risk flags, suggested conditions, and subscore breakdown',
+      'Returns AI-generated narrative, enhanced drivers with category metadata, risk flags, suggested conditions, and subscore breakdown. Only accessible by the tenant who owns this application.',
   })
   @ApiResponse({
     status: 200,
@@ -134,31 +135,28 @@ export class ScoringController {
   })
   @ApiResponse({
     status: 403,
-    description: 'Premium scoring required or not authorized',
+    description:
+      'Not authorized — only the application tenant can access scoring directly, or premium plan required',
   })
   @ApiResponse({ status: 404, description: 'Score not found' })
   async getExplanation(
     @CurrentUser() user: User,
     @Param('applicationId', ParseUUIDPipe) applicationId: string,
   ): Promise<ExplainabilityResponseDto> {
-    // 1. Permission check: must be tenant owner OR property landlord
+    // 1. Permission check: tenant-only
     const application = await this.prisma.application.findUnique({
       where: { id: applicationId },
-      include: {
-        property: { select: { landlordId: true } },
-      },
     });
 
     if (!application) {
       throw new NotFoundException('Aplicacion no encontrada');
     }
 
-    const isTenantOwner = application.tenantId === user.id;
-    const isLandlord = application.property.landlordId === user.id;
-
-    if (!isTenantOwner && !isLandlord) {
+    // ACCS-01/ACCS-02: Tenant-only access — explanation is a superset of scoring data.
+    // Landlords/inmobiliarias access scoring through the evaluation endpoint (Phase 27).
+    if (application.tenantId !== user.id) {
       throw new ForbiddenException(
-        'No tienes permiso para ver esta explicacion. Solo el aplicante o el propietario pueden acceder.',
+        'Solo el inquilino dueno de esta solicitud puede ver la explicacion del scoring directamente.',
       );
     }
 
@@ -169,7 +167,7 @@ export class ScoringController {
     if (!planConfig.hasPremiumScoring) {
       throw new ForbiddenException({
         message:
-          'Tu plan no incluye explicaciones detalladas de scoring. Actualiza a PRO o BUSINESS.',
+          'Tu plan no incluye explicaciones detalladas de scoring. Actualiza a PRO o FLEX.',
         requiredPlan: 'PRO',
       });
     }
@@ -188,14 +186,15 @@ export class ScoringController {
 
   /**
    * Get the risk score result for an application.
-   * Only accessible by the tenant owner or the property landlord.
+   * Only accessible by the tenant who owns the application.
+   * Landlords/inmobiliarias access scoring through the evaluation endpoint (Phase 27).
    */
   @Get(':applicationId')
-  @ApiOperation({ summary: 'Get risk score result for an application' })
+  @ApiOperation({ summary: 'Get risk score result for an application (tenant-only)' })
   @ApiResponse({ status: 200, description: 'Score result found' })
   @ApiResponse({
     status: 403,
-    description: 'Not authorized to view this score',
+    description: 'Not authorized — only the application tenant can access scoring directly',
   })
   @ApiResponse({
     status: 404,
@@ -205,27 +204,20 @@ export class ScoringController {
     @CurrentUser() user: User,
     @Param('applicationId', ParseUUIDPipe) applicationId: string,
   ) {
-    // Fetch application with property to check permissions
+    // Fetch application to check permissions
     const application = await this.prisma.application.findUnique({
       where: { id: applicationId },
-      include: {
-        property: {
-          select: { landlordId: true },
-        },
-      },
     });
 
     if (!application) {
-      throw new NotFoundException('Application not found');
+      throw new NotFoundException('Aplicacion no encontrada');
     }
 
-    // Check permissions: must be tenant owner OR property landlord
-    const isTenantOwner = application.tenantId === user.id;
-    const isLandlord = application.property.landlordId === user.id;
-
-    if (!isTenantOwner && !isLandlord) {
+    // ACCS-01: Only the tenant who owns this application can access scoring directly.
+    // Landlords/inmobiliarias access scoring results through the evaluation endpoint (Phase 27).
+    if (application.tenantId !== user.id) {
       throw new ForbiddenException(
-        'You do not have permission to view this score. Only the applicant or property owner can access it.',
+        'Solo el inquilino dueno de esta solicitud puede ver el scoring directamente. Los propietarios e inmobiliarias acceden al scoring a traves de la evaluacion.',
       );
     }
 
