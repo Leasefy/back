@@ -11,11 +11,11 @@ See: .planning/PROJECT.md (updated 2026-04-04)
 ## Current Position
 
 Phase: 25 of 28 (Tier Migration & Access Control)
-Plan: 0 of 3 in current phase
-Status: Ready to plan
-Last activity: 2026-04-03 — v1.3 roadmap created (Phases 25-28, 22 requirements mapped)
+Plan: 1 of 3 in current phase
+Status: In progress
+Last activity: 2026-04-03 — Completed 25-01-PLAN.md (enum rename + seed update)
 
-Progress: [████████████████░░░░] ~80% (v1.0+v1.1+v1.2 complete, v1.3 starting)
+Progress: [█████████████████░░░] ~83% (v1.0+v1.1+v1.2 complete, v1.3 plan 1/3 done)
 
 ## Phase Progress
 
@@ -24,7 +24,7 @@ Progress: [████████████████░░░░] ~80% (v
 | 1-22 | COMPLETE | v1.0 Backend MVP — 81/81 plans |
 | 23. Inmobiliaria Registration | COMPLETE | 3/3 plans |
 | 24. Roles & Permissions | COMPLETE | 3/3 plans — effective permissions, invitation expiry |
-| 25. Tier Migration & Access Control | NOT STARTED | STARTER/PRO/FLEX, pricing, scoring access control |
+| 25. Tier Migration & Access Control | IN PROGRESS (1/3) | 25-01 done: STARTER/PRO/FLEX enum+seed |
 | 26. Agent Credits System | NOT STARTED | Credit table, purchase packs, balance, history |
 | 27. Unified Evaluation Endpoint | NOT STARTED | Micro agentes integration, orchestration, result storage |
 | 28. FLEX Billing | NOT STARTED | Canon tracking, PSE 1% split, manual reporting |
@@ -37,11 +37,14 @@ Progress: [████████████████░░░░] ~80% (v
 - 2026-04-03 | 24-03: Invitation expiry via NestJS scheduler (cron), not BullMQ
 - 2026-04-03 | Roadmap: ACCS requirements grouped with Phase 25 (tier defines access, not evaluation flow)
 - 2026-04-03 | Roadmap: Micro agentes at localhost:4000 — backend calls it, never the reverse
+- 2026-04-03 | 25-01: ALTER TYPE RENAME VALUE (non-destructive) over DROP+RECREATE for enum migration
+- 2026-04-03 | 25-01: FLEX tier = $0/mo subscription, credits-based billing (Phase 26 handles credits)
+- 2026-04-03 | 25-01: Landlord PRO = $149,000/mo with unlimited properties (changed from $149,900 + max 10)
 
 ### Architecture Context (v1.3)
 
-- Current tiers in DB: FREE/PRO/BUSINESS (SubscriptionPlan enum + SubscriptionPlanConfig table)
-- PlanEnforcementService handles tier limits — needs update for STARTER/PRO/FLEX
+- Current tiers in DB: STARTER/PRO/FLEX (SubscriptionPlan enum renamed from FREE/PRO/BUSINESS — migration ready to apply)
+- PlanEnforcementService handles tier limits — 25-02 will update it for STARTER/PRO/FLEX access control
 - Micro agentes API: POST /tenant-scoring (202 async), GET /tenant-scoring/:runId (poll)
 - PSE is mock — split is simulated, not real
 
@@ -56,5 +59,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-04-03
-Stopped at: v1.3 roadmap created — ready to plan Phase 25
-Resume file: None
+Stopped at: 25-01 complete — enum rename migration + seed update done
+Resume file: .planning/phases/25-tier-migration-access-control/25-02-PLAN.md
