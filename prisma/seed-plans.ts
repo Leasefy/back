@@ -34,8 +34,8 @@ const plans = [
     name: 'Tenant Pro',
     description:
       'Plan premium para inquilinos. Scoring premium ilimitado con analisis AI e historial de pagos.',
-    monthlyPrice: 49900,
-    annualPrice: 479000, // ~80% of 49900*12 = 598800
+    monthlyPrice: 149000,
+    annualPrice: 1430000, // ~80% of 149000*12 = 1788000
     maxProperties: -1, // N/A for tenants
     maxScoringViews: -1, // Unlimited
     hasPremiumScoring: true,

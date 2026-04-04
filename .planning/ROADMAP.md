@@ -36,7 +36,6 @@ Backend API en NestJS para el marketplace de arriendos "Arriendo Facil". Provee 
   3. Todos los endpoints existentes de suscripciones responden correctamente con los nuevos nombres de tier
   4. GET /scoring/:applicationId devuelve 403 cuando lo llama un landlord o inmobiliaria
   5. Landlord/inmobiliaria solo puede ver resultados de scoring a traves de la evaluacion (no directamente)
-  6. Solicitar una evaluacion sin suscripcion activa devuelve error de autorizacion
 
 **Plans:** 3 plans
 Plans:
@@ -72,6 +71,7 @@ Plans:
   3. El backend puede hacer polling de GET /tenant-scoring/:runId hasta recibir el resultado y lo almacena en DB vinculado a la aplicacion
   4. STARTER paga $42,000 COP por evaluacion; PRO paga $21,000; FLEX no paga (ilimitado)
   5. PRO recibe error 429 al superar 30 evaluaciones en el mes calendario
+  6. Solicitar una evaluacion sin suscripcion activa devuelve error de autorizacion
 
 **Plans:** 4 plans
 Plans:
