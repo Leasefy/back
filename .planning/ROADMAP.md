@@ -56,9 +56,9 @@ Plans:
 
 **Plans:** 3 plans
 Plans:
-- [ ] 26-01: Schema (AgentCredit table, CreditTransaction table, migrations)
-- [ ] 26-02: Credit purchase (packs endpoint, balance query, credit deduction logic)
-- [ ] 26-03: Credit history (transaction log endpoint, balance summary)
+- [ ] 26-01-PLAN.md — Prisma schema: AgentCredit + AgentCreditTransaction models, enum, evaluationCreditPrice on SubscriptionPlanConfig, migration + seed
+- [ ] 26-02-PLAN.md — AgentCreditsModule: purchase endpoint (PSE mock), balance query, atomic deductCredits service method
+- [ ] 26-03-PLAN.md — Transaction history endpoint with pagination, end-to-end verification
 
 #### Phase 27: Unified Evaluation Endpoint
 
@@ -151,4 +151,4 @@ Plans:
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-04-03 — v1.3 roadmap added (Phases 25-28). Phase 25 planned.*
+*Last updated: 2026-04-03 — v1.3 roadmap added (Phases 25-28). Phase 26 planned.*
