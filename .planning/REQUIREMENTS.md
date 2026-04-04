@@ -66,34 +66,34 @@ Requirements for v1.3 Subscription Restructuring & Unified Evaluations.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| TIER-01 | Pending | Pending |
-| TIER-02 | Pending | Pending |
-| TIER-03 | Pending | Pending |
-| TIER-04 | Pending | Pending |
-| EVAL-01 | Pending | Pending |
-| EVAL-02 | Pending | Pending |
-| EVAL-03 | Pending | Pending |
-| EVAL-04 | Pending | Pending |
-| EVAL-05 | Pending | Pending |
-| EVAL-06 | Pending | Pending |
-| EVAL-07 | Pending | Pending |
-| CRED-01 | Pending | Pending |
-| CRED-02 | Pending | Pending |
-| CRED-03 | Pending | Pending |
-| CRED-04 | Pending | Pending |
-| ACCS-01 | Pending | Pending |
-| ACCS-02 | Pending | Pending |
-| ACCS-03 | Pending | Pending |
-| FLEX-01 | Pending | Pending |
-| FLEX-02 | Pending | Pending |
-| FLEX-03 | Pending | Pending |
-| FLEX-04 | Pending | Pending |
+| TIER-01 | Phase 25 | Pending |
+| TIER-02 | Phase 25 | Pending |
+| TIER-03 | Phase 25 | Pending |
+| TIER-04 | Phase 25 | Pending |
+| ACCS-01 | Phase 25 | Pending |
+| ACCS-02 | Phase 25 | Pending |
+| ACCS-03 | Phase 25 | Pending |
+| CRED-01 | Phase 26 | Pending |
+| CRED-02 | Phase 26 | Pending |
+| CRED-03 | Phase 26 | Pending |
+| CRED-04 | Phase 26 | Pending |
+| EVAL-01 | Phase 27 | Pending |
+| EVAL-02 | Phase 27 | Pending |
+| EVAL-03 | Phase 27 | Pending |
+| EVAL-04 | Phase 27 | Pending |
+| EVAL-05 | Phase 27 | Pending |
+| EVAL-06 | Phase 27 | Pending |
+| EVAL-07 | Phase 27 | Pending |
+| FLEX-01 | Phase 28 | Pending |
+| FLEX-02 | Phase 28 | Pending |
+| FLEX-03 | Phase 28 | Pending |
+| FLEX-04 | Phase 28 | Pending |
 
 **Coverage:**
 - v1.3 requirements: 22 total
-- Mapped to phases: 0
-- Unmapped: 22 (pending roadmap)
+- Mapped to phases: 22
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-04-04*
-*Last updated: 2026-04-04 after milestone v1.3 initialization*
+*Last updated: 2026-04-03 — traceability updated after v1.3 roadmap (Phases 25-28)*
