@@ -6,8 +6,8 @@ const prisma = new PrismaClient();
  * Default subscription plan configurations.
  *
  * Plans are different for Tenant and Landlord:
- * - Tenant: FREE (1 scoring view/mo, micropay extra), PRO (unlimited, premium scoring)
- * - Landlord: FREE (1 property), PRO (10 properties, premium), BUSINESS (unlimited, API)
+ * - Tenant: STARTER (1 scoring view/mo, micropay extra), PRO (unlimited, premium scoring)
+ * - Landlord: STARTER (1 property), PRO (unlimited, premium), FLEX (credits-based, pay-per-use)
  *
  * Prices in COP. Annual prices ~80% of monthly*12 (2 months free).
  * Admin can modify prices via admin endpoints.
@@ -16,8 +16,8 @@ const plans = [
   // ===== TENANT PLANS =====
   {
     planType: 'TENANT' as const,
-    tier: 'FREE' as const,
-    name: 'Tenant Gratis',
+    tier: 'STARTER' as const,
+    name: 'Tenant Starter',
     description:
       'Plan gratuito para inquilinos. 1 vista de scoring basico por mes. Compra vistas adicionales por micropago.',
     monthlyPrice: 0,
@@ -46,8 +46,8 @@ const plans = [
   // ===== LANDLORD PLANS =====
   {
     planType: 'LANDLORD' as const,
-    tier: 'FREE' as const,
-    name: 'Landlord Gratis',
+    tier: 'STARTER' as const,
+    name: 'Landlord Starter',
     description:
       'Plan gratuito para propietarios. Publica 1 propiedad. Scoring basico de candidatos.',
     monthlyPrice: 0,
@@ -63,10 +63,10 @@ const plans = [
     tier: 'PRO' as const,
     name: 'Landlord Pro',
     description:
-      'Plan profesional para propietarios. Hasta 10 propiedades. Scoring premium de candidatos con analisis AI.',
-    monthlyPrice: 149900,
-    annualPrice: 1439000, // ~80% of 149900*12 = 1798800
-    maxProperties: 10,
+      'Plan profesional para propietarios. Propiedades ilimitadas. Scoring premium de candidatos con analisis AI completo.',
+    monthlyPrice: 149000,
+    annualPrice: 1430000, // ~80% of 149000*12 = 1788000
+    maxProperties: -1, // Unlimited
     maxScoringViews: -1, // N/A for landlords
     hasPremiumScoring: true,
     hasApiAccess: false,
@@ -74,16 +74,16 @@ const plans = [
   },
   {
     planType: 'LANDLORD' as const,
-    tier: 'BUSINESS' as const,
-    name: 'Landlord Business',
+    tier: 'FLEX' as const,
+    name: 'Landlord Flex',
     description:
-      'Plan empresarial para propietarios. Propiedades ilimitadas. Scoring premium completo. Acceso API.',
-    monthlyPrice: 499900,
-    annualPrice: 4799000, // ~80% of 499900*12 = 5998800
+      'Plan de pago por uso para propietarios. Sin suscripcion mensual. Accede a evaluaciones premium usando creditos.',
+    monthlyPrice: 0,
+    annualPrice: 0,
     maxProperties: -1, // Unlimited
     maxScoringViews: -1, // N/A for landlords
     hasPremiumScoring: true,
-    hasApiAccess: true,
+    hasApiAccess: false,
     scoringViewPrice: 0,
   },
 ];
@@ -97,7 +97,7 @@ const subscriptionTemplates = [
     name: 'Trial expirando',
     emailSubject: 'Tu periodo de prueba termina manana',
     emailBody:
-      'Hola {{userName}},\n\nTu periodo de prueba del plan **{{planName}}** termina el **{{date}}**.\n\nPara seguir disfrutando de todos los beneficios, suscribete antes de que termine.\n\nSi no te suscribes, tu cuenta sera cambiada al plan gratuito automaticamente.',
+      'Hola {{userName}},\n\nTu periodo de prueba del plan **{{planName}}** termina el **{{date}}**.\n\nPara seguir disfrutando de todos los beneficios, suscribete antes de que termine.\n\nSi no te suscribes, tu cuenta sera cambiada al plan Starter automaticamente.',
     pushTitle: 'Trial expira manana',
     pushBody: 'Tu periodo de prueba del plan {{planName}} termina manana. Suscribete para no perder tus beneficios.',
   },
@@ -106,27 +106,27 @@ const subscriptionTemplates = [
     name: 'Trial expirado',
     emailSubject: 'Tu periodo de prueba ha terminado',
     emailBody:
-      'Hola {{userName}},\n\nTu periodo de prueba ha terminado y tu cuenta ha sido cambiada al plan gratuito.\n\nPuedes suscribirte en cualquier momento para recuperar los beneficios premium.',
+      'Hola {{userName}},\n\nTu periodo de prueba ha terminado y tu cuenta ha sido cambiada al plan Starter.\n\nPuedes suscribirte en cualquier momento para recuperar los beneficios premium.',
     pushTitle: 'Trial terminado',
-    pushBody: 'Tu periodo de prueba ha terminado. Tu cuenta ahora tiene el plan gratuito.',
+    pushBody: 'Tu periodo de prueba ha terminado. Tu cuenta ahora tiene el plan Starter.',
   },
   {
     code: 'SUBSCRIPTION_EXPIRED',
     name: 'Suscripcion expirada',
     emailSubject: 'Tu suscripcion ha vencido',
     emailBody:
-      'Hola {{userName}},\n\nTu suscripcion al plan **{{planName}}** ha vencido.\n\nTu cuenta ha sido cambiada al plan gratuito. Puedes renovar tu suscripcion en cualquier momento.',
+      'Hola {{userName}},\n\nTu suscripcion al plan **{{planName}}** ha vencido.\n\nTu cuenta ha sido cambiada al plan Starter. Puedes renovar tu suscripcion en cualquier momento.',
     pushTitle: 'Suscripcion vencida',
     pushBody: 'Tu suscripcion al plan {{planName}} ha vencido. Renueva para mantener tus beneficios.',
   },
   {
     code: 'SUBSCRIPTION_DOWNGRADED',
-    name: 'Plan degradado a gratuito',
-    emailSubject: 'Tu plan ha sido cambiado a gratuito',
+    name: 'Plan degradado a Starter',
+    emailSubject: 'Tu plan ha sido cambiado a Starter',
     emailBody:
-      'Hola {{userName}},\n\nTu plan ha sido cambiado a gratuito. Si tenias propiedades adicionales publicadas, solo la mas antigua permanece visible.\n\nPuedes suscribirte nuevamente para publicar mas propiedades.',
-    pushTitle: 'Plan cambiado a gratuito',
-    pushBody: 'Tu plan ha sido cambiado a gratuito. Suscribete para recuperar tus beneficios.',
+      'Hola {{userName}},\n\nTu plan ha sido cambiado a Starter. Si tenias propiedades adicionales publicadas, solo la mas antigua permanece visible.\n\nPuedes suscribirte nuevamente para publicar mas propiedades.',
+    pushTitle: 'Plan cambiado a Starter',
+    pushBody: 'Tu plan ha sido cambiado a Starter. Suscribete para recuperar tus beneficios.',
   },
 ];
 
