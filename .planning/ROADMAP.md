@@ -75,10 +75,10 @@ Plans:
 
 **Plans:** 4 plans
 Plans:
-- [ ] 27-01-PLAN.md — Prisma schema (EvaluationResult, EvaluationTransaction, EvaluationUsage models + EvaluationStatus enum + migration + env config)
-- [ ] 27-02-PLAN.md — AgentMicroClient service (Node fetch wrapper for POST /tenant-scoring + GET /tenant-scoring/:runId)
-- [ ] 27-03-PLAN.md — EvaluationsModule + controller + service (ownership, idempotency, plan validation, credit charge, micro call, result storage, polling)
-- [ ] 27-04-PLAN.md — Pricing enforcement hardening (tier pricing verification, PRO 30/month limit, error paths, e2e validation)
+- [x] 27-01-PLAN.md — Prisma schema (EvaluationResult, EvaluationTransaction, EvaluationUsage models + EvaluationStatus enum + migration + env config)
+- [x] 27-02-PLAN.md — AgentMicroClient service (Node fetch wrapper for POST /tenant-scoring + GET /tenant-scoring/:runId)
+- [x] 27-03-PLAN.md — EvaluationsModule + controller + service (ownership, idempotency, plan validation, credit charge, micro call, result storage, polling)
+- [x] 27-04-PLAN.md — Pricing enforcement hardening (tier pricing verification, PRO 30/month limit, error paths, e2e validation)
 
 #### Phase 28: FLEX Billing
 
@@ -93,9 +93,9 @@ Plans:
 
 **Plans:** 3 plans
 Plans:
-- [ ] 28-01: Schema (CanonTracking table, migrations)
-- [ ] 28-02: PSE split logic (1% capture en mock PSE, reporte manual de canon)
-- [ ] 28-03: FLEX dashboard endpoint (canon total, cobro estimado, historial)
+- [ ] 28-01-PLAN.md — CanonTracking Prisma model + migration (schema, indexes, relations)
+- [ ] 28-02-PLAN.md — FlexBillingModule + PSE auto-tracking in CobrosService + manual canon endpoint
+- [ ] 28-03-PLAN.md — FLEX dashboard endpoint (canon total, 1% fee, history)
 
 <details>
 <summary>v1.0 Backend MVP (Phases 1-22) — SHIPPED 2026-02-16</summary>
@@ -136,7 +136,7 @@ Plans:
 | v1.0 Backend MVP | 26 | 81/81 | Complete | 2026-02-16 |
 | v1.1 Inmobiliaria Registration | 1 | 3/3 | Complete | 2026-03-10 |
 | v1.2 Roles & Permissions | 1 | 3/3 | Complete | 2026-04-03 |
-| v1.3 Subscription Restructuring & Unified Evaluations | 4 | 6/13 | In Progress | - |
+| v1.3 Subscription Restructuring & Unified Evaluations | 4 | 10/13 | In Progress | - |
 
 ## External Services
 
@@ -151,4 +151,4 @@ Plans:
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-04-04 — Phase 26 Agent Credits System complete (3/3 plans). Next: Phase 27.*
+*Last updated: 2026-04-04 — Phase 27 Unified Evaluation Endpoint complete (4/4 plans). Next: Phase 28.*
