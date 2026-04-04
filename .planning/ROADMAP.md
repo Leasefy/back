@@ -51,7 +51,7 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. Existe una tabla AgentCredit con saldo por usuario/agencia; el saldo se actualiza correctamente al comprar o usar creditos
   2. Landlord/inmobiliaria puede comprar packs de creditos via endpoint y el saldo aumenta
-  3. Al solicitar evaluacion, el sistema acepta pago al momento O descuento de creditos existentes segun eleccion del usuario
+  3. deductCredits() service method descuenta creditos atomicamente (conditional updateMany con balance >= amount); la orquestacion "pago al momento O creditos" es responsabilidad de Phase 27
   4. El historial de transacciones lista compras y usos con fecha, monto, y saldo resultante
 
 **Plans:** 3 plans
@@ -151,4 +151,4 @@ Plans:
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-04-03 — v1.3 roadmap added (Phases 25-28). Phase 26 planned.*
+*Last updated: 2026-04-03 — v1.3 roadmap added (Phases 25-28). Phase 26 revised (SC-3 scoped to deductCredits only).*
