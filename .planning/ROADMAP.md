@@ -56,9 +56,9 @@ Plans:
 
 **Plans:** 3 plans
 Plans:
-- [ ] 26-01-PLAN.md — Prisma schema: AgentCredit + AgentCreditTransaction models, enum, evaluationCreditPrice on SubscriptionPlanConfig, migration + seed
-- [ ] 26-02-PLAN.md — AgentCreditsModule: purchase endpoint (PSE mock), balance query, atomic deductCredits service method
-- [ ] 26-03-PLAN.md — Transaction history endpoint with pagination, end-to-end verification
+- [x] 26-01-PLAN.md — Prisma schema: AgentCredit + AgentCreditTransaction models, enum, evaluationCreditPrice on SubscriptionPlanConfig, migration + seed
+- [x] 26-02-PLAN.md — AgentCreditsModule: purchase endpoint (PSE mock), balance query, atomic deductCredits service method
+- [x] 26-03-PLAN.md — Transaction history endpoint with pagination, end-to-end verification
 
 #### Phase 27: Unified Evaluation Endpoint
 
@@ -75,10 +75,10 @@ Plans:
 
 **Plans:** 4 plans
 Plans:
-- [ ] 27-01: Schema (EvaluationResult table, EvaluationTransaction table, migrations)
-- [ ] 27-02: Agent microservice client (HTTP client para localhost:4000, POST /tenant-scoring, polling GET /tenant-scoring/:runId)
-- [ ] 27-03: Evaluation orchestration (valida plan/creditos, llama micro, guarda resultado, emite evento)
-- [ ] 27-04: Pricing enforcement (STARTER/PRO/FLEX pricing logic, PRO monthly limit, integration tests)
+- [ ] 27-01-PLAN.md — Prisma schema (EvaluationResult, EvaluationTransaction, EvaluationUsage models + EvaluationStatus enum + migration + env config)
+- [ ] 27-02-PLAN.md — AgentMicroClient service (Node fetch wrapper for POST /tenant-scoring + GET /tenant-scoring/:runId)
+- [ ] 27-03-PLAN.md — EvaluationsModule + controller + service (ownership, idempotency, plan validation, credit charge, micro call, result storage, polling)
+- [ ] 27-04-PLAN.md — Pricing enforcement hardening (tier pricing verification, PRO 30/month limit, error paths, e2e validation)
 
 #### Phase 28: FLEX Billing
 
@@ -136,7 +136,7 @@ Plans:
 | v1.0 Backend MVP | 26 | 81/81 | Complete | 2026-02-16 |
 | v1.1 Inmobiliaria Registration | 1 | 3/3 | Complete | 2026-03-10 |
 | v1.2 Roles & Permissions | 1 | 3/3 | Complete | 2026-04-03 |
-| v1.3 Subscription Restructuring & Unified Evaluations | 4 | 3/13 | In Progress | - |
+| v1.3 Subscription Restructuring & Unified Evaluations | 4 | 6/13 | In Progress | - |
 
 ## External Services
 
@@ -151,4 +151,4 @@ Plans:
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-04-03 — v1.3 roadmap added (Phases 25-28). Phase 26 revised (SC-3 scoped to deductCredits only).*
+*Last updated: 2026-04-04 — Phase 26 Agent Credits System complete (3/3 plans). Next: Phase 27.*
