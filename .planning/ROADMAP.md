@@ -39,9 +39,9 @@ Backend API en NestJS para el marketplace de arriendos "Arriendo Facil". Provee 
 
 **Plans:** 3 plans
 Plans:
-- [ ] 25-01-PLAN.md — Rename enum FREE/PRO/BUSINESS to STARTER/PRO/FLEX (DB migration, Prisma schema, TS enum, seed data)
-- [ ] 25-02-PLAN.md — Update all source code references from FREE/BUSINESS to STARTER/FLEX (subscriptions service, AI controller)
-- [ ] 25-03-PLAN.md — Restrict scoring endpoints to tenant-only access (ACCS-01, ACCS-02)
+- [x] 25-01-PLAN.md — Rename enum FREE/PRO/BUSINESS to STARTER/PRO/FLEX (DB migration, Prisma schema, TS enum, seed data)
+- [x] 25-02-PLAN.md — Update all source code references from FREE/BUSINESS to STARTER/FLEX (subscriptions service, AI controller)
+- [x] 25-03-PLAN.md — Restrict scoring endpoints to tenant-only access (ACCS-01, ACCS-02)
 
 #### Phase 26: Agent Credits System
 
@@ -136,7 +136,7 @@ Plans:
 | v1.0 Backend MVP | 26 | 81/81 | Complete | 2026-02-16 |
 | v1.1 Inmobiliaria Registration | 1 | 3/3 | Complete | 2026-03-10 |
 | v1.2 Roles & Permissions | 1 | 3/3 | Complete | 2026-04-03 |
-| v1.3 Subscription Restructuring & Unified Evaluations | 4 | 0/13 | In Progress | - |
+| v1.3 Subscription Restructuring & Unified Evaluations | 4 | 3/13 | In Progress | - |
 
 ## External Services
 

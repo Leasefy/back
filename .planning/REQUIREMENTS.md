@@ -66,13 +66,13 @@ Requirements for v1.3 Subscription Restructuring & Unified Evaluations.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| TIER-01 | Phase 25 | Pending |
-| TIER-02 | Phase 25 | Pending |
-| TIER-03 | Phase 25 | Pending |
-| TIER-04 | Phase 25 | Pending |
-| ACCS-01 | Phase 25 | Pending |
-| ACCS-02 | Phase 25 | Pending |
-| ACCS-03 | Phase 25 | Pending |
+| TIER-01 | Phase 25 | Complete |
+| TIER-02 | Phase 25 | Complete |
+| TIER-03 | Phase 25 | Complete |
+| TIER-04 | Phase 25 | Complete |
+| ACCS-01 | Phase 25 | Complete |
+| ACCS-02 | Phase 25 | Complete |
+| ACCS-03 | Phase 25 | Complete |
 | CRED-01 | Phase 26 | Pending |
 | CRED-02 | Phase 26 | Pending |
 | CRED-03 | Phase 26 | Pending |
