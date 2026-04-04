@@ -40,9 +40,9 @@ Backend API en NestJS para el marketplace de arriendos "Arriendo Facil". Provee 
 
 **Plans:** 3 plans
 Plans:
-- [ ] 25-01: Schema migration (enum STARTER/PRO/FLEX, SubscriptionPlanConfig seed update)
-- [ ] 25-02: Backward-compat wiring (existing subscription endpoints, PlanEnforcementService update)
-- [ ] 25-03: Access control (scoring endpoint restriction, tier guard for evaluations)
+- [ ] 25-01-PLAN.md — Rename enum FREE/PRO/BUSINESS to STARTER/PRO/FLEX (DB migration, Prisma schema, TS enum, seed data)
+- [ ] 25-02-PLAN.md — Update all source code references from FREE/BUSINESS to STARTER/FLEX (subscriptions service, AI controller)
+- [ ] 25-03-PLAN.md — Restrict scoring endpoints to tenant-only access (ACCS-01, ACCS-02)
 
 #### Phase 26: Agent Credits System
 
@@ -151,4 +151,4 @@ Plans:
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-04-03 — v1.3 roadmap added (Phases 25-28). 22 requirements mapped.*
+*Last updated: 2026-04-03 — v1.3 roadmap added (Phases 25-28). Phase 25 planned.*
