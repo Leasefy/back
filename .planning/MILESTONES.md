@@ -26,4 +26,22 @@
 
 **What's next:** Pendiente — Frontend integration, E2E tests, o v1.1 con mejoras basadas en feedback de usuarios.
 
+## v1.3 Subscription Restructuring & Unified Evaluations (In Progress)
+
+**Goal:** Reestructurar suscripciones (STARTER/PRO/FLEX) con modelo pay-per-evaluation, endpoint unificado que consume microservicio de agentes, sistema de creditos, y billing FLEX por canon.
+
+**Phases:** 25-28 (13 plans, 22 requirements)
+
+**Scope:**
+- Tier migration: FREE/PRO/BUSINESS → STARTER/PRO/FLEX con nuevo pricing
+- Agent credits: compra, saldo, historial, pago al momento o creditos previos
+- Unified evaluation: endpoint que orquesta micro agentes (localhost:4000)
+- FLEX billing: 1% del canon via PSE split o reporte manual
+- Access control: scoring basico solo tenant, landlord via evaluacion
+
+**Key constraints:**
+- Minimizar cambios de URLs (frontend integrando)
+- Agentes AI en microservicio separado
+- PSE sigue mock
+
 ---
