@@ -77,7 +77,7 @@ export class SubscriptionsService {
 
   /**
    * Get the plan config for user's current subscription.
-   * If no active subscription, returns the FREE plan config matching user's role.
+   * If no active subscription, returns the STARTER plan config matching user's role.
    */
   async getUserPlanConfig(userId: string): Promise<SubscriptionPlanConfig> {
     try {
@@ -87,7 +87,7 @@ export class SubscriptionsService {
         return subscription.plan;
       }
 
-      // No active subscription - return FREE plan for user's role
+      // No active subscription - return STARTER plan for user's role
       const user = await this.prisma.user.findUnique({
         where: { id: userId },
         select: { role: true },
@@ -102,7 +102,7 @@ export class SubscriptionsService {
 
       return this.plansService.findByTypeAndTier(
         planType,
-        SubscriptionPlan.FREE,
+        SubscriptionPlan.STARTER,
       );
     } catch (error) {
       // If subscription tables don't exist yet, return a default free config
@@ -116,7 +116,7 @@ export class SubscriptionsService {
         return {
           id: 'default-free',
           planType: PlanType.LANDLORD,
-          tier: SubscriptionPlan.FREE,
+          tier: SubscriptionPlan.STARTER,
           name: 'Gratis (default)',
           description: 'Plan gratuito por defecto',
           monthlyPrice: 0,
@@ -194,7 +194,7 @@ export class SubscriptionsService {
    *
    * Flow:
    * 1. Validate plan exists and is active
-   * 2. If FREE: create subscription, no payment needed
+   * 2. If STARTER: create subscription, no payment needed
    * 3. If paid: process PSE mock payment
    * 4. If PSE SUCCESS: create subscription + payment record
    * 5. If PSE FAILURE: throw error
@@ -257,8 +257,8 @@ export class SubscriptionsService {
     const now = new Date();
     const endDate = this.calculateEndDate(now, dto.cycle);
 
-    // If FREE plan or finalPrice is 0 (from coupon), no payment needed
-    if ((plan.tier as string) === SubscriptionPlan.FREE || finalPrice === 0) {
+    // If STARTER plan or finalPrice is 0 (from coupon), no payment needed
+    if ((plan.tier as string) === SubscriptionPlan.STARTER || finalPrice === 0) {
       // Expire existing subscriptions
       await this.expireExistingSubscriptions(userId);
 
@@ -456,8 +456,8 @@ export class SubscriptionsService {
     const now = new Date();
     const endDate = this.calculateEndDate(now, dto.cycle);
 
-    // If new plan is FREE or finalPrice is 0 (from coupon)
-    if ((newPlan.tier as string) === SubscriptionPlan.FREE || finalPrice === 0) {
+    // If new plan is STARTER or finalPrice is 0 (from coupon)
+    if ((newPlan.tier as string) === SubscriptionPlan.STARTER || finalPrice === 0) {
       const subscription = await this.prisma.subscription.create({
         data: {
           userId,
@@ -550,7 +550,7 @@ export class SubscriptionsService {
   /**
    * Handle expired subscriptions (called by cron).
    * Finds subscriptions where endDate < now and status is ACTIVE or CANCELLED.
-   * Marks as EXPIRED, downgrades user to FREE, hides excess landlord properties.
+   * Marks as EXPIRED, downgrades user to STARTER, hides excess landlord properties.
    *
    * @returns Number of expired subscriptions processed
    */
@@ -581,14 +581,14 @@ export class SubscriptionsService {
           data: { status: SubscriptionStatus.EXPIRED },
         });
 
-        // Determine plan type to find correct FREE plan
+        // Determine plan type to find correct STARTER plan
         const planType = subscription.plan.planType as PlanType;
 
-        // Downgrade user to FREE
+        // Downgrade user to STARTER
         await this.prisma.user.update({
           where: { id: subscription.userId },
           data: {
-            subscriptionPlan: SubscriptionPlan.FREE,
+            subscriptionPlan: SubscriptionPlan.STARTER,
             subscriptionEndsAt: null,
           },
         });
@@ -631,7 +631,7 @@ export class SubscriptionsService {
 
   /**
    * Handle a single subscription/trial expiry.
-   * Marks as EXPIRED, downgrades user to FREE, hides excess landlord properties.
+   * Marks as EXPIRED, downgrades user to STARTER, hides excess landlord properties.
    */
   async handleSingleExpiry(subscriptionId: string): Promise<void> {
     const sub = await this.prisma.subscription.findUnique({
@@ -649,7 +649,7 @@ export class SubscriptionsService {
     await this.prisma.user.update({
       where: { id: sub.userId },
       data: {
-        subscriptionPlan: SubscriptionPlan.FREE,
+        subscriptionPlan: SubscriptionPlan.STARTER,
         subscriptionEndsAt: null,
       },
     });
@@ -801,7 +801,7 @@ export class SubscriptionsService {
     });
 
     if (properties.length <= 1) {
-      return; // Already within FREE plan limit
+      return; // Already within STARTER plan limit
     }
 
     // Keep the first one published, hide the rest

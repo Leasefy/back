@@ -44,9 +44,9 @@ enum PropertyStatus {
 /// Subscription tier level
 /// Used on User model to track current plan and on SubscriptionPlanConfig for plan definitions
 enum SubscriptionPlan {
-  FREE
+  STARTER
   PRO
-  BUSINESS
+  FLEX
 }
 
 /// Type of user plan applies to
@@ -293,7 +293,7 @@ model User {
   onboardingData   Json?   @map("onboarding_data")
 
   // Subscription
-  subscriptionPlan   SubscriptionPlan @default(FREE) @map("subscription_plan")
+  subscriptionPlan   SubscriptionPlan @default(STARTER) @map("subscription_plan")
   subscriptionEndsAt DateTime?        @map("subscription_ends_at") // null = no expiration (free) or lifetime
 
   // Notification preferences
@@ -1034,7 +1034,7 @@ model NotificationLog {
 model SubscriptionPlanConfig {
   id          String        @id @default(uuid()) @db.Uuid
   planType    PlanType      @map("plan_type")        // TENANT or LANDLORD
-  tier        SubscriptionPlan                        // FREE, PRO, BUSINESS
+  tier        SubscriptionPlan                        // STARTER, PRO, FLEX
   name        String        @db.VarChar(100)          // Display name: "Tenant Pro", "Landlord Business"
   description String?       @db.Text
 

@@ -290,9 +290,9 @@ export class AiController {
     const planConfig =
       await this.subscriptionsService.getUserPlanConfig(userId);
 
-    if (planConfig.tier === 'FREE') {
+    if (planConfig.tier === 'STARTER') {
       throw new ForbiddenException(
-        'AI Document Analysis requiere plan PRO o BUSINESS. Actualiza tu suscripción para acceder a esta funcionalidad.',
+        'AI Document Analysis requiere plan PRO o FLEX. Actualiza tu suscripción para acceder a esta funcionalidad.',
       );
     }
   }
