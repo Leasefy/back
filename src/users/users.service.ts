@@ -3,6 +3,7 @@ import type { User, Prisma } from '@prisma/client';
 import { Role as PrismaRole, ContractStatus, ApplicationStatus } from '@prisma/client';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { ConfigService } from '@nestjs/config';
+import sharp from 'sharp';
 import { PrismaService } from '../database/prisma.service.js';
 import { Role } from '../common/enums/role.enum.js';
 import { LeaseDocumentType } from '../common/enums/index.js';
@@ -43,6 +44,18 @@ export interface TenantVaultDocument {
 @Injectable()
 export class UsersService {
   private readonly supabase: SupabaseClient;
+
+  // Avatar upload config
+  private readonly AVATAR_BUCKET = 'user-avatars';
+  private readonly AVATAR_MAX_UPLOAD_SIZE = 10 * 1024 * 1024; // 10MB raw upload (will be compressed)
+  private readonly AVATAR_ALLOWED_MIME_TYPES = [
+    'image/jpeg',
+    'image/jpg',
+    'image/png',
+    'image/webp',
+  ];
+  private readonly AVATAR_OUTPUT_SIZE = 512; // 512x512 px
+  private readonly AVATAR_QUALITY = 82;
 
   constructor(
     private readonly prisma: PrismaService,
@@ -97,6 +110,105 @@ export class UsersService {
         avatarUrl: dto.avatarUrl,
       },
     });
+  }
+
+  /**
+   * Upload and compress user avatar.
+   *
+   * Processing pipeline:
+   * 1. Validate mime type and raw size (<=10MB)
+   * 2. Resize to 512x512 (cover fit, center crop)
+   * 3. Convert to WebP with quality 82 (~20-40KB output)
+   * 4. Delete previous avatar from storage (if exists)
+   * 5. Upload to Supabase Storage bucket 'user-avatars'
+   * 6. Update user.avatarUrl with public URL
+   *
+   * @param userId - User UUID
+   * @param file - Raw uploaded file from multer
+   * @returns Updated user with new avatarUrl
+   */
+  async uploadAvatar(
+    userId: string,
+    file: Express.Multer.File,
+  ): Promise<{ url: string; user: User }> {
+    if (!file) {
+      throw new BadRequestException('No se envio ningun archivo');
+    }
+
+    // Validate mime type
+    if (!this.AVATAR_ALLOWED_MIME_TYPES.includes(file.mimetype)) {
+      throw new BadRequestException(
+        'Solo se permiten imagenes JPG, PNG o WebP',
+      );
+    }
+
+    // Validate raw size (before compression)
+    if (file.size > this.AVATAR_MAX_UPLOAD_SIZE) {
+      throw new BadRequestException('La imagen no puede superar los 10MB');
+    }
+
+    const user = await this.findById(userId);
+
+    // Compress + resize to square WebP using sharp
+    let compressedBuffer: Buffer;
+    try {
+      compressedBuffer = await sharp(file.buffer)
+        .rotate() // auto-rotate based on EXIF
+        .resize(this.AVATAR_OUTPUT_SIZE, this.AVATAR_OUTPUT_SIZE, {
+          fit: 'cover',
+          position: 'center',
+        })
+        .webp({ quality: this.AVATAR_QUALITY })
+        .toBuffer();
+    } catch (err) {
+      throw new BadRequestException(
+        `No se pudo procesar la imagen: ${(err as Error).message}`,
+      );
+    }
+
+    // Delete previous avatar from storage if it exists and is hosted in our bucket
+    if (user.avatarUrl && user.avatarUrl.includes(`/${this.AVATAR_BUCKET}/`)) {
+      try {
+        const previousPath = user.avatarUrl
+          .split(`/${this.AVATAR_BUCKET}/`)
+          .pop();
+        if (previousPath) {
+          await this.supabase.storage
+            .from(this.AVATAR_BUCKET)
+            .remove([previousPath]);
+        }
+      } catch {
+        // Silently ignore — deletion failures should not block new upload
+      }
+    }
+
+    // Upload compressed avatar
+    const filename = `${userId}/${Date.now()}.webp`;
+    const { error: uploadError } = await this.supabase.storage
+      .from(this.AVATAR_BUCKET)
+      .upload(filename, compressedBuffer, {
+        contentType: 'image/webp',
+        upsert: false,
+      });
+
+    if (uploadError) {
+      throw new BadRequestException(
+        `Error al subir el avatar: ${uploadError.message}`,
+      );
+    }
+
+    // Get public URL
+    const { data: urlData } = this.supabase.storage
+      .from(this.AVATAR_BUCKET)
+      .getPublicUrl(filename);
+
+    // Update user record
+    const updatedUser = await this.prisma.user.update({
+      where: { id: userId },
+      data: { avatarUrl: urlData.publicUrl },
+    });
+
+    return { url: urlData.publicUrl, user: updatedUser };
   }
 
   /**

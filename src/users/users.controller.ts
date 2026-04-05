@@ -1,11 +1,25 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiBearerAuth,
+  ApiConsumes,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
   ApiResponse,
   ApiParam,
+  ApiBody,
 } from '@nestjs/swagger';
 import type { User } from '@prisma/client';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
@@ -237,6 +251,45 @@ export class UsersController {
     @Body() dto: UpdateProfileDto,
   ): Promise<User> {
     return this.usersService.updateProfile(userId, dto);
+  }
+
+  /**
+   * Upload and compress user avatar.
+   *
+   * Accepts multipart/form-data with a 'file' field.
+   * Image is compressed to 512x512 WebP (~20-40KB) before storage.
+   */
+  @Post('me/avatar')
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiConsumes('multipart/form-data')
+  @ApiOperation({ summary: 'Upload user avatar (auto-compressed to 512x512 WebP)' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+          description: 'Imagen JPG, PNG o WebP. Max 10MB raw (se comprime).',
+        },
+      },
+    },
+  })
+  @ApiOkResponse({
+    description: 'Avatar subido y comprimido exitosamente',
+    schema: {
+      type: 'object',
+      properties: {
+        url: { type: 'string', description: 'URL publica del avatar' },
+      },
+    },
+  })
+  async uploadAvatar(
+    @CurrentUser('id') userId: string,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    const result = await this.usersService.uploadAvatar(userId, file);
+    return { url: result.url };
   }
 
   /**

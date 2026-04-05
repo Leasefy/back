@@ -26,22 +26,25 @@
 
 **What's next:** Pendiente — Frontend integration, E2E tests, o v1.1 con mejoras basadas en feedback de usuarios.
 
-## v1.3 Subscription Restructuring & Unified Evaluations (In Progress)
+## v1.3 Subscription Restructuring & Unified Evaluations (Shipped: 2026-04-04)
 
-**Goal:** Reestructurar suscripciones (STARTER/PRO/FLEX) con modelo pay-per-evaluation, endpoint unificado que consume microservicio de agentes, sistema de creditos, y billing FLEX por canon.
+**Delivered:** Reestructuracion de suscripciones con modelo pay-per-evaluation y billing FLEX.
 
-**Phases:** 25-28 (13 plans, 22 requirements)
+**Phases completed:** 25-28 (13 plans total, 4 fases)
 
-**Scope:**
-- Tier migration: FREE/PRO/BUSINESS → STARTER/PRO/FLEX con nuevo pricing
-- Agent credits: compra, saldo, historial, pago al momento o creditos previos
-- Unified evaluation: endpoint que orquesta micro agentes (localhost:4000)
-- FLEX billing: 1% del canon via PSE split o reporte manual
-- Access control: scoring basico solo tenant, landlord via evaluacion
+**Key accomplishments:**
+- Tier migration: FREE/PRO/BUSINESS → STARTER/PRO/FLEX con pricing actualizado y enum rename non-destructivo
+- Agent Credits System: wallet con compra de packs via PSE mock, saldo atomico, historial paginado, deduccion anti-double-spend
+- Unified Evaluation Endpoint: POST /evaluations (202 async) con orquestacion micro agentes, client-driven polling, tier-based pricing (STARTER $42k, PRO $21k, FLEX free), PRO 30/mes limit
+- FLEX Billing: auto-tracking 1% canon en pagos PSE (non-blocking), reporte manual de canon, dashboard con aggregacion paralela
+- Access Control: scoring basico restringido a tenant, landlord accede via evaluacion
 
-**Key constraints:**
-- Minimizar cambios de URLs (frontend integrando)
-- Agentes AI en microservicio separado
-- PSE sigue mock
+**Stats:**
+- 18 archivos TypeScript nuevos, ~963 LOC en 3 modulos nuevos
+- 42,651 LOC TypeScript total + 2,363 lineas Prisma schema
+- 4 fases, 13 plans
+- 1 dia (04 Abr 2026)
+
+**What's next:** Pendiente — v1.4 planning (agent integrations, E2E tests, o features basadas en feedback).
 
 ---

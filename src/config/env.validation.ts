@@ -46,7 +46,10 @@ export class EnvironmentVariables {
   // Redis (for BullMQ job queue)
   // ============================================
 
-  /** Redis connection URL for BullMQ (e.g., Upstash: rediss://...) */
+  /** Redis/Valkey connection URL for BullMQ.
+   * Dev/Staging (Upstash): rediss://default:[token]@[instance].upstash.io:6379
+   * Production (Valkey self-hosted): redis://:[password]@[ip-servidor]:6379
+   */
   @IsString()
   REDIS_URL!: string;
 
@@ -123,6 +126,29 @@ export class EnvironmentVariables {
   @IsString()
   @IsOptional()
   AI_MODEL: string = 'command-r-plus';
+
+  // ============================================
+  // Agent Microservice (Phase 27)
+  // ============================================
+
+  /** Agent microservice URL for tenant scoring evaluations */
+  @IsString()
+  @IsOptional()
+  AGENT_MICRO_URL: string = 'http://localhost:4000';
+
+  // ============================================
+  // PSE Payment Gateway
+  // ============================================
+
+  /**
+   * PSE processing mode.
+   * - `mock`: Use deterministic mock (dev/staging/testing). Results based on document last digit.
+   * - `real`: Use real PSE gateway integration (production). Throws until implemented.
+   * Default: 'mock' for safety.
+   */
+  @IsString()
+  @IsOptional()
+  PSE_MODE: string = 'mock';
 }
 
 export function validate(config: Record<string, unknown>) {

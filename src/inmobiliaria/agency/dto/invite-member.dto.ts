@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsEmail, IsEnum } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsString, IsEmail, IsEnum, IsOptional, MaxLength } from 'class-validator';
 import { AgencyMemberRole } from '../../../common/enums/agency-member-role.enum.js';
 
 /**
@@ -22,4 +22,14 @@ export class InviteMemberDto {
   })
   @IsEnum(AgencyMemberRole)
   role!: AgencyMemberRole;
+
+  @ApiPropertyOptional({
+    example: 'Agente Senior',
+    description: 'Display title/position (free-form, independent of role)',
+    maxLength: 100,
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  position?: string;
 }

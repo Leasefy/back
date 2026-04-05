@@ -91,6 +91,7 @@ export class ReportsService {
 
   /**
    * Aging analysis: bucket pending/late/partial cobros by days late.
+   * Also includes monthly breakdown of collected vs overdue for last 12 months.
    */
   async getCarteraReport(agencyId: string) {
     const cobros = await this.prisma.cobro.findMany({
@@ -150,6 +151,62 @@ export class ReportsService {
       };
     });
 
+    // Monthly breakdown: last 12 months, collected vs overdue
+    const monthsList: string[] = [];
+    for (let i = 11; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      monthsList.push(`${yyyy}-${mm}`);
+    }
+
+    const monthlyCobros = await this.prisma.cobro.findMany({
+      where: { agencyId, month: { in: monthsList } },
+      select: {
+        month: true,
+        status: true,
+        paidAmount: true,
+        pendingAmount: true,
+        totalWithFees: true,
+      },
+    });
+
+    const byMonthMap = new Map<
+      string,
+      { collected: number; overdue: number; total: number; count: number }
+    >();
+
+    for (const m of monthsList) {
+      byMonthMap.set(m, { collected: 0, overdue: 0, total: 0, count: 0 });
+    }
+
+    for (const c of monthlyCobros) {
+      const entry = byMonthMap.get(c.month);
+      if (!entry) continue;
+      entry.collected += c.paidAmount;
+      entry.total += c.totalWithFees;
+      entry.count += 1;
+      if (c.status === CobroStatus.LATE || c.status === CobroStatus.PARTIAL) {
+        entry.overdue += c.pendingAmount;
+      }
+    }
+
+    const byMonth = monthsList.map((m) => {
+      const data = byMonthMap.get(m)!;
+      const collectionRate =
+        data.total > 0
+          ? Math.round((data.collected / data.total) * 100 * 100) / 100
+          : 0;
+      return {
+        month: m,
+        collected: data.collected,
+        overdue: data.overdue,
+        total: data.total,
+        cobroCount: data.count,
+        collectionRate,
+      };
+    });
+
     return {
       items,
       summary: {
@@ -159,6 +216,7 @@ export class ReportsService {
         bucket61to90,
         bucket90plus,
       },
+      byMonth,
     };
   }
 
@@ -271,6 +329,7 @@ export class ReportsService {
 
   /**
    * Occupancy report: count consignaciones by availability, grouped by city/zone.
+   * Also includes per-property breakdown and monthly occupancy trend (last 12 months).
    */
   async getOcupacionReport(agencyId: string) {
     const consignaciones = await this.prisma.consignacion.findMany({
@@ -280,8 +339,15 @@ export class ReportsService {
       },
       select: {
         id: true,
+        propertyTitle: true,
+        propertyAddress: true,
         propertyCity: true,
+        propertyZone: true,
+        propertyType: true,
+        monthlyRent: true,
         availability: true,
+        currentTenantName: true,
+        leaseEndDate: true,
       },
     });
 
@@ -322,11 +388,65 @@ export class ReportsService {
       }),
     );
 
+    // Per-property breakdown
+    const byProperty = consignaciones.map((c) => ({
+      consignacionId: c.id,
+      propertyTitle: c.propertyTitle,
+      propertyAddress: c.propertyAddress,
+      propertyCity: c.propertyCity,
+      propertyZone: c.propertyZone,
+      propertyType: c.propertyType,
+      monthlyRent: c.monthlyRent,
+      availability: c.availability,
+      tenantName: c.currentTenantName,
+      leaseEndDate: c.leaseEndDate,
+    }));
+
+    // Monthly occupancy trend: derive from cobros (a property with a cobro in month X
+    // was RENTED that month, since cobros are only generated for RENTED consignaciones).
+    const now = new Date();
+    const monthsList: string[] = [];
+    for (let i = 11; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      monthsList.push(`${yyyy}-${mm}`);
+    }
+
+    const historicalCobros = await this.prisma.cobro.findMany({
+      where: { agencyId, month: { in: monthsList } },
+      select: { month: true, consignacionId: true },
+    });
+
+    const occupiedByMonth = new Map<string, Set<string>>();
+    for (const m of monthsList) {
+      occupiedByMonth.set(m, new Set());
+    }
+    for (const c of historicalCobros) {
+      occupiedByMonth.get(c.month)?.add(c.consignacionId);
+    }
+
+    const monthlyTrend = monthsList.map((m) => {
+      const occupied = occupiedByMonth.get(m)?.size ?? 0;
+      const rate =
+        totalProperties > 0
+          ? Math.round((occupied / totalProperties) * 100 * 100) / 100
+          : 0;
+      return {
+        month: m,
+        occupied,
+        total: totalProperties,
+        rate,
+      };
+    });
+
     return {
       totalProperties,
       totalOccupied,
       overallOccupancyRate,
       zones,
+      byProperty,
+      monthlyTrend,
     };
   }
 
@@ -526,7 +646,10 @@ export class ReportsService {
       userId: string;
       assignedConsignaciones: number;
       activePipeline: number;
+      activeLeads: number;
       completedDeals: number;
+      lostDeals: number;
+      conversionRate: number;
       avgDaysToClose: number;
     }> = [];
 
@@ -538,7 +661,7 @@ export class ReportsService {
         where: { agencyId, agenteUserId: uid },
       });
 
-      // Count active pipeline items
+      // Count active pipeline items (not closed/lost)
       const activePipeline = await this.prisma.pipelineItem.count({
         where: {
           agencyId,
@@ -562,6 +685,23 @@ export class ReportsService {
 
       const completedDeals = completedItems.length;
 
+      // Count lost pipeline items this month (for conversion rate denominator)
+      const lostDeals = await this.prisma.pipelineItem.count({
+        where: {
+          agencyId,
+          agenteUserId: uid,
+          stage: PipelineStage.LOST,
+          updatedAt: { gte: startOfMonth, lt: endOfMonth },
+        },
+      });
+
+      // Conversion rate = completed / (completed + lost) this month
+      const totalResolved = completedDeals + lostDeals;
+      const conversionRate =
+        totalResolved > 0
+          ? Math.round((completedDeals / totalResolved) * 100 * 100) / 100
+          : 0;
+
       // Average days to close (total lifecycle from created to completed)
       let avgDaysToClose = 0;
       if (completedItems.length > 0) {
@@ -579,7 +719,10 @@ export class ReportsService {
         userId: uid,
         assignedConsignaciones,
         activePipeline,
+        activeLeads: activePipeline,
         completedDeals,
+        lostDeals,
+        conversionRate,
         avgDaysToClose,
       });
     }

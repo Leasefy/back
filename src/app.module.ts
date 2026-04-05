@@ -43,6 +43,10 @@ import { AnalyticsModule } from './inmobiliaria/analytics/analytics.module.js';
 import { InmobiliariaDashboardModule } from './inmobiliaria/dashboard/dashboard.module.js';
 import { AiModule } from './ai/ai.module.js';
 import { MlPersistenceModule } from './ml-persistence/ml-persistence.module.js';
+import { AgentCreditsModule } from './agent-credits/agent-credits.module.js';
+import { EvaluationsModule } from './evaluations/evaluations.module.js';
+import { FlexBillingModule } from './flex-billing/flex-billing.module.js';
+import { AiInsightsModule } from './inmobiliaria/ai/ai-insights.module.js';
 import { SupabaseAuthGuard } from './auth/guards/supabase-auth.guard.js';
 import { RolesGuard } from './auth/guards/roles.guard.js';
 import { AppController } from './app.controller.js';
@@ -98,6 +102,10 @@ import { AppService } from './app.service.js';
     InmobiliariaDashboardModule,
     AiModule,
     MlPersistenceModule,
+    AgentCreditsModule,
+    EvaluationsModule,
+    FlexBillingModule,
+    AiInsightsModule,
   ],
   controllers: [AppController],
   providers: [

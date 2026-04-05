@@ -14,6 +14,7 @@ import { CreateAgencyDto } from './dto/create-agency.dto.js';
 import { UpdateAgencyDto } from './dto/update-agency.dto.js';
 import { InviteMemberDto } from './dto/invite-member.dto.js';
 import { UpdateMemberRoleDto } from './dto/update-member-role.dto.js';
+import { UpdateMemberProfileDto } from './dto/update-member-profile.dto.js';
 import type { AgencyPermissions } from './permissions/agency-permissions.js';
 import { AGENCY_ROLE_DEFAULTS } from './permissions/role-defaults.js';
 
@@ -161,6 +162,7 @@ export class AgencyService {
             invitationToken,
             invitationExpiresAt,
             invitedEmail: dto.email,
+            ...(dto.position !== undefined && { position: dto.position }),
           },
           include: { agency: true },
         });
@@ -179,6 +181,7 @@ export class AgencyService {
           invitationToken,
           invitationExpiresAt,
           invitedEmail: dto.email,
+          ...(dto.position !== undefined && { position: dto.position }),
         },
         include: { agency: true },
       });
@@ -406,6 +409,33 @@ export class AgencyService {
     return this.prisma.agencyMember.update({
       where: { id: memberId },
       data: { role: dto.role },
+    });
+  }
+
+  /**
+   * Update a member's display profile fields (position/title).
+   * These are cosmetic and do not affect permissions.
+   */
+  async updateMemberProfile(
+    agencyId: string,
+    memberId: string,
+    dto: UpdateMemberProfileDto,
+  ) {
+    const member = await this.prisma.agencyMember.findFirst({
+      where: { id: memberId, agencyId },
+    });
+
+    if (!member) {
+      throw new NotFoundException(
+        `Member with ID ${memberId} not found in this agency`,
+      );
+    }
+
+    return this.prisma.agencyMember.update({
+      where: { id: memberId },
+      data: {
+        ...(dto.position !== undefined && { position: dto.position }),
+      },
     });
   }
 

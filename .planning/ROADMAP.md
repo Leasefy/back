@@ -9,7 +9,7 @@ Backend API en NestJS para el marketplace de arriendos "Arriendo Facil". Provee 
 - **v1.0 Backend MVP** - Phases 1-22 (SHIPPED 2026-02-16) — [ver archivo](milestones/v1.0-ROADMAP.md)
 - **v1.1 Inmobiliaria Registration** - Phase 23 (SHIPPED 2026-03-10)
 - **v1.2 Roles & Permissions** - Phase 24 (SHIPPED 2026-04-03)
-- **v1.3 Subscription Restructuring & Unified Evaluations** - Phases 25-28 (In Progress)
+- **v1.3 Subscription Restructuring & Unified Evaluations** - Phases 25-28 (SHIPPED 2026-04-04) — [ver archivo](milestones/v1.3-ROADMAP.md)
 
 ## Phases
 
@@ -21,81 +21,15 @@ Backend API en NestJS para el marketplace de arriendos "Arriendo Facil". Provee 
 
 - [x] Phase 24: Granular Permissions & Team Role Enforcement (3/3 plans) — 2026-04-03 COMPLETE
 
-### v1.3 Subscription Restructuring & Unified Evaluations
+<details>
+<summary>v1.3 Subscription Restructuring (Phases 25-28) — SHIPPED 2026-04-04</summary>
 
-**Milestone Goal:** Reestructurar suscripciones (STARTER/PRO/FLEX) con modelo pay-per-evaluation, endpoint unificado que consume el microservicio de agentes, sistema de creditos, y billing FLEX por canon.
+- [x] Phase 25: Tier Migration & Access Control (3/3 plans) — 2026-04-04
+- [x] Phase 26: Agent Credits System (3/3 plans) — 2026-04-04
+- [x] Phase 27: Unified Evaluation Endpoint (4/4 plans) — 2026-04-04
+- [x] Phase 28: FLEX Billing (3/3 plans) — 2026-04-04
 
-#### Phase 25: Tier Migration & Access Control
-
-**Goal:** Los tiers de suscripcion reflejan el nuevo modelo STARTER/PRO/FLEX, con pricing actualizado y acceso al scoring restringido segun rol.
-**Depends on:** Phase 24
-**Requirements:** TIER-01, TIER-02, TIER-03, TIER-04, ACCS-01, ACCS-02, ACCS-03
-**Success Criteria** (what must be TRUE):
-  1. El enum SubscriptionPlan tiene los valores STARTER/PRO/FLEX y las suscripciones activas no se rompen
-  2. El seed data refleja: STARTER $0/mes, PRO $149,000/mes, FLEX $0/mes (billing por canon)
-  3. Todos los endpoints existentes de suscripciones responden correctamente con los nuevos nombres de tier
-  4. GET /scoring/:applicationId devuelve 403 cuando lo llama un landlord o inmobiliaria
-  5. Landlord/inmobiliaria solo puede ver resultados de scoring a traves de la evaluacion (no directamente)
-
-**Plans:** 3 plans
-Plans:
-- [x] 25-01-PLAN.md — Rename enum FREE/PRO/BUSINESS to STARTER/PRO/FLEX (DB migration, Prisma schema, TS enum, seed data)
-- [x] 25-02-PLAN.md — Update all source code references from FREE/BUSINESS to STARTER/FLEX (subscriptions service, AI controller)
-- [x] 25-03-PLAN.md — Restrict scoring endpoints to tenant-only access (ACCS-01, ACCS-02)
-
-#### Phase 26: Agent Credits System
-
-**Goal:** Landlords e inmobiliarias pueden comprar creditos de evaluacion por adelantado, consultar su saldo, y ver el historial de transacciones.
-**Depends on:** Phase 25
-**Requirements:** CRED-01, CRED-02, CRED-03, CRED-04
-**Success Criteria** (what must be TRUE):
-  1. Existe una tabla AgentCredit con saldo por usuario/agencia; el saldo se actualiza correctamente al comprar o usar creditos
-  2. Landlord/inmobiliaria puede comprar packs de creditos via endpoint y el saldo aumenta
-  3. deductCredits() service method descuenta creditos atomicamente (conditional updateMany con balance >= amount); la orquestacion "pago al momento O creditos" es responsabilidad de Phase 27
-  4. El historial de transacciones lista compras y usos con fecha, monto, y saldo resultante
-
-**Plans:** 3 plans
-Plans:
-- [x] 26-01-PLAN.md — Prisma schema: AgentCredit + AgentCreditTransaction models, enum, evaluationCreditPrice on SubscriptionPlanConfig, migration + seed
-- [x] 26-02-PLAN.md — AgentCreditsModule: purchase endpoint (PSE mock), balance query, atomic deductCredits service method
-- [x] 26-03-PLAN.md — Transaction history endpoint with pagination, end-to-end verification
-
-#### Phase 27: Unified Evaluation Endpoint
-
-**Goal:** Landlord/inmobiliaria puede solicitar una evaluacion unificada de un aplicante; el backend orquesta la llamada al microservicio de agentes, almacena el resultado, y aplica las reglas de precio y limite por tier.
-**Depends on:** Phase 25, Phase 26
-**Requirements:** EVAL-01, EVAL-02, EVAL-03, EVAL-04, EVAL-05, EVAL-06, EVAL-07
-**Success Criteria** (what must be TRUE):
-  1. POST /evaluations/:applicationId inicia una evaluacion y devuelve 202 con runId
-  2. El backend llama a POST /tenant-scoring del microservicio (localhost:4000) con los documentos y datos del aplicante
-  3. El backend puede hacer polling de GET /tenant-scoring/:runId hasta recibir el resultado y lo almacena en DB vinculado a la aplicacion
-  4. STARTER paga $42,000 COP por evaluacion; PRO paga $21,000; FLEX no paga (ilimitado)
-  5. PRO recibe error 429 al superar 30 evaluaciones en el mes calendario
-  6. Solicitar una evaluacion sin suscripcion activa devuelve error de autorizacion
-
-**Plans:** 4 plans
-Plans:
-- [x] 27-01-PLAN.md — Prisma schema (EvaluationResult, EvaluationTransaction, EvaluationUsage models + EvaluationStatus enum + migration + env config)
-- [x] 27-02-PLAN.md — AgentMicroClient service (Node fetch wrapper for POST /tenant-scoring + GET /tenant-scoring/:runId)
-- [x] 27-03-PLAN.md — EvaluationsModule + controller + service (ownership, idempotency, plan validation, credit charge, micro call, result storage, polling)
-- [x] 27-04-PLAN.md — Pricing enforcement hardening (tier pricing verification, PRO 30/month limit, error paths, e2e validation)
-
-#### Phase 28: FLEX Billing
-
-**Goal:** Agencias FLEX pueden trackear el canon total que administran, el sistema aplica el split del 1% en pagos PSE, y el dashboard muestra el cobro estimado.
-**Depends on:** Phase 25
-**Requirements:** FLEX-01, FLEX-02, FLEX-03, FLEX-04
-**Success Criteria** (what must be TRUE):
-  1. Existe una tabla CanonTracking que registra el canon administrado por agencia; el total se puede consultar
-  2. Al procesar un pago de arriendo via PSE (mock), el sistema registra automaticamente el 1% como cobro Leasify
-  3. Si el pago no es via PSE, la agencia puede reportar el canon manualmente via endpoint
-  4. El dashboard FLEX muestra canon total administrado y el cobro estimado del 1%
-
-**Plans:** 3 plans
-Plans:
-- [ ] 28-01-PLAN.md — CanonTracking Prisma model + migration (schema, indexes, relations)
-- [ ] 28-02-PLAN.md — FlexBillingModule + PSE auto-tracking in CobrosService + manual canon endpoint
-- [ ] 28-03-PLAN.md — FLEX dashboard endpoint (canon total, 1% fee, history)
+</details>
 
 <details>
 <summary>v1.0 Backend MVP (Phases 1-22) — SHIPPED 2026-02-16</summary>
@@ -136,7 +70,7 @@ Plans:
 | v1.0 Backend MVP | 26 | 81/81 | Complete | 2026-02-16 |
 | v1.1 Inmobiliaria Registration | 1 | 3/3 | Complete | 2026-03-10 |
 | v1.2 Roles & Permissions | 1 | 3/3 | Complete | 2026-04-03 |
-| v1.3 Subscription Restructuring & Unified Evaluations | 4 | 10/13 | In Progress | - |
+| v1.3 Subscription Restructuring & Unified Evaluations | 4 | 13/13 | Complete | 2026-04-04 |
 
 ## External Services
 
@@ -151,4 +85,4 @@ Plans:
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-04-04 — Phase 27 Unified Evaluation Endpoint complete (4/4 plans). Next: Phase 28.*
+*Last updated: 2026-04-04 — v1.3 COMPLETE. All 4 phases (25-28) delivered. 13/13 plans.*

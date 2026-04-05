@@ -1,10 +1,16 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service.js';
+import { FlexBillingService } from '../../flex-billing/flex-billing.service.js';
 import { RegisterPaymentDto } from './dto/index.js';
 
 @Injectable()
 export class CobrosService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly logger = new Logger(CobrosService.name);
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly flexBillingService: FlexBillingService,
+  ) {}
 
   /**
    * Auto-generate cobros for all active consignaciones with availability=RENTED
@@ -168,7 +174,7 @@ export class CobrosService {
       ? new Date(dto.paidDate)
       : new Date();
 
-    return this.prisma.cobro.update({
+    const updatedCobro = await this.prisma.cobro.update({
       where: { id },
       data: {
         paidAmount,
@@ -182,6 +188,28 @@ export class CobrosService {
         consignacion: true,
       },
     });
+
+    // Auto-track canon for FLEX billing when paid via PSE
+    if (
+      status === 'PAID' &&
+      (dto.paymentMethod === 'PSE' || updatedCobro.paymentMethod === 'PSE')
+    ) {
+      try {
+        await this.flexBillingService.registerPsePayment(
+          agencyId,
+          updatedCobro.consignacionId,
+          updatedCobro.rentAmount,
+          updatedCobro.month,
+          dto.paymentReference,
+        );
+      } catch (error) {
+        this.logger.error(
+          `[FlexBilling] Failed to auto-track canon: ${(error as Error).message}`,
+        );
+      }
+    }
+
+    return updatedCobro;
   }
 
   /**

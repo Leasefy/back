@@ -63,11 +63,11 @@ enum BillingCycle {
 
 /// Status of a subscription
 enum SubscriptionStatus {
-  TRIAL        // 7-day free trial
-  ACTIVE       // Paid and active
-  PAST_DUE     // Payment failed/expired, grace period
-  CANCELLED    // User cancelled, remains active until period end
-  EXPIRED      // Subscription period ended without renewal
+  TRIAL // 7-day free trial
+  ACTIVE // Paid and active
+  PAST_DUE // Payment failed/expired, grace period
+  CANCELLED // User cancelled, remains active until period end
+  EXPIRED // Subscription period ended without renewal
 }
 
 /// Application status in the rental process
@@ -276,21 +276,21 @@ enum ActivityType {
 /// User model - synced from Supabase Auth via database trigger
 /// The id matches auth.users.id (UUID)
 model User {
-  id         String  @id @db.Uuid // Same UUID as auth.users.id
-  email      String  @unique
-  role       Role    @default(TENANT)
-  firstName        String? @map("first_name")
-  lastName         String? @map("last_name")
-  phone            String?
-  rut              String? @db.VarChar(20)
-  address          String? @db.VarChar(255)
-  birthDate        DateTime? @map("birth_date") @db.Date
-  emergencyContactName  String? @map("emergency_contact_name")  @db.VarChar(100)
-  emergencyContactPhone String? @map("emergency_contact_phone") @db.VarChar(30)
-  avatarUrl        String? @map("avatar_url")
+  id                    String    @id @db.Uuid // Same UUID as auth.users.id
+  email                 String    @unique
+  role                  Role      @default(TENANT)
+  firstName             String?   @map("first_name")
+  lastName              String?   @map("last_name")
+  phone                 String?
+  rut                   String?   @db.VarChar(20)
+  address               String?   @db.VarChar(255)
+  birthDate             DateTime? @map("birth_date") @db.Date
+  emergencyContactName  String?   @map("emergency_contact_name") @db.VarChar(100)
+  emergencyContactPhone String?   @map("emergency_contact_phone") @db.VarChar(30)
+  avatarUrl             String?   @map("avatar_url")
 
   // Onboarding extended data (role-specific fields stored as JSON)
-  onboardingData   Json?   @map("onboarding_data")
+  onboardingData Json? @map("onboarding_data")
 
   // Subscription
   subscriptionPlan   SubscriptionPlan @default(STARTER) @map("subscription_plan")
@@ -299,7 +299,7 @@ model User {
   // Notification preferences
   emailNotificationsEnabled Boolean @default(true) @map("email_notifications_enabled")
   pushNotificationsEnabled  Boolean @default(true) @map("push_notifications_enabled")
-  fcmToken                  String? @map("fcm_token")  // Firebase Cloud Messaging device token
+  fcmToken                  String? @map("fcm_token") // Firebase Cloud Messaging device token
   notificationSettings      Json?   @map("notification_settings") // Granular notification preferences
 
   // Account status (soft-delete)
@@ -327,36 +327,45 @@ model User {
   disputeResolutions     PaymentDispute[]        @relation("DisputeResolutions")
 
   // Property visits relations
-  tenantVisits           PropertyVisit[]         @relation("TenantVisits")
+  tenantVisits PropertyVisit[] @relation("TenantVisits")
 
   // Notification relations
-  notificationLogs       NotificationLog[]
+  notificationLogs NotificationLog[]
 
   // Agent property access relations
-  agentAccess            PropertyAccess[] @relation("AgentAccess")
-  grantedAccess          PropertyAccess[] @relation("GrantedAccess")
+  agentAccess   PropertyAccess[] @relation("AgentAccess")
+  grantedAccess PropertyAccess[] @relation("GrantedAccess")
 
   // Chat relations
-  chatMessages           ChatMessage[] @relation("ChatMessages")
+  chatMessages ChatMessage[] @relation("ChatMessages")
 
   // Wishlist relations
-  wishlistItems          WishlistItem[]
+  wishlistItems WishlistItem[]
 
   // Lease document relations
   uploadedLeaseDocuments LeaseDocument[] @relation("UploadedLeaseDocuments")
 
   // Tenant preferences relation
-  tenantPreference       TenantPreference?
+  tenantPreference TenantPreference?
 
   // Coupon relations
-  couponUsages           CouponUsage[]
+  couponUsages CouponUsage[]
 
   // Activity log relations
-  userActivities         ActivityLog[] @relation("UserActivities")
-  actorActivities        ActivityLog[] @relation("ActorActivities")
+  userActivities  ActivityLog[] @relation("UserActivities")
+  actorActivities ActivityLog[] @relation("ActorActivities")
 
   // Team member relations
-  teamMembers            TeamMember[] @relation("TeamOwner")
+  teamMembers TeamMember[] @relation("TeamOwner")
+
+  // Agent credits relations
+  agentCredit             AgentCredit?
+  agentCreditTransactions AgentCreditTransaction[]
+
+  // Evaluation relations
+  evaluationResults      EvaluationResult[]      @relation("EvaluationRequester")
+  evaluationTransactions EvaluationTransaction[]
+  evaluationUsage        EvaluationUsage[]
 
   @@map("users")
 }
@@ -364,13 +373,13 @@ model User {
 /// Team member for landlord account collaboration
 /// Allows landlords to invite other users to manage their properties
 model TeamMember {
-  id         String   @id @default(uuid()) @db.Uuid
-  ownerId    String   @map("owner_id") @db.Uuid
-  name       String?  @db.VarChar(100)
-  email      String   @db.VarChar(255)
-  role       String   @default("viewer") @db.VarChar(20) // admin, manager, accountant, viewer
-  status     String   @default("pending") @db.VarChar(20) // pending, accepted, expired, revoked
-  invitedAt  DateTime @default(now()) @map("invited_at")
+  id         String    @id @default(uuid()) @db.Uuid
+  ownerId    String    @map("owner_id") @db.Uuid
+  name       String?   @db.VarChar(100)
+  email      String    @db.VarChar(255)
+  role       String    @default("viewer") @db.VarChar(20) // admin, manager, accountant, viewer
+  status     String    @default("pending") @db.VarChar(20) // pending, accepted, expired, revoked
+  invitedAt  DateTime  @default(now()) @map("invited_at")
   acceptedAt DateTime? @map("accepted_at")
 
   createdAt DateTime @default(now()) @map("created_at")
@@ -423,7 +432,7 @@ model Property {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  landlord       User            @relation(fields: [landlordId], references: [id], onDelete: Cascade)
+  landlord       User                   @relation(fields: [landlordId], references: [id], onDelete: Cascade)
   images         PropertyImage[]
   applications   Application[]
   contracts      Contract[]
@@ -469,9 +478,9 @@ model PropertyAccess {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
-  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  agent      User     @relation("AgentAccess", fields: [agentId], references: [id])
-  grantedBy  User     @relation("GrantedAccess", fields: [grantedById], references: [id])
+  property  Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  agent     User     @relation("AgentAccess", fields: [agentId], references: [id])
+  grantedBy User     @relation("GrantedAccess", fields: [grantedById], references: [id])
 
   @@unique([propertyId, agentId])
   @@index([agentId])
@@ -500,16 +509,17 @@ model Application {
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
   // Relations
-  property        Property                    @relation(fields: [propertyId], references: [id])
-  tenant          User                        @relation("TenantApplications", fields: [tenantId], references: [id])
-  documents       ApplicationDocument[]
-  events          ApplicationEvent[]
-  riskScore       RiskScoreResult?
-  notes           LandlordNote[]
-  contract        Contract?
-  conversation    ApplicationConversation?
-  featureSnapshot ApplicationFeatureSnapshot?
-  predictionLog   PredictionLog?
+  property         Property                    @relation(fields: [propertyId], references: [id])
+  tenant           User                        @relation("TenantApplications", fields: [tenantId], references: [id])
+  documents        ApplicationDocument[]
+  events           ApplicationEvent[]
+  riskScore        RiskScoreResult?
+  notes            LandlordNote[]
+  contract         Contract?
+  conversation     ApplicationConversation?
+  featureSnapshot  ApplicationFeatureSnapshot?
+  predictionLog    PredictionLog?
+  evaluationResult EvaluationResult?
 
   @@index([propertyId])
   @@index([tenantId])
@@ -564,23 +574,23 @@ model ApplicationConversation {
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
 
-  application   Application   @relation(fields: [applicationId], references: [id], onDelete: Cascade)
-  messages      ChatMessage[]
+  application Application   @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  messages    ChatMessage[]
 
   @@map("application_conversations")
 }
 
 /// Individual chat message in an application conversation
 model ChatMessage {
-  id             String   @id @default(uuid()) @db.Uuid
-  conversationId String   @map("conversation_id") @db.Uuid
-  senderId       String   @map("sender_id") @db.Uuid
-  content        String   @db.Text
+  id             String    @id @default(uuid()) @db.Uuid
+  conversationId String    @map("conversation_id") @db.Uuid
+  senderId       String    @map("sender_id") @db.Uuid
+  content        String    @db.Text
   readAt         DateTime? @map("read_at")
-  createdAt      DateTime @default(now()) @map("created_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
 
-  conversation   ApplicationConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  sender         User @relation("ChatMessages", fields: [senderId], references: [id])
+  conversation ApplicationConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User                    @relation("ChatMessages", fields: [senderId], references: [id])
 
   @@index([conversationId])
   @@index([senderId])
@@ -664,8 +674,8 @@ model Contract {
 
   // Insurance
   insuranceTier    InsuranceTier @default(NONE) @map("insurance_tier")
-  insurancePremium Int           @default(0) @map("insurance_premium")  // Monthly premium in COP
-  insuranceDetails String?       @map("insurance_details") @db.Text     // Coverage description text
+  insurancePremium Int           @default(0) @map("insurance_premium") // Monthly premium in COP
+  insuranceDetails String?       @map("insurance_details") @db.Text // Coverage description text
 
   // Custom clauses as JSON array: [{ title: string, content: string }]
   customClauses Json @default("[]") @map("custom_clauses")
@@ -921,56 +931,56 @@ model PaymentDispute {
 /// Landlord's availability configuration for property visits
 /// Stores recurring weekly schedule (one row per time window per day)
 model PropertyAvailability {
-  id           String   @id @default(uuid()) @db.Uuid
-  propertyId   String   @map("property_id") @db.Uuid
-  dayOfWeek    Int      @map("day_of_week")       // 0=Sunday, 6=Saturday
-  startTime    String   @map("start_time")        // "09:00" (HH:mm 24h)
-  endTime      String   @map("end_time")          // "17:00"
-  slotDuration Int      @map("slot_duration")     // Minutes: 15, 30, 45, 60
-  isActive     Boolean  @default(true) @map("is_active")
+  id           String  @id @default(uuid()) @db.Uuid
+  propertyId   String  @map("property_id") @db.Uuid
+  dayOfWeek    Int     @map("day_of_week") // 0=Sunday, 6=Saturday
+  startTime    String  @map("start_time") // "09:00" (HH:mm 24h)
+  endTime      String  @map("end_time") // "17:00"
+  slotDuration Int     @map("slot_duration") // Minutes: 15, 30, 45, 60
+  isActive     Boolean @default(true) @map("is_active")
 
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  property     Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 
-  @@unique([propertyId, dayOfWeek, startTime])  // Prevent overlapping windows
+  @@unique([propertyId, dayOfWeek, startTime]) // Prevent overlapping windows
   @@index([propertyId])
   @@map("property_availabilities")
 }
 
 /// Individual property visit request
 model PropertyVisit {
-  id                String      @id @default(uuid()) @db.Uuid
-  propertyId        String      @map("property_id") @db.Uuid
-  tenantId          String      @map("tenant_id") @db.Uuid
-  status            VisitStatus @default(PENDING)
+  id         String      @id @default(uuid()) @db.Uuid
+  propertyId String      @map("property_id") @db.Uuid
+  tenantId   String      @map("tenant_id") @db.Uuid
+  status     VisitStatus @default(PENDING)
 
   // Visit timing
-  visitDate         DateTime    @map("visit_date") @db.Date
-  startTime         String      @map("start_time")      // "10:00"
-  endTime           String      @map("end_time")        // "10:30"
+  visitDate DateTime @map("visit_date") @db.Date
+  startTime String   @map("start_time") // "10:00"
+  endTime   String   @map("end_time") // "10:30"
 
   // Optional notes
-  tenantNotes       String?     @map("tenant_notes") @db.VarChar(500)
-  landlordNotes     String?     @map("landlord_notes") @db.VarChar(500)
-  rejectionReason   String?     @map("rejection_reason") @db.VarChar(500)
-  cancellationReason String?    @map("cancellation_reason") @db.VarChar(500)
-  cancelledBy       String?     @map("cancelled_by") @db.Uuid  // Who cancelled
+  tenantNotes        String? @map("tenant_notes") @db.VarChar(500)
+  landlordNotes      String? @map("landlord_notes") @db.VarChar(500)
+  rejectionReason    String? @map("rejection_reason") @db.VarChar(500)
+  cancellationReason String? @map("cancellation_reason") @db.VarChar(500)
+  cancelledBy        String? @map("cancelled_by") @db.Uuid // Who cancelled
 
   // Rescheduling chain
-  rescheduledFromId String?     @unique @map("rescheduled_from_id") @db.Uuid
-  rescheduledToId   String?     @unique @map("rescheduled_to_id") @db.Uuid
+  rescheduledFromId String? @unique @map("rescheduled_from_id") @db.Uuid
+  rescheduledToId   String? @unique @map("rescheduled_to_id") @db.Uuid
 
-  createdAt         DateTime    @default(now()) @map("created_at")
-  updatedAt         DateTime    @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  property          Property    @relation(fields: [propertyId], references: [id])
-  tenant            User        @relation("TenantVisits", fields: [tenantId], references: [id])
-  rescheduledFrom   PropertyVisit? @relation("VisitReschedule", fields: [rescheduledFromId], references: [id])
-  rescheduledTo     PropertyVisit? @relation("VisitReschedule")
+  property        Property       @relation(fields: [propertyId], references: [id])
+  tenant          User           @relation("TenantVisits", fields: [tenantId], references: [id])
+  rescheduledFrom PropertyVisit? @relation("VisitReschedule", fields: [rescheduledFromId], references: [id])
+  rescheduledTo   PropertyVisit? @relation("VisitReschedule")
 
   @@index([propertyId])
   @@index([tenantId])
@@ -982,22 +992,22 @@ model PropertyVisit {
 /// Template for notifications (admin-managed)
 /// Each template has both email and push variants
 model NotificationTemplate {
-  id          String   @id @default(uuid()) @db.Uuid
-  code        String   @unique @db.VarChar(50)  // e.g., "APPLICATION_RECEIVED"
-  name        String   @db.VarChar(100)          // Human-readable name
-  description String?  @db.Text                  // Admin notes
+  id          String  @id @default(uuid()) @db.Uuid
+  code        String  @unique @db.VarChar(50) // e.g., "APPLICATION_RECEIVED"
+  name        String  @db.VarChar(100) // Human-readable name
+  description String? @db.Text // Admin notes
 
   // Email template (Markdown converted to HTML at send time)
-  emailSubject  String  @map("email_subject") @db.VarChar(200)
-  emailBody     String  @map("email_body") @db.Text  // Markdown content
+  emailSubject String @map("email_subject") @db.VarChar(200)
+  emailBody    String @map("email_body") @db.Text // Markdown content
 
   // Push notification template
-  pushTitle     String  @map("push_title") @db.VarChar(100)
-  pushBody      String  @map("push_body") @db.VarChar(500)
+  pushTitle String @map("push_title") @db.VarChar(100)
+  pushBody  String @map("push_body") @db.VarChar(500)
 
-  isActive    Boolean  @default(true) @map("is_active")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("notification_templates")
 }
@@ -1011,16 +1021,16 @@ model NotificationLog {
   status       NotificationStatus  @default(PENDING)
 
   // Delivery details
-  recipient    String              @db.VarChar(255)  // Email address or FCM token
-  subject      String?             @db.VarChar(200)  // For email
-  errorMessage String?             @map("error_message") @db.Text
+  recipient    String  @db.VarChar(255) // Email address or FCM token
+  subject      String? @db.VarChar(200) // For email
+  errorMessage String? @map("error_message") @db.Text
 
   // Timing
-  sentAt       DateTime?           @map("sent_at")
-  createdAt    DateTime            @default(now()) @map("created_at")
+  sentAt    DateTime? @map("sent_at")
+  createdAt DateTime  @default(now()) @map("created_at")
 
   // Relations
-  user         User                @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id])
 
   @@index([userId])
   @@index([templateCode])
@@ -1032,33 +1042,36 @@ model NotificationLog {
 /// Configurable subscription plan definition
 /// Admin can modify prices. Different plans for TENANT vs LANDLORD.
 model SubscriptionPlanConfig {
-  id          String        @id @default(uuid()) @db.Uuid
-  planType    PlanType      @map("plan_type")        // TENANT or LANDLORD
-  tier        SubscriptionPlan                        // STARTER, PRO, FLEX
-  name        String        @db.VarChar(100)          // Display name: "Tenant Pro", "Landlord Business"
-  description String?       @db.Text
+  id          String           @id @default(uuid()) @db.Uuid
+  planType    PlanType         @map("plan_type") // TENANT or LANDLORD
+  tier        SubscriptionPlan // STARTER, PRO, FLEX
+  name        String           @db.VarChar(100) // Display name: "Tenant Pro", "Landlord Business"
+  description String?          @db.Text
 
   // Pricing (COP - 0 for free plan)
-  monthlyPrice Int          @default(0) @map("monthly_price")
-  annualPrice  Int          @default(0) @map("annual_price")   // Full year price (discounted)
+  monthlyPrice Int @default(0) @map("monthly_price")
+  annualPrice  Int @default(0) @map("annual_price") // Full year price (discounted)
 
   // Limits
-  maxProperties     Int     @default(1) @map("max_properties")      // -1 = unlimited
-  maxScoringViews   Int     @default(1) @map("max_scoring_views")   // Per month, -1 = unlimited
+  maxProperties     Int     @default(1) @map("max_properties") // -1 = unlimited
+  maxScoringViews   Int     @default(1) @map("max_scoring_views") // Per month, -1 = unlimited
   hasPremiumScoring Boolean @default(false) @map("has_premium_scoring")
   hasApiAccess      Boolean @default(false) @map("has_api_access")
 
   // Micropayment price (for tenant free extra scoring views)
-  scoringViewPrice  Int     @default(0) @map("scoring_view_price")  // COP per extra view
+  scoringViewPrice Int @default(0) @map("scoring_view_price") // COP per extra view
 
-  isActive    Boolean       @default(true) @map("is_active")
-  createdAt   DateTime      @default(now()) @map("created_at")
-  updatedAt   DateTime      @updatedAt @map("updated_at")
+  // Evaluation credit price (for landlord/agent evaluation purchases)
+  evaluationCreditPrice Int @default(0) @map("evaluation_credit_price") // COP per evaluation credit
+
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
   subscriptions Subscription[]
 
-  @@unique([planType, tier])  // One config per role+tier combo
+  @@unique([planType, tier]) // One config per role+tier combo
   @@index([planType])
   @@index([isActive])
   @@map("subscription_plan_configs")
@@ -1066,26 +1079,26 @@ model SubscriptionPlanConfig {
 
 /// User's active subscription
 model Subscription {
-  id        String             @id @default(uuid()) @db.Uuid
-  userId    String             @map("user_id") @db.Uuid
-  planId    String             @map("plan_id") @db.Uuid
-  status    SubscriptionStatus @default(TRIAL)
-  cycle     BillingCycle       @default(MONTHLY)
+  id     String             @id @default(uuid()) @db.Uuid
+  userId String             @map("user_id") @db.Uuid
+  planId String             @map("plan_id") @db.Uuid
+  status SubscriptionStatus @default(TRIAL)
+  cycle  BillingCycle       @default(MONTHLY)
 
   // Period
-  startDate   DateTime         @map("start_date")
-  endDate     DateTime         @map("end_date")
-  trialEndsAt DateTime?        @map("trial_ends_at")  // Set only during trial
+  startDate   DateTime  @map("start_date")
+  endDate     DateTime  @map("end_date")
+  trialEndsAt DateTime? @map("trial_ends_at") // Set only during trial
 
   // Cancellation
-  cancelledAt   DateTime?      @map("cancelled_at")
-  cancelReason  String?        @map("cancel_reason") @db.VarChar(500)
+  cancelledAt  DateTime? @map("cancelled_at")
+  cancelReason String?   @map("cancel_reason") @db.VarChar(500)
 
   // Auto-renew
-  autoRenew   Boolean          @default(true) @map("auto_renew")
+  autoRenew Boolean @default(true) @map("auto_renew")
 
-  createdAt   DateTime         @default(now()) @map("created_at")
-  updatedAt   DateTime         @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
   plan     SubscriptionPlanConfig @relation(fields: [planId], references: [id])
@@ -1099,20 +1112,20 @@ model Subscription {
 
 /// Payment record for a subscription (via PSE mock)
 model SubscriptionPayment {
-  id              String   @id @default(uuid()) @db.Uuid
-  subscriptionId  String   @map("subscription_id") @db.Uuid
-  amount          Int      // COP
-  cycle           BillingCycle
+  id             String       @id @default(uuid()) @db.Uuid
+  subscriptionId String       @map("subscription_id") @db.Uuid
+  amount         Int // COP
+  cycle          BillingCycle
 
   // PSE mock reference
   pseTransactionId String? @map("pse_transaction_id") @db.VarChar(100)
-  status           String  @default("PENDING") @db.VarChar(20)  // PENDING, SUCCESS, FAILED
+  status           String  @default("PENDING") @db.VarChar(20) // PENDING, SUCCESS, FAILED
 
   // Period covered
-  periodStart DateTime    @map("period_start")
-  periodEnd   DateTime    @map("period_end")
+  periodStart DateTime @map("period_start")
+  periodEnd   DateTime @map("period_end")
 
-  createdAt   DateTime    @default(now()) @map("created_at")
+  createdAt DateTime @default(now()) @map("created_at")
 
   // Relations
   subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
@@ -1125,14 +1138,14 @@ model SubscriptionPayment {
 /// Track tenant scoring view usage per month
 /// Enforces monthly limits for free tier tenants
 model ScoringUsage {
-  id        String   @id @default(uuid()) @db.Uuid
-  userId    String   @map("user_id") @db.Uuid
-  month     Int      // 1-12
-  year      Int      // e.g., 2026
-  viewCount Int      @default(0) @map("view_count")  // Number of scoring views used
+  id        String @id @default(uuid()) @db.Uuid
+  userId    String @map("user_id") @db.Uuid
+  month     Int // 1-12
+  year      Int // e.g., 2026
+  viewCount Int    @default(0) @map("view_count") // Number of scoring views used
 
   // Micropayment tracking
-  paidViewCount Int  @default(0) @map("paid_view_count")  // Extra views purchased via micropayment
+  paidViewCount Int @default(0) @map("paid_view_count") // Extra views purchased via micropayment
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -1150,8 +1163,8 @@ model WishlistItem {
   propertyId String   @map("property_id") @db.Uuid
   createdAt  DateTime @default(now()) @map("created_at")
 
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 
   @@unique([userId, propertyId])
   @@index([userId])
@@ -1173,7 +1186,7 @@ model TenantPreference {
   moveInDate             DateTime? @map("move_in_date") @db.Date
   updatedAt              DateTime  @updatedAt @map("updated_at")
 
-  user                   User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("tenant_preferences")
 }
@@ -1181,35 +1194,35 @@ model TenantPreference {
 /// Coupon code for subscription discounts
 /// Admin-managed with validation rules and usage tracking
 model Coupon {
-  id              String     @id @default(uuid()) @db.Uuid
-  code            String     @unique @db.VarChar(50)
-  type            CouponType
+  id   String     @id @default(uuid()) @db.Uuid
+  code String     @unique @db.VarChar(50)
+  type CouponType
 
   // Discount values (only one used based on type)
-  percentageOff   Int?       @map("percentage_off")   // 1-100 for PERCENTAGE
-  amountOff       Int?       @map("amount_off")       // COP for FIXED_AMOUNT
-  freeMonths      Int?       @map("free_months")      // Months for FREE_MONTHS
+  percentageOff Int? @map("percentage_off") // 1-100 for PERCENTAGE
+  amountOff     Int? @map("amount_off") // COP for FIXED_AMOUNT
+  freeMonths    Int? @map("free_months") // Months for FREE_MONTHS
 
   // Validity
-  validFrom       DateTime   @map("valid_from")
-  validUntil      DateTime   @map("valid_until")
+  validFrom  DateTime @map("valid_from")
+  validUntil DateTime @map("valid_until")
 
   // Usage limits
-  maxUses         Int?       @map("max_uses")          // null = unlimited
-  currentUses     Int        @default(0) @map("current_uses")
+  maxUses     Int? @map("max_uses") // null = unlimited
+  currentUses Int  @default(0) @map("current_uses")
 
   // Plan applicability (empty = all plans)
-  applicablePlans String[]   @default([]) @map("applicable_plans")
+  applicablePlans String[] @default([]) @map("applicable_plans")
 
   // Description for admin
-  description     String?    @db.Text
+  description String? @db.Text
 
-  isActive        Boolean    @default(true) @map("is_active")
-  createdAt       DateTime   @default(now()) @map("created_at")
-  updatedAt       DateTime   @updatedAt @map("updated_at")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  usages          CouponUsage[]
+  usages CouponUsage[]
 
   @@index([code])
   @@index([isActive])
@@ -1226,8 +1239,8 @@ model CouponUsage {
   usedAt         DateTime @default(now()) @map("used_at")
 
   // Relations
-  coupon         Coupon   @relation(fields: [couponId], references: [id], onDelete: Cascade)
-  user           User     @relation(fields: [userId], references: [id])
+  coupon Coupon @relation(fields: [couponId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id])
 
   @@unique([couponId, userId])
   @@index([userId])
@@ -1451,30 +1464,30 @@ enum PropietarioDocumentType {
 /// Real estate agency organization
 /// Groups users (agents, admins, accountants) under one entity
 model Agency {
-  id          String  @id @default(uuid()) @db.Uuid
-  name        String  @db.VarChar(200)
-  nit         String? @unique @db.VarChar(20)
-  address     String? @db.VarChar(300)
-  city        String? @db.VarChar(50)
-  phone       String? @db.VarChar(20)
-  email       String? @db.VarChar(255)
-  logoUrl     String? @map("logo_url") @db.VarChar(500)
+  id      String  @id @default(uuid()) @db.Uuid
+  name    String  @db.VarChar(200)
+  nit     String? @unique @db.VarChar(20)
+  address String? @db.VarChar(300)
+  city    String? @db.VarChar(50)
+  phone   String? @db.VarChar(20)
+  email   String? @db.VarChar(255)
+  logoUrl String? @map("logo_url") @db.VarChar(500)
 
   // Financial defaults
-  defaultCommissionPercent Float   @default(10) @map("default_commission_percent")
-  defaultLateFeePercent    Float   @default(2) @map("default_late_fee_percent")
-  paymentDueDay            Int     @default(5) @map("payment_due_day")     // Day of month
-  disbursementDay          Int     @default(15) @map("disbursement_day")   // Day of month
+  defaultCommissionPercent Float @default(10) @map("default_commission_percent")
+  defaultLateFeePercent    Float @default(2) @map("default_late_fee_percent")
+  paymentDueDay            Int   @default(5) @map("payment_due_day") // Day of month
+  disbursementDay          Int   @default(15) @map("disbursement_day") // Day of month
 
   // Reminder config (JSON arrays of days)
   reminderDaysBefore Json @default("[3, 1]") @map("reminder_days_before")
   reminderDaysAfter  Json @default("[1, 3, 7, 15]") @map("reminder_days_after")
 
   // Business profile (from onboarding)
-  portfolioSize    String? @map("portfolio_size") @db.VarChar(20)
-  yearsInBusiness  Int?    @map("years_in_business")
-  services         Json    @default("[]")
-  website          String? @db.Text
+  portfolioSize   String? @map("portfolio_size") @db.VarChar(20)
+  yearsInBusiness Int?    @map("years_in_business")
+  services        Json    @default("[]")
+  website         String? @db.Text
 
   // Branding
   branding Json @default("{}")
@@ -1488,18 +1501,19 @@ model Agency {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  members            AgencyMember[]
-  propietarios       Propietario[]
-  consignaciones     Consignacion[]
-  pipelineItems      PipelineItem[]
-  cobros             Cobro[]
-  dispersiones       Dispersion[]
-  mantenimientos     SolicitudMantenimiento[]
-  renovaciones       Renovacion[]
-  actas              ActaEntrega[]
-  documentTemplates  AgencyDocumentTemplate[]
-  documents          AgencyDocument[]
-  integrations       AgencyIntegration[]
+  members           AgencyMember[]
+  propietarios      Propietario[]
+  consignaciones    Consignacion[]
+  pipelineItems     PipelineItem[]
+  cobros            Cobro[]
+  dispersiones      Dispersion[]
+  mantenimientos    SolicitudMantenimiento[]
+  renovaciones      Renovacion[]
+  actas             ActaEntrega[]
+  documentTemplates AgencyDocumentTemplate[]
+  documents         AgencyDocument[]
+  integrations      AgencyIntegration[]
+  canonTrackings    CanonTracking[]
 
   @@map("agencies")
 }
@@ -1511,6 +1525,10 @@ model AgencyMember {
   userId   String             @map("user_id") @db.Uuid
   role     AgencyMemberRole   @default(AGENTE)
   status   AgencyMemberStatus @default(ACTIVE)
+
+  // Display title/position (free-form text, independent of system role)
+  // e.g. "Administrador General", "Agente Senior", "Contadora Principal"
+  position String? @db.VarChar(100)
 
   // Agent-specific fields (only when role = AGENTE)
   agentRole       AgentRole?           @map("agent_role")
@@ -1544,23 +1562,23 @@ model AgencyMember {
 /// Property owner - client of the agency
 /// Not necessarily a platform User; managed by agency
 model Propietario {
-  id               String                  @id @default(uuid()) @db.Uuid
-  agencyId         String                  @map("agency_id") @db.Uuid
-  name             String                  @db.VarChar(200)
-  email            String?                 @db.VarChar(255)
-  phone            String?                 @db.VarChar(20)
-  documentType     PropietarioDocumentType @default(CC) @map("document_type")
-  documentNumber   String                  @map("document_number") @db.VarChar(30)
-  address          String?                 @db.VarChar(300)
-  city             String?                 @db.VarChar(50)
+  id             String                  @id @default(uuid()) @db.Uuid
+  agencyId       String                  @map("agency_id") @db.Uuid
+  name           String                  @db.VarChar(200)
+  email          String?                 @db.VarChar(255)
+  phone          String?                 @db.VarChar(20)
+  documentType   PropietarioDocumentType @default(CC) @map("document_type")
+  documentNumber String                  @map("document_number") @db.VarChar(30)
+  address        String?                 @db.VarChar(300)
+  city           String?                 @db.VarChar(50)
 
   // Bank account for disbursements
-  bankName             String?  @map("bank_name") @db.VarChar(100)
-  bankAccountType      String?  @map("bank_account_type") @db.VarChar(20) // savings | checking
-  bankAccountNumber    String?  @map("bank_account_number") @db.VarChar(50)
-  bankAccountHolder    String?  @map("bank_account_holder") @db.VarChar(200)
+  bankName          String? @map("bank_name") @db.VarChar(100)
+  bankAccountType   String? @map("bank_account_type") @db.VarChar(20) // savings | checking
+  bankAccountNumber String? @map("bank_account_number") @db.VarChar(50)
+  bankAccountHolder String? @map("bank_account_holder") @db.VarChar(200)
 
-  notes String? @db.Text
+  notes String?  @db.Text
   tags  String[] @default([])
 
   createdAt DateTime @default(now()) @map("created_at")
@@ -1582,39 +1600,39 @@ model Propietario {
 /// Property consignment agreement
 /// Wraps an existing Property with agency-specific data
 model Consignacion {
-  id             String                    @id @default(uuid()) @db.Uuid
-  agencyId       String                    @map("agency_id") @db.Uuid
-  propertyId     String?                   @map("property_id") @db.Uuid
-  propietarioId  String                    @map("propietario_id") @db.Uuid
-  agenteUserId   String?                   @map("agente_user_id") @db.Uuid // User.id of assigned agent
+  id            String  @id @default(uuid()) @db.Uuid
+  agencyId      String  @map("agency_id") @db.Uuid
+  propertyId    String? @map("property_id") @db.Uuid
+  propietarioId String  @map("propietario_id") @db.Uuid
+  agenteUserId  String? @map("agente_user_id") @db.Uuid // User.id of assigned agent
 
   // Property info (denormalized for agency dashboard)
-  propertyTitle   String  @map("property_title") @db.VarChar(200)
-  propertyAddress String  @map("property_address") @db.VarChar(300)
-  propertyCity    String  @map("property_city") @db.VarChar(50)
-  propertyZone    String? @map("property_zone") @db.VarChar(100)
-  propertyType    ConsignacionPropertyType @default(APARTMENT) @map("property_type")
-  propertyThumbnail String? @map("property_thumbnail") @db.VarChar(500)
-  monthlyRent     Int     @map("monthly_rent")
-  adminFee        Int     @default(0) @map("admin_fee")
+  propertyTitle     String                   @map("property_title") @db.VarChar(200)
+  propertyAddress   String                   @map("property_address") @db.VarChar(300)
+  propertyCity      String                   @map("property_city") @db.VarChar(50)
+  propertyZone      String?                  @map("property_zone") @db.VarChar(100)
+  propertyType      ConsignacionPropertyType @default(APARTMENT) @map("property_type")
+  propertyThumbnail String?                  @map("property_thumbnail") @db.VarChar(500)
+  monthlyRent       Int                      @map("monthly_rent")
+  adminFee          Int                      @default(0) @map("admin_fee")
 
   // Consignment terms
-  commissionPercent Float    @map("commission_percent")
-  contractDate      DateTime @map("contract_date") @db.Date
+  commissionPercent Float     @map("commission_percent")
+  contractDate      DateTime  @map("contract_date") @db.Date
   contractEndDate   DateTime? @map("contract_end_date") @db.Date
-  minimumTerm       Int?     @map("minimum_term") // months
+  minimumTerm       Int?      @map("minimum_term") // months
 
   // Status
   status       ConsignacionStatus       @default(ACTIVE)
   availability ConsignacionAvailability @default(AVAILABLE)
 
   // Current lease tracking (denormalized)
-  currentLeaseId   String? @map("current_lease_id") @db.Uuid
-  currentTenantName String? @map("current_tenant_name") @db.VarChar(200)
-  leaseEndDate     DateTime? @map("lease_end_date") @db.Date
+  currentLeaseId    String?   @map("current_lease_id") @db.Uuid
+  currentTenantName String?   @map("current_tenant_name") @db.VarChar(200)
+  leaseEndDate      DateTime? @map("lease_end_date") @db.Date
 
   // Documents
-  consignmentContractUrl String? @map("consignment_contract_url") @db.VarChar(500)
+  consignmentContractUrl String?  @map("consignment_contract_url") @db.VarChar(500)
   photosUrls             String[] @default([]) @map("photos_urls")
 
   createdAt DateTime @default(now()) @map("created_at")
@@ -1629,6 +1647,7 @@ model Consignacion {
   renovaciones   Renovacion[]
   actas          ActaEntrega[]
   documents      AgencyDocument[]
+  canonTrackings CanonTracking[]
 
   @@index([agencyId])
   @@index([propietarioId])
@@ -1640,10 +1659,10 @@ model Consignacion {
 
 /// Pipeline item tracking a prospect through the rental funnel
 model PipelineItem {
-  id              String  @id @default(uuid()) @db.Uuid
-  agencyId        String  @map("agency_id") @db.Uuid
-  consignacionId  String  @map("consignacion_id") @db.Uuid
-  agenteUserId    String? @map("agente_user_id") @db.Uuid
+  id             String  @id @default(uuid()) @db.Uuid
+  agencyId       String  @map("agency_id") @db.Uuid
+  consignacionId String  @map("consignacion_id") @db.Uuid
+  agenteUserId   String? @map("agente_user_id") @db.Uuid
 
   // Candidate info (denormalized)
   candidateName   String  @map("candidate_name") @db.VarChar(200)
@@ -1654,9 +1673,9 @@ model PipelineItem {
   riskLevel       String? @map("risk_level") @db.VarChar(5)
 
   // Pipeline stage
-  stage           PipelineStage @default(LEAD)
-  enteredStageAt  DateTime      @default(now()) @map("entered_stage_at")
-  daysInStage     Int           @default(0) @map("days_in_stage")
+  stage          PipelineStage @default(LEAD)
+  enteredStageAt DateTime      @default(now()) @map("entered_stage_at")
+  daysInStage    Int           @default(0) @map("days_in_stage")
 
   // Activity
   nextAction      String?   @map("next_action") @db.VarChar(500)
@@ -1684,12 +1703,12 @@ model PipelineItem {
 
 /// Monthly rent collection record
 model Cobro {
-  id              String @id @default(uuid()) @db.Uuid
-  agencyId        String @map("agency_id") @db.Uuid
-  consignacionId  String @map("consignacion_id") @db.Uuid
-  leaseId         String? @map("lease_id") @db.Uuid
-  propietarioId   String @map("propietario_id") @db.Uuid
-  agenteUserId    String? @map("agente_user_id") @db.Uuid
+  id             String  @id @default(uuid()) @db.Uuid
+  agencyId       String  @map("agency_id") @db.Uuid
+  consignacionId String  @map("consignacion_id") @db.Uuid
+  leaseId        String? @map("lease_id") @db.Uuid
+  propietarioId  String  @map("propietario_id") @db.Uuid
+  agenteUserId   String? @map("agente_user_id") @db.Uuid
 
   // Tenant info (denormalized)
   tenantName  String? @map("tenant_name") @db.VarChar(200)
@@ -1700,12 +1719,12 @@ model Cobro {
   propertyTitle String @map("property_title") @db.VarChar(200)
 
   // Amounts (COP)
-  month          String @db.VarChar(7) // '2026-02'
-  rentAmount     Int    @map("rent_amount")
-  adminAmount    Int    @default(0) @map("admin_amount")
-  totalAmount    Int    @map("total_amount")
-  lateFee        Int    @default(0) @map("late_fee")
-  totalWithFees  Int    @map("total_with_fees")
+  month         String @db.VarChar(7) // '2026-02'
+  rentAmount    Int    @map("rent_amount")
+  adminAmount   Int    @default(0) @map("admin_amount")
+  totalAmount   Int    @map("total_amount")
+  lateFee       Int    @default(0) @map("late_fee")
+  totalWithFees Int    @map("total_with_fees")
 
   // Payment tracking
   status           CobroStatus @default(COBRO_PENDING)
@@ -1717,16 +1736,16 @@ model Cobro {
   paymentReference String?     @map("payment_reference") @db.VarChar(100)
 
   // Reminders
-  daysLate         Int @default(0) @map("days_late")
-  remindersSent    Int @default(0) @map("reminders_sent")
+  daysLate         Int       @default(0) @map("days_late")
+  remindersSent    Int       @default(0) @map("reminders_sent")
   lastReminderDate DateTime? @map("last_reminder_date")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  agency        Agency         @relation(fields: [agencyId], references: [id], onDelete: Cascade)
-  consignacion  Consignacion   @relation(fields: [consignacionId], references: [id])
+  agency          Agency           @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  consignacion    Consignacion     @relation(fields: [consignacionId], references: [id])
   dispersionItems DispersionItem[]
 
   @@unique([consignacionId, month])
@@ -1740,27 +1759,27 @@ model Cobro {
 
 /// Owner disbursement - aggregates cobros for a month per propietario
 model Dispersion {
-  id              String @id @default(uuid()) @db.Uuid
-  agencyId        String @map("agency_id") @db.Uuid
-  propietarioId   String @map("propietario_id") @db.Uuid
+  id            String @id @default(uuid()) @db.Uuid
+  agencyId      String @map("agency_id") @db.Uuid
+  propietarioId String @map("propietario_id") @db.Uuid
 
   // Propietario info (denormalized)
-  propietarioName        String @map("propietario_name") @db.VarChar(200)
+  propietarioName        String  @map("propietario_name") @db.VarChar(200)
   propietarioBankName    String? @map("propietario_bank_name") @db.VarChar(100)
   propietarioBankAccount String? @map("propietario_bank_account") @db.VarChar(50)
 
-  month              String @db.VarChar(7) // '2026-02'
-  totalCollected     Int    @map("total_collected")
-  totalCommission    Int    @map("total_commission")
-  netToPropietario   Int    @map("net_to_propietario")
+  month            String @db.VarChar(7) // '2026-02'
+  totalCollected   Int    @map("total_collected")
+  totalCommission  Int    @map("total_commission")
+  netToPropietario Int    @map("net_to_propietario")
 
   // Status
-  status             DispersionStatus @default(DISP_PENDING)
-  approvedBy         String?          @map("approved_by") @db.Uuid
-  approvedAt         DateTime?        @map("approved_at")
-  processedAt        DateTime?        @map("processed_at")
-  transferReference  String?          @map("transfer_reference") @db.VarChar(100)
-  failureReason      String?          @map("failure_reason") @db.Text
+  status            DispersionStatus @default(DISP_PENDING)
+  approvedBy        String?          @map("approved_by") @db.Uuid
+  approvedAt        DateTime?        @map("approved_at")
+  processedAt       DateTime?        @map("processed_at")
+  transferReference String?          @map("transfer_reference") @db.VarChar(100)
+  failureReason     String?          @map("failure_reason") @db.Text
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -1780,14 +1799,14 @@ model Dispersion {
 
 /// Individual item in a dispersion (one per cobro)
 model DispersionItem {
-  id              String @id @default(uuid()) @db.Uuid
-  dispersionId    String @map("dispersion_id") @db.Uuid
-  cobroId         String @map("cobro_id") @db.Uuid
-  propertyTitle   String @map("property_title") @db.VarChar(200)
-  rentCollected   Int    @map("rent_collected")
-  commissionPercent Float @map("commission_percent")
-  commissionAmount Int   @map("commission_amount")
-  netAmount       Int    @map("net_amount")
+  id                String @id @default(uuid()) @db.Uuid
+  dispersionId      String @map("dispersion_id") @db.Uuid
+  cobroId           String @map("cobro_id") @db.Uuid
+  propertyTitle     String @map("property_title") @db.VarChar(200)
+  rentCollected     Int    @map("rent_collected")
+  commissionPercent Float  @map("commission_percent")
+  commissionAmount  Int    @map("commission_amount")
+  netAmount         Int    @map("net_amount")
 
   // Relations
   dispersion Dispersion @relation(fields: [dispersionId], references: [id], onDelete: Cascade)
@@ -1800,16 +1819,16 @@ model DispersionItem {
 
 /// Maintenance request for a consigned property
 model SolicitudMantenimiento {
-  id              String  @id @default(uuid()) @db.Uuid
-  agencyId        String  @map("agency_id") @db.Uuid
-  consignacionId  String  @map("consignacion_id") @db.Uuid
-  propietarioId   String  @map("propietario_id") @db.Uuid
-  agenteUserId    String? @map("agente_user_id") @db.Uuid
+  id             String  @id @default(uuid()) @db.Uuid
+  agencyId       String  @map("agency_id") @db.Uuid
+  consignacionId String  @map("consignacion_id") @db.Uuid
+  propietarioId  String  @map("propietario_id") @db.Uuid
+  agenteUserId   String? @map("agente_user_id") @db.Uuid
 
   // Denormalized info
-  propertyTitle    String @map("property_title") @db.VarChar(200)
-  tenantName       String? @map("tenant_name") @db.VarChar(200)
-  propietarioName  String @map("propietario_name") @db.VarChar(200)
+  propertyTitle   String  @map("property_title") @db.VarChar(200)
+  tenantName      String? @map("tenant_name") @db.VarChar(200)
+  propietarioName String  @map("propietario_name") @db.VarChar(200)
 
   // Request details
   type        MantenimientoType
@@ -1825,17 +1844,17 @@ model SolicitudMantenimiento {
   paidBy          MantenimientoPaidBy @default(OWNER)
 
   // Completion
-  completedAt       DateTime? @map("completed_at")
-  completionNotes   String?   @map("completion_notes") @db.Text
-  completionPhotoUrls String[] @default([]) @map("completion_photo_urls")
+  completedAt         DateTime? @map("completed_at")
+  completionNotes     String?   @map("completion_notes") @db.Text
+  completionPhotoUrls String[]  @default([]) @map("completion_photo_urls")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  agency       Agency              @relation(fields: [agencyId], references: [id], onDelete: Cascade)
-  consignacion Consignacion        @relation(fields: [consignacionId], references: [id])
-  propietario  Propietario         @relation(fields: [propietarioId], references: [id])
+  agency       Agency               @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  consignacion Consignacion         @relation(fields: [consignacionId], references: [id])
+  propietario  Propietario          @relation(fields: [propietarioId], references: [id])
   quotes       MantenimientoQuote[]
 
   @@index([agencyId])
@@ -1847,13 +1866,13 @@ model SolicitudMantenimiento {
 
 /// Vendor quote for a maintenance request
 model MantenimientoQuote {
-  id                String @id @default(uuid()) @db.Uuid
-  solicitudId       String @map("solicitud_id") @db.Uuid
-  providerName      String @map("provider_name") @db.VarChar(200)
-  providerPhone     String? @map("provider_phone") @db.VarChar(20)
-  amount            Int
-  description       String @db.Text
-  estimatedDays     Int    @map("estimated_days")
+  id            String  @id @default(uuid()) @db.Uuid
+  solicitudId   String  @map("solicitud_id") @db.Uuid
+  providerName  String  @map("provider_name") @db.VarChar(200)
+  providerPhone String? @map("provider_phone") @db.VarChar(20)
+  amount        Int
+  description   String  @db.Text
+  estimatedDays Int     @map("estimated_days")
 
   createdAt DateTime @default(now()) @map("created_at")
 
@@ -1866,41 +1885,41 @@ model MantenimientoQuote {
 
 /// Lease renewal tracking
 model Renovacion {
-  id              String  @id @default(uuid()) @db.Uuid
-  agencyId        String  @map("agency_id") @db.Uuid
-  consignacionId  String  @map("consignacion_id") @db.Uuid
-  leaseId         String? @map("lease_id") @db.Uuid
-  propietarioId   String  @map("propietario_id") @db.Uuid
-  agenteUserId    String? @map("agente_user_id") @db.Uuid
+  id             String  @id @default(uuid()) @db.Uuid
+  agencyId       String  @map("agency_id") @db.Uuid
+  consignacionId String  @map("consignacion_id") @db.Uuid
+  leaseId        String? @map("lease_id") @db.Uuid
+  propietarioId  String  @map("propietario_id") @db.Uuid
+  agenteUserId   String? @map("agente_user_id") @db.Uuid
 
   // Denormalized info
-  propertyTitle    String @map("property_title") @db.VarChar(200)
-  propertyAddress  String @map("property_address") @db.VarChar(300)
-  tenantName       String? @map("tenant_name") @db.VarChar(200)
-  propietarioName  String @map("propietario_name") @db.VarChar(200)
+  propertyTitle   String  @map("property_title") @db.VarChar(200)
+  propertyAddress String  @map("property_address") @db.VarChar(300)
+  tenantName      String? @map("tenant_name") @db.VarChar(200)
+  propietarioName String  @map("propietario_name") @db.VarChar(200)
 
   // Lease terms
-  currentRent      Int      @map("current_rent")
-  leaseStartDate   DateTime @map("lease_start_date") @db.Date
-  leaseEndDate     DateTime @map("lease_end_date") @db.Date
-  daysUntilExpiry  Int      @map("days_until_expiry")
+  currentRent     Int      @map("current_rent")
+  leaseStartDate  DateTime @map("lease_start_date") @db.Date
+  leaseEndDate    DateTime @map("lease_end_date") @db.Date
+  daysUntilExpiry Int      @map("days_until_expiry")
 
   // IPC calculation
-  ipcRate          Float?   @map("ipc_rate")
-  proposedRent     Int?     @map("proposed_rent")
-  negotiatedRent   Int?     @map("negotiated_rent")
+  ipcRate        Float? @map("ipc_rate")
+  proposedRent   Int?   @map("proposed_rent")
+  negotiatedRent Int?   @map("negotiated_rent")
 
   // Workflow
-  status           RenovacionStatus @default(RENOV_PENDING)
-  notifiedAt       DateTime?        @map("notified_at")
-  approvedAt       DateTime?        @map("approved_at")
-  signedAt         DateTime?        @map("signed_at")
-  completedAt      DateTime?        @map("completed_at")
+  status      RenovacionStatus @default(RENOV_PENDING)
+  notifiedAt  DateTime?        @map("notified_at")
+  approvedAt  DateTime?        @map("approved_at")
+  signedAt    DateTime?        @map("signed_at")
+  completedAt DateTime?        @map("completed_at")
 
   // New lease reference
-  newLeaseId       String?   @map("new_lease_id") @db.Uuid
+  newLeaseId        String?   @map("new_lease_id") @db.Uuid
   newLeaseStartDate DateTime? @map("new_lease_start_date") @db.Date
-  newLeaseEndDate  DateTime? @map("new_lease_end_date") @db.Date
+  newLeaseEndDate   DateTime? @map("new_lease_end_date") @db.Date
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -1920,11 +1939,11 @@ model Renovacion {
 
 /// Audit trail entry for renewal process
 model RenovacionHistory {
-  id            String @id @default(uuid()) @db.Uuid
-  renovacionId  String @map("renovacion_id") @db.Uuid
-  action        String @db.VarChar(100)
-  description   String @db.Text
-  actorName     String? @map("actor_name") @db.VarChar(200)
+  id           String  @id @default(uuid()) @db.Uuid
+  renovacionId String  @map("renovacion_id") @db.Uuid
+  action       String  @db.VarChar(100)
+  description  String  @db.Text
+  actorName    String? @map("actor_name") @db.VarChar(200)
 
   createdAt DateTime @default(now()) @map("created_at")
 
@@ -1937,13 +1956,13 @@ model RenovacionHistory {
 
 /// Property delivery or return act
 model ActaEntrega {
-  id              String   @id @default(uuid()) @db.Uuid
-  agencyId        String   @map("agency_id") @db.Uuid
-  type            ActaType
-  consignacionId  String?  @map("consignacion_id") @db.Uuid
-  leaseId         String?  @map("lease_id") @db.Uuid
-  propietarioId   String   @map("propietario_id") @db.Uuid
-  agenteUserId    String?  @map("agente_user_id") @db.Uuid
+  id             String   @id @default(uuid()) @db.Uuid
+  agencyId       String   @map("agency_id") @db.Uuid
+  type           ActaType
+  consignacionId String?  @map("consignacion_id") @db.Uuid
+  leaseId        String?  @map("lease_id") @db.Uuid
+  propietarioId  String   @map("propietario_id") @db.Uuid
+  agenteUserId   String?  @map("agente_user_id") @db.Uuid
 
   // Denormalized
   propertyTitle   String  @map("property_title") @db.VarChar(200)
@@ -1952,8 +1971,8 @@ model ActaEntrega {
   propietarioName String  @map("propietario_name") @db.VarChar(200)
 
   // Inventory (JSON arrays for flexibility)
-  rooms    Json @default("[]") // RoomType[]
-  items    Json @default("[]") // ActaInventoryItem[]
+  rooms Json @default("[]") // RoomType[]
+  items Json @default("[]") // ActaInventoryItem[]
 
   // Meter readings (JSON)
   meterReadings Json @default("[]") @map("meter_readings")
@@ -1962,13 +1981,13 @@ model ActaEntrega {
   keysDelivered Json @default("[]") @map("keys_delivered")
 
   // General condition
-  generalCondition     ItemCondition @default(GOOD) @map("general_condition")
-  generalObservations  String?       @map("general_observations") @db.Text
+  generalCondition    ItemCondition @default(GOOD) @map("general_condition")
+  generalObservations String?       @map("general_observations") @db.Text
 
   // For return acts - deposit handling
-  depositAmount    Int? @map("deposit_amount")
-  deductions       Json @default("[]") // ActaDeduction[]
-  depositToReturn  Int? @map("deposit_to_return")
+  depositAmount   Int? @map("deposit_amount")
+  deductions      Json @default("[]") // ActaDeduction[]
+  depositToReturn Int? @map("deposit_to_return")
 
   // Photo documentation
   photoUrls String[] @default([]) @map("photo_urls")
@@ -1993,14 +2012,14 @@ model ActaEntrega {
 
 /// Document template for agency document generation
 model AgencyDocumentTemplate {
-  id          String                   @id @default(uuid()) @db.Uuid
-  agencyId    String                   @map("agency_id") @db.Uuid
-  name        String                   @db.VarChar(200)
-  category    DocumentTemplateCategory
-  version     String                   @default("1.0") @db.VarChar(20)
-  content     String                   @db.Text // Handlebars template
-  variables   String[]                 @default([])
-  isActive    Boolean                  @default(true) @map("is_active")
+  id        String                   @id @default(uuid()) @db.Uuid
+  agencyId  String                   @map("agency_id") @db.Uuid
+  name      String                   @db.VarChar(200)
+  category  DocumentTemplateCategory
+  version   String                   @default("1.0") @db.VarChar(20)
+  content   String                   @db.Text // Handlebars template
+  variables String[]                 @default([])
+  isActive  Boolean                  @default(true) @map("is_active")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -2016,15 +2035,15 @@ model AgencyDocumentTemplate {
 
 /// Generated document from a template
 model AgencyDocument {
-  id              String              @id @default(uuid()) @db.Uuid
-  agencyId        String              @map("agency_id") @db.Uuid
-  templateId      String?             @map("template_id") @db.Uuid
-  consignacionId  String?             @map("consignacion_id") @db.Uuid
+  id             String  @id @default(uuid()) @db.Uuid
+  agencyId       String  @map("agency_id") @db.Uuid
+  templateId     String? @map("template_id") @db.Uuid
+  consignacionId String? @map("consignacion_id") @db.Uuid
 
-  name            String              @db.VarChar(200)
-  content         String?             @db.Text // Rendered HTML
-  filePath        String?             @map("file_path") @db.VarChar(500)
-  status          AgencyDocumentStatus @default(DOC_DRAFT)
+  name     String               @db.VarChar(200)
+  content  String?              @db.Text // Rendered HTML
+  filePath String?              @map("file_path") @db.VarChar(500)
+  status   AgencyDocumentStatus @default(DOC_DRAFT)
 
   // Signature tracking (JSON)
   signatures Json @default("[]")
@@ -2078,8 +2097,8 @@ model DocumentAnalysisResult {
   extractedData Json @map("extracted_data")
 
   // Scoring and evaluation
-  confidence    Float  @default(0) // 0.0-1.0
-  scoreFinal    Int?   @map("score_final") // 0-100
+  confidence    Float   @default(0) // 0.0-1.0
+  scoreFinal    Int?    @map("score_final") // 0-100
   nivelRiesgo   String? @map("nivel_riesgo") @db.VarChar(10) // BAJO|MEDIO|ALTO
   justificacion String? @db.Text
   recomendacion String? @db.Text
@@ -2093,11 +2112,11 @@ model DocumentAnalysisResult {
   ocrConfidence Float?  @map("ocr_confidence")
 
   // AI metadata
-  modelUsed       String @map("model_used") @db.VarChar(50)
-  tokensUsed      Int?   @map("tokens_used")
-  processingTimeMs Int?  @map("processing_time_ms")
+  modelUsed        String @map("model_used") @db.VarChar(50)
+  tokensUsed       Int?   @map("tokens_used")
+  processingTimeMs Int?   @map("processing_time_ms")
 
-  status       String @default("PENDING") @db.VarChar(20) // PENDING|PROCESSING|COMPLETED|FAILED
+  status       String  @default("PENDING") @db.VarChar(20) // PENDING|PROCESSING|COMPLETED|FAILED
   errorMessage String? @map("error_message") @db.Text
 
   createdAt DateTime @default(now()) @map("created_at")
@@ -2121,8 +2140,8 @@ model ActivityLog {
   metadata     Json         @default("{}")
   createdAt    DateTime     @default(now()) @map("created_at")
 
-  user         User         @relation("UserActivities", fields: [userId], references: [id], onDelete: Cascade)
-  actor        User         @relation("ActorActivities", fields: [actorId], references: [id])
+  user  User @relation("UserActivities", fields: [userId], references: [id], onDelete: Cascade)
+  actor User @relation("ActorActivities", fields: [actorId], references: [id])
 
   @@index([userId, createdAt(sort: Desc)])
   @@index([resourceType, resourceId])
@@ -2137,8 +2156,8 @@ model ActivityLog {
 /// Immutable snapshot of features at prediction time
 /// Decoupled from mutable Application data to ensure reproducibility
 model ApplicationFeatureSnapshot {
-  id            String   @id @default(uuid()) @db.Uuid
-  applicationId String   @unique @map("application_id") @db.Uuid
+  id            String @id @default(uuid()) @db.Uuid
+  applicationId String @unique @map("application_id") @db.Uuid
 
   // Complete feature vector as JSON (ScoringFeatures interface)
   features Json
@@ -2165,9 +2184,9 @@ model PredictionLog {
   applicationId String @unique @map("application_id") @db.Uuid
 
   // Prediction at scoring time
-  predictedScore Int       @map("predicted_score") // 0-100
-  predictedLevel RiskLevel @map("predicted_level") // A, B, C, D
-  algorithmVersion String @default("2.1") @map("algorithm_version")
+  predictedScore   Int       @map("predicted_score") // 0-100
+  predictedLevel   RiskLevel @map("predicted_level") // A, B, C, D
+  algorithmVersion String    @default("2.1") @map("algorithm_version")
 
   // Actual outcome (updated later)
   actualOutcome     String?   @map("actual_outcome") @db.VarChar(30) // PredictionOutcome enum value
@@ -2193,4 +2212,156 @@ model PredictionLog {
   @@index([actualOutcome])
   @@index([createdAt])
   @@map("prediction_logs")
+}
+
+// ===== Agent Credits System =====
+
+enum AgentCreditTransactionType {
+  PURCHASE
+  DEDUCTION
+}
+
+/// Current credit balance for a landlord or agent user
+/// One row per user - created on first purchase, updated atomically
+model AgentCredit {
+  id      String @id @default(uuid()) @db.Uuid
+  userId  String @unique @map("user_id") @db.Uuid
+  balance Int    @default(0)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("agent_credits")
+}
+
+/// Ledger of all credit movements (purchases and deductions)
+/// Append-only - never updated after creation
+model AgentCreditTransaction {
+  id           String                     @id @default(uuid()) @db.Uuid
+  userId       String                     @map("user_id") @db.Uuid
+  type         AgentCreditTransactionType
+  amount       Int
+  balanceAfter Int                        @map("balance_after")
+
+  // For purchases: PSE reference
+  pseTransactionId String? @map("pse_transaction_id") @db.VarChar(100)
+  amountPaidCop    Int?    @map("amount_paid_cop")
+
+  // For deductions: application reference
+  applicationId String? @map("application_id") @db.Uuid
+
+  // Description for history display
+  description String @db.VarChar(255)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations - only to User, NOT to AgentCredit (avoids dual FK on userId)
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([userId])
+  @@map("agent_credit_transactions")
+}
+
+// ===== Unified Evaluations (Phase 27) =====
+
+enum EvaluationStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+/// Result of an agent microservice evaluation run for an application
+model EvaluationResult {
+  id            String           @id @default(uuid()) @db.Uuid
+  applicationId String           @unique @map("application_id") @db.Uuid
+  requestedBy   String           @map("requested_by") @db.Uuid
+  runId         String           @map("run_id") @db.VarChar(100)
+  status        EvaluationStatus @default(PENDING)
+  result        Json?
+  error         String?          @db.Text
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  application     Application            @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  requestedByUser User                   @relation("EvaluationRequester", fields: [requestedBy], references: [id])
+  transaction     EvaluationTransaction?
+
+  @@index([applicationId])
+  @@index([requestedBy])
+  @@map("evaluation_results")
+}
+
+/// Financial record of an evaluation request (per-tier pricing)
+model EvaluationTransaction {
+  id              String @id @default(uuid()) @db.Uuid
+  evaluationId    String @unique @map("evaluation_id") @db.Uuid
+  userId          String @map("user_id") @db.Uuid
+  tier            String @db.VarChar(20)
+  amountPaidCop   Int    @map("amount_paid_cop")
+  creditsDeducted Int    @map("credits_deducted")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  evaluation EvaluationResult @relation(fields: [evaluationId], references: [id])
+  user       User             @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("evaluation_transactions")
+}
+
+/// Monthly evaluation usage counter for PRO tier limit enforcement
+model EvaluationUsage {
+  id     String @id @default(uuid()) @db.Uuid
+  userId String @map("user_id") @db.Uuid
+  month  Int
+  year   Int
+  count  Int    @default(0)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([userId, month, year], name: "userId_month_year_eval")
+  @@index([userId])
+  @@map("evaluation_usage")
+}
+
+// ===== FLEX Billing (Phase 28) =====
+
+/// Tracks rent canons administered by agencies for Leasify FLEX billing (1% fee)
+/// Auto-populated on PSE payments; manually reported for other methods
+model CanonTracking {
+  id             String @id @default(uuid()) @db.Uuid
+  agencyId       String @map("agency_id") @db.Uuid
+  consignacionId String @map("consignacion_id") @db.Uuid
+
+  canonAmount Int    @map("canon_amount")
+  leasifyFee  Int    @map("leasify_fee")
+  month       String @db.VarChar(7)
+
+  source           String  @db.VarChar(20)
+  pseTransactionId String? @map("pse_transaction_id") @db.VarChar(100)
+  paymentReference String? @map("payment_reference") @db.VarChar(100)
+  reportedByUserId String? @map("reported_by_user_id") @db.Uuid
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  agency       Agency       @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  consignacion Consignacion @relation(fields: [consignacionId], references: [id])
+
+  @@unique([consignacionId, month])
+  @@index([agencyId])
+  @@index([agencyId, month])
+  @@map("canon_tracking")
 }

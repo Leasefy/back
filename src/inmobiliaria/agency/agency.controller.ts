@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Put,
+  Patch,
   Delete,
   Body,
   Param,
@@ -32,6 +33,7 @@ import {
   UpdateAgencyDto,
   InviteMemberDto,
   UpdateMemberRoleDto,
+  UpdateMemberProfileDto,
   UpdatePermissionsDto,
   InvitationInfoResponseDto,
 } from './dto/index.js';
@@ -229,6 +231,26 @@ export class AgencyController {
     }
     this.ensureAdmin(agency.memberRole as AgencyMemberRole);
     return this.agencyService.updateMemberRole(agency.id, memberId, dto);
+  }
+
+  /**
+   * PATCH /inmobiliaria/agency/members/:memberId/profile
+   * Update a member's display profile (position/title). Admin only.
+   */
+  @Patch('members/:memberId/profile')
+  @ApiOperation({ summary: 'Update member profile/title (admin only)' })
+  @ApiOkResponse({ description: 'Member profile updated' })
+  async updateMemberProfile(
+    @CurrentUser('id') userId: string,
+    @Param('memberId', ParseUUIDPipe) memberId: string,
+    @Body() dto: UpdateMemberProfileDto,
+  ) {
+    const agency = await this.agencyService.getAgencyForUser(userId);
+    if (!agency) {
+      throw new NotFoundException('You are not a member of any agency');
+    }
+    this.ensureAdmin(agency.memberRole as AgencyMemberRole);
+    return this.agencyService.updateMemberProfile(agency.id, memberId, dto);
   }
 
   /**

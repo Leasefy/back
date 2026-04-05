@@ -1,6 +1,18 @@
+import 'dotenv/config';
 import { PrismaClient } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
+import pg from 'pg';
 
-const prisma = new PrismaClient();
+const connectionString =
+  process.env.DIRECT_URL || process.env.DATABASE_URL;
+
+if (!connectionString) {
+  throw new Error('DATABASE_URL or DIRECT_URL must be defined in .env');
+}
+
+const pool = new pg.Pool({ connectionString });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 /**
  * Default subscription plan configurations.
@@ -27,6 +39,7 @@ const plans = [
     hasPremiumScoring: false,
     hasApiAccess: false,
     scoringViewPrice: 9900, // COP per extra view
+    evaluationCreditPrice: 0, // Tenants don't purchase evaluations
   },
   {
     planType: 'TENANT' as const,
@@ -41,6 +54,7 @@ const plans = [
     hasPremiumScoring: true,
     hasApiAccess: false,
     scoringViewPrice: 0, // Not needed, unlimited views
+    evaluationCreditPrice: 0, // Tenants don't purchase evaluations
   },
 
   // ===== LANDLORD PLANS =====
@@ -57,6 +71,7 @@ const plans = [
     hasPremiumScoring: false,
     hasApiAccess: false,
     scoringViewPrice: 0,
+    evaluationCreditPrice: 42_000, // $42,000 COP per evaluation
   },
   {
     planType: 'LANDLORD' as const,
@@ -71,6 +86,7 @@ const plans = [
     hasPremiumScoring: true,
     hasApiAccess: false,
     scoringViewPrice: 0,
+    evaluationCreditPrice: 21_000, // $21,000 COP per evaluation (50% discount)
   },
   {
     planType: 'LANDLORD' as const,
@@ -85,6 +101,7 @@ const plans = [
     hasPremiumScoring: true,
     hasApiAccess: false,
     scoringViewPrice: 0,
+    evaluationCreditPrice: 0, // Unlimited free evaluations (FLEX benefit)
   },
 ];
 
@@ -151,6 +168,7 @@ async function main() {
         hasPremiumScoring: plan.hasPremiumScoring,
         hasApiAccess: plan.hasApiAccess,
         scoringViewPrice: plan.scoringViewPrice,
+        evaluationCreditPrice: plan.evaluationCreditPrice,
       },
       create: {
         planType: plan.planType,
@@ -164,6 +182,7 @@ async function main() {
         hasPremiumScoring: plan.hasPremiumScoring,
         hasApiAccess: plan.hasApiAccess,
         scoringViewPrice: plan.scoringViewPrice,
+        evaluationCreditPrice: plan.evaluationCreditPrice,
       },
     });
 
@@ -209,4 +228,7 @@ main()
     console.error('Error seeding plans:', e);
     process.exit(1);
   })
-  .finally(() => prisma.$disconnect());
+  .finally(async () => {
+    await prisma.$disconnect();
+    await pool.end();
+  });
